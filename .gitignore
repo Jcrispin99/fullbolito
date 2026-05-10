@@ -1,0 +1,45 @@
+*.log
+.DS_Store
+.env
+.env.backup
+.env.production
+.phpactor.json
+.phpunit.result.cache
+/.fleet
+/.idea
+/.nova
+/.phpunit.cache
+/.vscode
+/.zed
+/auth.json
+/node_modules
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+/storage/one/app/mpdf
+/storage/one/app/billing/certs/*.pem
+/storage/one/app/billing/sales
+/vendor
+Homestead.json
+Homestead.yaml
+Thumbs.db
+
+# Backmark task tracking
+/backlog/
+
+# Claude Code settings
+/.claude/
+CLAUDE.md
+
+# SQLite databases
+database/*.sqlite
+# Per-tenant SQLite files (stancl/tenancy with sqlite driver — created mostly by tests)
+/database/saas_base-*
+
+# Per-tenant storage folders (stancl/tenancy FilesystemTenancyBootstrapper)
+# These get created from tests / migrate:fresh and accumulate.
+/storage/acme-*
+/storage/biz-*
+/storage/exp_*

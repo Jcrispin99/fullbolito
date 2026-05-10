@@ -1,0 +1,4 @@
+name,description,parent_id,is_active
+Aguas,"Aguas minerales y saborizadas (actualizado)",Bebidas Naturales,true
+Refrescos,"Bebidas con gas",Bebidas Naturales,true
+Categoria Mala,"Tiene padre que no existe",Categoria Inexistente,true

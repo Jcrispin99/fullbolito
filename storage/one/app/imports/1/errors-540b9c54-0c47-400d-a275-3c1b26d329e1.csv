@@ -1,0 +1,2 @@
+﻿Name,"Document Type","Document Number",Email,Phone,Status,_row,_error
+"Cliente Bad Email",DNI,33333333,not-an-email,999333333,active,3,"The email field must be a valid email address."

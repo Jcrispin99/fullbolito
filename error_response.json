@@ -1,0 +1,466 @@
+{
+    "message": "SQLSTATE[42S22]: Column not found: 1054 Unknown column 'business_name' in 'field list' (Connection: tenant, Host: 127.0.0.1, Port: 3306, Database: restop-tomy, SQL: insert into `partners` (`is_supplier`, `document_type`, `document_number`, `business_name`, `email`, `phone`, `status`, `company_id`, `updated_at`, `created_at`) values (1, RUC, 20100000001, Distribuidora Alimentos S.A.C., ventas@distalimentos.com, 01-555-1001, active, 1, 2026-02-24 22:15:02, 2026-02-24 22:15:02))",
+    "exception": "Illuminate\\Database\\QueryException",
+    "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Database/Connection.php",
+    "line": 838,
+    "trace": [
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Database/Connection.php",
+            "line": 794,
+            "function": "runQueryCallback",
+            "class": "Illuminate\\Database\\Connection",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Database/MySqlConnection.php",
+            "line": 42,
+            "function": "run",
+            "class": "Illuminate\\Database\\Connection",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Database/Query/Processors/MySqlProcessor.php",
+            "line": 35,
+            "function": "insert",
+            "class": "Illuminate\\Database\\MySqlConnection",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php",
+            "line": 4054,
+            "function": "processInsertGetId",
+            "class": "Illuminate\\Database\\Query\\Processors\\MySqlProcessor",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php",
+            "line": 2235,
+            "function": "insertGetId",
+            "class": "Illuminate\\Database\\Query\\Builder",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php",
+            "line": 1436,
+            "function": "__call",
+            "class": "Illuminate\\Database\\Eloquent\\Builder",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php",
+            "line": 1401,
+            "function": "insertAndSetId",
+            "class": "Illuminate\\Database\\Eloquent\\Model",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php",
+            "line": 1240,
+            "function": "performInsert",
+            "class": "Illuminate\\Database\\Eloquent\\Model",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php",
+            "line": 1219,
+            "function": "save",
+            "class": "Illuminate\\Database\\Eloquent\\Model",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Support/helpers.php",
+            "line": 390,
+            "function": "{closure:Illuminate\\Database\\Eloquent\\Builder::create():1218}",
+            "class": "Illuminate\\Database\\Eloquent\\Builder",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php",
+            "line": 1218,
+            "function": "tap"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Support/Traits/ForwardsCalls.php",
+            "line": 23,
+            "function": "create",
+            "class": "Illuminate\\Database\\Eloquent\\Builder",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php",
+            "line": 2540,
+            "function": "forwardCallTo",
+            "class": "Illuminate\\Database\\Eloquent\\Model",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php",
+            "line": 2556,
+            "function": "__call",
+            "class": "Illuminate\\Database\\Eloquent\\Model",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/app/Http/Controllers/Api/Tenant/V1/SupplierController.php",
+            "line": 45,
+            "function": "__callStatic",
+            "class": "Illuminate\\Database\\Eloquent\\Model",
+            "type": "::"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Database/Concerns/ManagesTransactions.php",
+            "line": 35,
+            "function": "{closure:App\\Http\\Controllers\\Api\\Tenant\\V1\\SupplierController::store():44}",
+            "class": "App\\Http\\Controllers\\Api\\Tenant\\V1\\SupplierController",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Database/DatabaseManager.php",
+            "line": 491,
+            "function": "transaction",
+            "class": "Illuminate\\Database\\Connection",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php",
+            "line": 363,
+            "function": "__call",
+            "class": "Illuminate\\Database\\DatabaseManager",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/app/Http/Controllers/Api/Tenant/V1/SupplierController.php",
+            "line": 44,
+            "function": "__callStatic",
+            "class": "Illuminate\\Support\\Facades\\Facade",
+            "type": "::"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Routing/ControllerDispatcher.php",
+            "line": 46,
+            "function": "store",
+            "class": "App\\Http\\Controllers\\Api\\Tenant\\V1\\SupplierController",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Routing/Route.php",
+            "line": 265,
+            "function": "dispatch",
+            "class": "Illuminate\\Routing\\ControllerDispatcher",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Routing/Route.php",
+            "line": 211,
+            "function": "runController",
+            "class": "Illuminate\\Routing\\Route",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Routing/Router.php",
+            "line": 822,
+            "function": "run",
+            "class": "Illuminate\\Routing\\Route",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php",
+            "line": 180,
+            "function": "{closure:Illuminate\\Routing\\Router::runRouteWithinStack():821}",
+            "class": "Illuminate\\Routing\\Router",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/app/Http/Middleware/CheckTenantSubscription.php",
+            "line": 44,
+            "function": "{closure:Illuminate\\Pipeline\\Pipeline::prepareDestination():178}",
+            "class": "Illuminate\\Pipeline\\Pipeline",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php",
+            "line": 219,
+            "function": "handle",
+            "class": "App\\Http\\Middleware\\CheckTenantSubscription",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Routing/Middleware/SubstituteBindings.php",
+            "line": 50,
+            "function": "{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():194}:195}",
+            "class": "Illuminate\\Pipeline\\Pipeline",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php",
+            "line": 219,
+            "function": "handle",
+            "class": "Illuminate\\Routing\\Middleware\\SubstituteBindings",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Auth/Middleware/Authenticate.php",
+            "line": 63,
+            "function": "{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():194}:195}",
+            "class": "Illuminate\\Pipeline\\Pipeline",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php",
+            "line": 219,
+            "function": "handle",
+            "class": "Illuminate\\Auth\\Middleware\\Authenticate",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/stancl/tenancy/src/Middleware/IdentificationMiddleware.php",
+            "line": 36,
+            "function": "{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():194}:195}",
+            "class": "Illuminate\\Pipeline\\Pipeline",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/stancl/tenancy/src/Middleware/InitializeTenancyByDomain.php",
+            "line": 37,
+            "function": "initializeTenancy",
+            "class": "Stancl\\Tenancy\\Middleware\\IdentificationMiddleware",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php",
+            "line": 219,
+            "function": "handle",
+            "class": "Stancl\\Tenancy\\Middleware\\InitializeTenancyByDomain",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/stancl/tenancy/src/Middleware/PreventAccessFromCentralDomains.php",
+            "line": 29,
+            "function": "{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():194}:195}",
+            "class": "Illuminate\\Pipeline\\Pipeline",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php",
+            "line": 219,
+            "function": "handle",
+            "class": "Stancl\\Tenancy\\Middleware\\PreventAccessFromCentralDomains",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php",
+            "line": 137,
+            "function": "{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():194}:195}",
+            "class": "Illuminate\\Pipeline\\Pipeline",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Routing/Router.php",
+            "line": 821,
+            "function": "then",
+            "class": "Illuminate\\Pipeline\\Pipeline",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Routing/Router.php",
+            "line": 800,
+            "function": "runRouteWithinStack",
+            "class": "Illuminate\\Routing\\Router",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Routing/Router.php",
+            "line": 764,
+            "function": "runRoute",
+            "class": "Illuminate\\Routing\\Router",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Routing/Router.php",
+            "line": 753,
+            "function": "dispatchToRoute",
+            "class": "Illuminate\\Routing\\Router",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php",
+            "line": 200,
+            "function": "dispatch",
+            "class": "Illuminate\\Routing\\Router",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php",
+            "line": 180,
+            "function": "{closure:Illuminate\\Foundation\\Http\\Kernel::dispatchToRouter():197}",
+            "class": "Illuminate\\Foundation\\Http\\Kernel",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php",
+            "line": 21,
+            "function": "{closure:Illuminate\\Pipeline\\Pipeline::prepareDestination():178}",
+            "class": "Illuminate\\Pipeline\\Pipeline",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php",
+            "line": 31,
+            "function": "handle",
+            "class": "Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php",
+            "line": 219,
+            "function": "handle",
+            "class": "Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php",
+            "line": 21,
+            "function": "{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():194}:195}",
+            "class": "Illuminate\\Pipeline\\Pipeline",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php",
+            "line": 51,
+            "function": "handle",
+            "class": "Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php",
+            "line": 219,
+            "function": "handle",
+            "class": "Illuminate\\Foundation\\Http\\Middleware\\TrimStrings",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePostSize.php",
+            "line": 27,
+            "function": "{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():194}:195}",
+            "class": "Illuminate\\Pipeline\\Pipeline",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php",
+            "line": 219,
+            "function": "handle",
+            "class": "Illuminate\\Http\\Middleware\\ValidatePostSize",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php",
+            "line": 109,
+            "function": "{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():194}:195}",
+            "class": "Illuminate\\Pipeline\\Pipeline",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php",
+            "line": 219,
+            "function": "handle",
+            "class": "Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php",
+            "line": 74,
+            "function": "{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():194}:195}",
+            "class": "Illuminate\\Pipeline\\Pipeline",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php",
+            "line": 219,
+            "function": "handle",
+            "class": "Illuminate\\Http\\Middleware\\HandleCors",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php",
+            "line": 58,
+            "function": "{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():194}:195}",
+            "class": "Illuminate\\Pipeline\\Pipeline",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php",
+            "line": 219,
+            "function": "handle",
+            "class": "Illuminate\\Http\\Middleware\\TrustProxies",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/InvokeDeferredCallbacks.php",
+            "line": 22,
+            "function": "{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():194}:195}",
+            "class": "Illuminate\\Pipeline\\Pipeline",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php",
+            "line": 219,
+            "function": "handle",
+            "class": "Illuminate\\Foundation\\Http\\Middleware\\InvokeDeferredCallbacks",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePathEncoding.php",
+            "line": 26,
+            "function": "{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():194}:195}",
+            "class": "Illuminate\\Pipeline\\Pipeline",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php",
+            "line": 219,
+            "function": "handle",
+            "class": "Illuminate\\Http\\Middleware\\ValidatePathEncoding",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php",
+            "line": 137,
+            "function": "{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():194}:195}",
+            "class": "Illuminate\\Pipeline\\Pipeline",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php",
+            "line": 175,
+            "function": "then",
+            "class": "Illuminate\\Pipeline\\Pipeline",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php",
+            "line": 144,
+            "function": "sendRequestThroughRouter",
+            "class": "Illuminate\\Foundation\\Http\\Kernel",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Foundation/Application.php",
+            "line": 1220,
+            "function": "handle",
+            "class": "Illuminate\\Foundation\\Http\\Kernel",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/public/index.php",
+            "line": 22,
+            "function": "handleRequest",
+            "class": "Illuminate\\Foundation\\Application",
+            "type": "->"
+        },
+        {
+            "file": "/Users/wild/Herd/saas_restop/vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php",
+            "line": 23,
+            "function": "require_once"
+        }
+    ]
+}

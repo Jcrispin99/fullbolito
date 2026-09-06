@@ -10,6 +10,7 @@ import {
     ArrowLeftRight,
     Users,
     Sparkles,
+    LandPlot,
 } from "lucide-vue-next";
 
 export type NavSubMenu = {
@@ -89,6 +90,17 @@ export const MAIN_APPS: NavApp[] = [
                     { title: "Atributos", url: "/admin/attributes" },
                 ],
             },
+        ],
+    },
+    {
+        title: "Canchas",
+        icon: LandPlot,
+        colorClass: "border-emerald-500 text-emerald-500",
+        defaultRoute: "/admin/reservations",
+        submenus: [
+            { title: "Reservas", url: "/admin/reservations" },
+            { title: "Canchas", url: "/admin/courts" },
+            { title: "Horarios", url: "/admin/court-schedules" },
         ],
     },
     {

@@ -13,25 +13,15 @@ use Illuminate\Support\Facades\DB;
 /**
  * Switches a tenant between plans by rebinding its latest subscription.
  *
- * Stripe is mirrored via {@see StripePlanService} when the tenant has a
- * Stripe subscription — that call runs *before* the local DB update so
- * a Stripe failure aborts the whole switch (we never want the local plan
- * advertising a feature the customer isn't being billed for).
+ * Provider-backed changes are handled by their checkout + webhook flow.
+ * This service remains for trusted/manual local subscription changes.
  */
 final class PlanService
 {
-    public function __construct(
-        private readonly StripePlanService $stripe,
-    ) {
-    }
-
     /**
      * Switch the tenant to {@see $newPlan}. Returns the refreshed Tenant.
      *
      * Side effects:
-     *   - if the tenant has a Stripe subscription, the matching item's
-     *     price is updated to the new plan's stripe_price_id (best-effort:
-     *     skipped + logged when there's no Stripe context)
      *   - the latest local subscription's plan_id is updated
      *   - status is reset to "active" and the period is renewed from now()
      *   - any addon whose key is now included in the new plan is removed
@@ -39,16 +29,8 @@ final class PlanService
      */
     public function switchPlan(Tenant $tenant, Plan $newPlan): Tenant
     {
-        $oldPlan = $tenant->subscription()->with('plan')->first()?->plan;
-
-        // Sync Stripe FIRST. If it throws, the local DB stays untouched —
-        // we'd rather fail the switch than have local features diverge
-        // from what Stripe is billing.
-        if ($oldPlan) {
-            $this->stripe->swapPlan($tenant, $oldPlan, $newPlan);
-        }
-
-        DB::connection(config('tenancy.database.central_connection'))->transaction(function () use ($tenant, $newPlan): void {
+        DB::connection($this->centralConnection())->transaction(function () use ($tenant, $newPlan): void {
+            /** @var Subscription|null $subscription */
             $subscription = $tenant->subscription()->first();
 
             if ($subscription) {
@@ -71,7 +53,7 @@ final class PlanService
             $this->dropRedundantAddons($tenant, $newPlan);
         });
 
-        return $tenant->fresh();
+        return $tenant->fresh() ?? $tenant;
     }
 
     /**
@@ -83,7 +65,7 @@ final class PlanService
         if ($newPlan->includes_all_modules) {
             // Wildcard plan — every active module is included, so all addons
             // become redundant. Clear the array.
-            $tenant->addon_features = [];
+            $tenant->forceFill(['addon_features' => []]);
             $tenant->save();
 
             return;
@@ -94,9 +76,12 @@ final class PlanService
         // Fall back to config when the plan has no pivot rows AND no wildcard
         // (e.g. unmanaged legacy plans still in config/saas.php).
         if ($planFeatures === []) {
-            $planFeatures = (array) config("saas.plans.{$newPlan->slug}.features", []);
+            $planFeatures = array_values(array_filter(
+                (array) config("saas.plans.{$newPlan->slug}.features", []),
+                is_string(...),
+            ));
             if (in_array('*', $planFeatures, true)) {
-                $tenant->addon_features = [];
+                $tenant->forceFill(['addon_features' => []]);
                 $tenant->save();
 
                 return;
@@ -114,8 +99,15 @@ final class PlanService
         ));
 
         if ($kept !== $current) {
-            $tenant->addon_features = $kept;
+            $tenant->forceFill(['addon_features' => $kept]);
             $tenant->save();
         }
+    }
+
+    private function centralConnection(): string
+    {
+        $connection = config('tenancy.database.central_connection');
+
+        return is_string($connection) ? $connection : 'mysql';
     }
 }

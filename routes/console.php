@@ -26,10 +26,25 @@ Schedule::command('tenants:run lots:check-expirations')
 
 /*
 |--------------------------------------------------------------------------
+| Reservation hold expiration cleanup (multi-tenant)
+|--------------------------------------------------------------------------
+| Corre `reservations:cleanup-expired-holds` dentro de cada tenant cada
+| minuto. Cancela las reservas en estado `held` cuyo `held_until` ya pasó
+| (el slot ya estaba libre por el scope currentlyBlocking, esto solo
+| limpia el status para que no queden holds zombi en listados/reportes).
+*/
+Schedule::command('tenants:run reservations:cleanup-expired-holds')
+    ->everyMinute()
+    ->name('reservations-cleanup-expired-holds')
+    ->withoutOverlapping()
+    ->onOneServer();
+
+/*
+|--------------------------------------------------------------------------
 | Subscription expiration safety net (central)
 |--------------------------------------------------------------------------
 | Cada hora marca `expired` los trials vencidos y, con 24h de gracia, las
-| subs Stripe cuyo `ends_at` pasó sin que llegara el webhook de renovación.
+| suscripciones de pasarela cuyo `ends_at` pasó sin webhook de renovación.
 */
 Schedule::command('subscriptions:expire')
     ->hourly()

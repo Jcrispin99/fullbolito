@@ -4,15 +4,12 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Listeners\HandleStripeWebhook;
-use App\Models\Tenant;
+use App\Models\Company;
+use App\Observers\CompanyObserver;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
-use Laravel\Cashier\Cashier;
-use Laravel\Cashier\Events\WebhookReceived;
 
 final class AppServiceProvider extends ServiceProvider
 {
@@ -31,10 +28,7 @@ final class AppServiceProvider extends ServiceProvider
     {
         $this->configureRateLimiting();
 
-        // Configurar Cashier para usar Tenant en lugar de User
-        Cashier::useCustomerModel(Tenant::class);
-
-        Event::listen(WebhookReceived::class, HandleStripeWebhook::class);
+        Company::observe(CompanyObserver::class);
     }
 
     /**

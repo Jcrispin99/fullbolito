@@ -40,11 +40,18 @@ final class JournalSeeder extends Seeder
             ['name' => 'Transferencias',         'type' => 'transfer',       'code' => 'T001', 'document_type_code' => null, 'is_fiscal' => false, 'prefix' => 'T001', 'sequence_size' => 8],
             ['name' => 'Entradas',               'type' => 'movement_entry', 'code' => 'ENT',  'document_type_code' => null, 'is_fiscal' => false, 'prefix' => 'ENT', 'sequence_size' => 6],
             ['name' => 'Salidas',                'type' => 'movement_exit',  'code' => 'SAL',  'document_type_code' => null, 'is_fiscal' => false, 'prefix' => 'SAL', 'sequence_size' => 6],
+            ['name' => 'Reservas',               'type' => 'reservation',    'code' => 'RES',  'document_type_code' => null, 'is_fiscal' => false, 'prefix' => 'RES', 'sequence_size' => 8],
         ];
 
         foreach ($journals as $journalData) {
-            // Crear sequence para cada journal (con prefix/size personalizados si vienen)
-            $sequence = Sequence::create([
+            // Reusa la sequence del journal si ya existe (evita huérfanas y
+            // resetear el next_number en corridas repetidas del seeder).
+            $existingJournal = Journal::query()
+                ->where('code', $journalData['code'])
+                ->where('company_id', $mainCompany->id)
+                ->first();
+
+            $sequence = $existingJournal?->sequence ?? Sequence::create([
                 'prefix' => $journalData['prefix'] ?? null,
                 'sequence_size' => $journalData['sequence_size'] ?? 8,
                 'step' => 1,

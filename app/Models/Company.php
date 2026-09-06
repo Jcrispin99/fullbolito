@@ -64,6 +64,11 @@ class Company extends Model
         return $this->hasMany(Company::class, 'parent_id');
     }
 
+    public function warehouses(): HasMany
+    {
+        return $this->hasMany(Warehouse::class);
+    }
+
     public function parent(): BelongsTo
     {
         return $this->belongsTo(Company::class, 'parent_id');
@@ -77,6 +82,24 @@ class Company extends Model
     public function isMain(): bool
     {
         return (bool) $this->is_main;
+    }
+
+    /**
+     * Devuelve la company raíz subiendo por parent_id. Útil cuando ciertos
+     * recursos del tenant viven solo en la company madre (ej. journals que
+     * tienen code globalmente único) y las sucursales los comparten.
+     */
+    public function rootCompany(): self
+    {
+        $node = $this;
+        while ($node->parent_id !== null) {
+            $node = $node->parent;
+            if ($node === null) {
+                break;
+            }
+        }
+
+        return $node ?? $this;
     }
 
     public function getActivitylogOptions(): LogOptions

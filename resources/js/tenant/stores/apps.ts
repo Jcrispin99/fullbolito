@@ -40,7 +40,7 @@ export interface AppsCatalog {
   current_plan: CurrentPlan | null
   plans: PlanOption[]
   addon_total: number
-  has_stripe_subscription: boolean
+  has_payment_subscription: boolean
 }
 
 export const useAppsStore = defineStore('apps', () => {
@@ -95,10 +95,12 @@ export const useAppsStore = defineStore('apps', () => {
     switchingPlan.value = slug
     error.value = null
     try {
-      const { data } = await apiClient.post<AppsCatalog>('/v1/apps/plan', {
+      const { data } = await apiClient.post<{ checkout_url: string; pending: boolean }>('/v1/apps/plan', {
         plan_slug: slug,
       })
-      catalog.value = data.data
+      if (data.data.checkout_url) {
+        window.location.href = data.data.checkout_url
+      }
     } catch (err: any) {
       error.value = err?.response?.data?.message ?? err.message ?? 'Failed to switch plan'
       throw err

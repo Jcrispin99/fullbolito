@@ -82,7 +82,7 @@ it('returns the apps catalog with plan/addon flags', function (): void {
                 'current_plan' => ['name', 'slug', 'price'],
                 'plans',
                 'addon_total',
-                'has_stripe_subscription',
+                'has_payment_subscription',
             ],
         ]);
 

@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Models\Module;
 use App\Models\Plan;
+use App\Models\Subscription;
 use App\Models\Tenant;
 
 /**
@@ -23,7 +24,7 @@ final class TenantAppService
      *   current_plan: array<string, mixed>|null,
      *   plans: list<array<string, mixed>>,
      *   addon_total: float,
-     *   has_stripe_subscription: bool,
+     *   has_payment_subscription: bool,
      * }
      */
     public function getAppsData(Tenant $tenant): array
@@ -33,7 +34,7 @@ final class TenantAppService
         $planFeatures = $tenant->getPlanFeatures();
         $addonFeatures = $tenant->getAddonFeatures();
 
-        $apps = $modules->map(function (Module $module) use ($planFeatures, $addonFeatures) {
+        $apps = array_values($modules->map(function (Module $module) use ($planFeatures, $addonFeatures) {
             $includedInPlan = in_array($module->key, $planFeatures, true);
             $isActiveAddon = in_array($module->key, $addonFeatures, true);
 
@@ -49,13 +50,14 @@ final class TenantAppService
                 'is_active_addon' => $isActiveAddon,
                 'can_toggle' => $module->isAddon() && ! $includedInPlan,
             ];
-        })->values()->all();
+        })->values()->all());
 
         $addonTotal = array_sum(array_map(
             fn (array $app) => $app['is_active_addon'] ? $app['addon_price'] : 0,
             $apps,
         ));
 
+        /** @var Subscription|null $subscription */
         $subscription = $tenant->subscription()->with('plan')->first();
         $currentPlan = $subscription && $subscription->plan ? [
             'name' => $subscription->plan->name,
@@ -68,7 +70,7 @@ final class TenantAppService
             'trial_ends_at' => $subscription->trial_ends_at?->toIso8601String(),
         ] : null;
 
-        $plans = Plan::query()
+        $plans = array_values(Plan::query()
             ->where('is_active', true)
             ->orderBy('price')
             ->get()
@@ -81,14 +83,15 @@ final class TenantAppService
                 'modules' => $this->modulesForPlan($plan->slug, $modules),
             ])
             ->values()
-            ->all();
+            ->all());
 
         return [
             'apps' => $apps,
             'current_plan' => $currentPlan,
             'plans' => $plans,
             'addon_total' => round($addonTotal, 2),
-            'has_stripe_subscription' => $subscription?->stripe_id !== null,
+            'has_payment_subscription' => $subscription?->provider === 'mercadopago'
+                && $subscription->provider_id !== null,
         ];
     }
 
@@ -117,7 +120,7 @@ final class TenantAppService
             }
         }
 
-        return $modules
+        return array_values($modules
             ->filter(fn (Module $m) => in_array($m->key, $keys, true))
             ->map(fn (Module $m) => [
                 'key' => $m->key,
@@ -125,6 +128,6 @@ final class TenantAppService
                 'icon' => $m->icon,
             ])
             ->values()
-            ->all();
+            ->all());
     }
 }

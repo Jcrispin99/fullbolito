@@ -16,9 +16,10 @@ return [
      *
      * Only relevant if you're using the domain or subdomain identification middleware.
      */
-    'central_domains' => [
-        'saas_base.test',
-    ],
+    'central_domains' => array_values(array_filter(array_map(
+        'trim',
+        explode(',', (string) env('CENTRAL_DOMAINS', 'fullbolito.test')),
+    ))),
 
     /**
      * Tenancy bootstrappers are executed when tenancy is initialized.

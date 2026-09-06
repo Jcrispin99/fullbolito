@@ -11,18 +11,18 @@ use App\Http\Resources\UserResource;
 use App\Models\Plan;
 use App\Models\Tenant;
 use App\Models\User;
-use App\Services\StripeCheckoutService;
+use App\Services\MercadoPago\MercadoPagoBillingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
+use Stancl\Tenancy\Database\Models\Domain;
 
 final class TenantRegistrationController extends ApiController
 {
-    public function register(RegisterTenantRequest $request, StripeCheckoutService $checkout): JsonResponse
+    public function register(RegisterTenantRequest $request, MercadoPagoBillingService $billing): JsonResponse
     {
-        $fullName = trim($request->first_name . ' ' . $request->last_name);
+        $fullName = mb_trim($request->first_name.' '.$request->last_name);
 
         $centralUser = User::query()->create([
             'name' => $fullName,
@@ -32,7 +32,10 @@ final class TenantRegistrationController extends ApiController
 
         $centralToken = $centralUser->createToken('central-auth-token')->plainTextToken;
 
-        $centralDomain = (string) (config('tenancy.central_domains')[0] ?? '');
+        $configuredDomains = config('tenancy.central_domains', []);
+        $centralDomain = is_array($configuredDomains) && is_string($configuredDomains[0] ?? null)
+            ? $configuredDomains[0]
+            : '';
         $baseId = Str::slug($request->business_name);
         $baseId = $baseId !== '' ? $baseId : Str::lower(Str::random(8));
         $baseId = mb_substr($baseId, 0, 50);
@@ -41,10 +44,10 @@ final class TenantRegistrationController extends ApiController
         $suffix = 1;
         while (Tenant::query()->whereKey($tenantId)->exists()) {
             $suffix++;
-            $tenantId = mb_substr($baseId, 0, 45) . '-' . $suffix;
+            $tenantId = mb_substr($baseId, 0, 45).'-'.$suffix;
         }
 
-        $domain = $tenantId . '.' . $centralDomain;
+        $domain = $tenantId.'.'.$centralDomain;
 
         $tenant = Tenant::query()->create([
             'id' => $tenantId,
@@ -54,19 +57,20 @@ final class TenantRegistrationController extends ApiController
             'owner_phone' => $request->phone,
         ]);
 
-        $tenant->domains()->create([
+        Domain::query()->create([
             'domain' => $domain,
+            'tenant_id' => $tenant->id,
         ]);
 
         $chosenPlan = $request->plan_slug
             ? Plan::query()->where('slug', $request->plan_slug)->first()
             : Plan::query()->where('slug', 'free-trial')->first();
 
-        $isPaidPlan = $chosenPlan && $chosenPlan->stripe_price_id !== null && (float) $chosenPlan->price > 0;
+        $isPaidPlan = $chosenPlan && (float) $chosenPlan->price > 0;
 
         // Trial / free plans: persist the local subscription immediately.
-        // Paid plans: defer subscription creation to the Stripe webhook
-        // (customer.subscription.created), triggered after Checkout.
+        // Paid plans are activated only after Mercado Pago authorizes the
+        // preapproval and calls our signed webhook.
         if ($chosenPlan && ! $isPaidPlan) {
             $tenant->subscriptions()->create([
                 'plan_id' => $chosenPlan->id,
@@ -76,9 +80,6 @@ final class TenantRegistrationController extends ApiController
                 'trial_ends_at' => now()->addDays($chosenPlan->duration_days),
             ]);
         }
-
-        $tenantUser = null;
-        $tenantToken = null;
 
         try {
             tenancy()->initialize($tenant);
@@ -100,9 +101,7 @@ final class TenantRegistrationController extends ApiController
             tenancy()->end();
         }
 
-        if ($tenantUser) {
-            $tenantUser->setConnection($centralUser->getConnectionName());
-        }
+        $tenantUser->setConnection($centralUser->getConnectionName());
 
         $tenant->load(['domains', 'subscription.plan']);
 
@@ -124,11 +123,10 @@ final class TenantRegistrationController extends ApiController
 
         $checkoutUrl = null;
         if ($isPaidPlan) {
-            $checkoutUrl = $checkout->createSubscriptionCheckout(
-                tenant: $tenant,
-                plan: $chosenPlan,
-                successUrl: URL::to('/billing/success?tenant=' . $tenant->id),
-                cancelUrl: URL::to('/billing/cancel?tenant=' . $tenant->id),
+            $checkoutUrl = $billing->createSubscriptionCheckout(
+                $tenant,
+                $chosenPlan,
+                mb_rtrim($this->appUrl(), '/').'/billing/success?tenant='.$tenant->id,
             );
         }
 
@@ -140,5 +138,12 @@ final class TenantRegistrationController extends ApiController
             'tenant_token' => $tenantToken,
             'checkout_url' => $checkoutUrl,
         ], 'Tenant registered successfully');
+    }
+
+    private function appUrl(): string
+    {
+        $url = config('app.url');
+
+        return is_string($url) ? $url : 'http://localhost';
     }
 }

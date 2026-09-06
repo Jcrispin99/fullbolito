@@ -8,7 +8,16 @@ use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
 
-class Plan extends Model
+/**
+ * @property int $id
+ * @property string $name
+ * @property string $slug
+ * @property string $price
+ * @property int $duration_days
+ * @property bool $is_active
+ * @property bool $includes_all_modules
+ */
+final class Plan extends Model
 {
     use LogsActivity;
 
@@ -16,8 +25,6 @@ class Plan extends Model
         'name',
         'slug',
         'price',
-        'stripe_price_id',
-        'stripe_product_id',
         'duration_days',
         'is_active',
         'includes_all_modules',
@@ -36,14 +43,16 @@ class Plan extends Model
      */
     public function getConnectionName(): string
     {
-        return config('tenancy.database.central_connection') ?? parent::getConnectionName();
+        $connection = config('tenancy.database.central_connection');
+
+        return is_string($connection) ? $connection : 'mysql';
     }
 
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
             ->useLogName('plans')
-            ->logOnly(['name', 'slug', 'price', 'stripe_price_id', 'stripe_product_id', 'duration_days', 'is_active'])
+            ->logOnly(['name', 'slug', 'price', 'duration_days', 'is_active'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }

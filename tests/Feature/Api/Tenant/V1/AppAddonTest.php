@@ -4,23 +4,8 @@ declare(strict_types=1);
 
 use App\Models\Module;
 use App\Models\Plan;
-use App\Models\Tenant;
-use App\Services\StripeAddonService;
-
-/**
- * No-op double for StripeAddonService — Stripe interactions are out of scope
- * for these tests; we just verify local DB toggling and HTTP responses.
- */
-class FakeStripeAddonService extends StripeAddonService
-{
-    public function attach(Tenant $tenant, Module $module): void
-    {
-    }
-
-    public function detach(Tenant $tenant, Module $module): void
-    {
-    }
-}
+use App\Models\User;
+use Illuminate\Support\Facades\Http;
 
 /**
  * Verifies POST/DELETE /api/v1/apps/{key}/addon:
@@ -52,17 +37,31 @@ function seedAddonScaffold(): void
         );
     });
 
-    /** @var \App\Models\Tenant $tenant */
+    /** @var App\Models\Tenant $tenant */
     $tenant = tenant();
     tenancy()->central(function () use ($tenant): void {
         $plan = Plan::query()->where('slug', 'basico-mensual')->first();
-        $tenant->subscription->update(['plan_id' => $plan->id]);
+        $tenant->owner_email = 'owner@example.test';
+        $tenant->save();
+        $tenant->subscription->update([
+            'plan_id' => $plan->id,
+            'provider' => 'mercadopago',
+            'provider_id' => 'preapproval-addon-test',
+            'provider_status' => 'authorized',
+            'external_reference' => (string) Illuminate\Support\Str::uuid(),
+        ]);
     });
     $tenant->refresh();
 }
 
 beforeEach(function (): void {
-    $this->app->bind(StripeAddonService::class, FakeStripeAddonService::class);
+    config()->set('mercadopago.access_token', 'TEST-token');
+    Http::fake([
+        'api.mercadopago.com/preapproval/preapproval-addon-test' => Http::response([
+            'id' => 'preapproval-addon-test',
+            'status' => 'authorized',
+        ]),
+    ]);
 });
 
 it('requires authentication for attach', function (): void {
@@ -78,7 +77,7 @@ it('requires authentication for detach', function (): void {
 });
 
 it('returns 404 when the module does not exist', function (): void {
-    $this->actingAsTenantUser();
+    $this->actingAsTenantUser(User::factory()->create(['email' => 'owner@example.test']));
     seedAddonScaffold();
 
     $this->tenantPostJson('/api/v1/apps/ghost/addon')
@@ -87,7 +86,7 @@ it('returns 404 when the module does not exist', function (): void {
 });
 
 it('rejects modules that are not addons', function (): void {
-    $this->actingAsTenantUser();
+    $this->actingAsTenantUser(User::factory()->create(['email' => 'owner@example.test']));
     seedAddonScaffold();
 
     $this->tenantPostJson('/api/v1/apps/sales/addon')
@@ -96,7 +95,7 @@ it('rejects modules that are not addons', function (): void {
 });
 
 it('rejects addons already included in the plan', function (): void {
-    $this->actingAsTenantUser();
+    $this->actingAsTenantUser(User::factory()->create(['email' => 'owner@example.test']));
     seedAddonScaffold();
 
     // Force the plan to include `loyalty` so it's no longer an upgrade.
@@ -108,12 +107,12 @@ it('rejects addons already included in the plan', function (): void {
 });
 
 it('attaches an addon and returns the updated catalog', function (): void {
-    $this->actingAsTenantUser();
+    $this->actingAsTenantUser(User::factory()->create(['email' => 'owner@example.test']));
     seedAddonScaffold();
 
     $response = $this->tenantPostJson('/api/v1/apps/loyalty/addon')->assertOk();
 
-    /** @var \App\Models\Tenant $tenant */
+    /** @var App\Models\Tenant $tenant */
     $tenant = tenant()->fresh();
     expect($tenant->getAddonFeatures())->toContain('loyalty');
 
@@ -125,10 +124,10 @@ it('attaches an addon and returns the updated catalog', function (): void {
 });
 
 it('detaches an addon and returns the updated catalog', function (): void {
-    $this->actingAsTenantUser();
+    $this->actingAsTenantUser(User::factory()->create(['email' => 'owner@example.test']));
     seedAddonScaffold();
 
-    /** @var \App\Models\Tenant $tenant */
+    /** @var App\Models\Tenant $tenant */
     $tenant = tenant();
     tenancy()->central(fn () => $tenant->addAddon('loyalty'));
 

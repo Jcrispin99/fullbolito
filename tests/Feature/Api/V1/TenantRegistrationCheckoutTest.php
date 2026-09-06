@@ -2,42 +2,17 @@
 
 declare(strict_types=1);
 
+use App\Models\BillingCheckout;
 use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\Tenant;
-use App\Services\StripeCheckoutService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 
 uses(RefreshDatabase::class);
 
-/**
- * Records every checkout call so tests can assert what was sent
- * without ever touching Stripe.
- */
-class FakeStripeCheckoutService extends StripeCheckoutService
-{
-    public array $calls = [];
-
-    public function createSubscriptionCheckout(
-        Tenant $tenant,
-        Plan $plan,
-        string $successUrl,
-        string $cancelUrl,
-    ): string {
-        $this->calls[] = [
-            'tenant_id' => $tenant->id,
-            'plan_slug' => $plan->slug,
-            'success_url' => $successUrl,
-            'cancel_url' => $cancelUrl,
-        ];
-
-        return 'https://checkout.stripe.com/c/pay/cs_test_fake_' . count($this->calls);
-    }
-}
-
 beforeEach(function (): void {
-    $this->fakeCheckout = new FakeStripeCheckoutService();
-    $this->app->instance(StripeCheckoutService::class, $this->fakeCheckout);
+    config()->set('mercadopago.access_token', 'TEST-token');
 
     Plan::query()->create([
         'name' => 'Free Trial',
@@ -46,19 +21,25 @@ beforeEach(function (): void {
         'duration_days' => 14,
         'is_active' => true,
     ]);
-
     Plan::query()->create([
         'name' => 'Pro Mensual',
         'slug' => 'pro-mensual',
         'price' => 59.99,
         'duration_days' => 30,
         'is_active' => true,
-        'stripe_product_id' => 'prod_pro',
-        'stripe_price_id' => 'price_pro',
+    ]);
+
+    Http::fake([
+        'api.mercadopago.com/preapproval' => Http::response([
+            'id' => 'preapproval-registration',
+            'status' => 'pending',
+            'init_point' => 'https://www.mercadopago.com.pe/subscriptions/checkout?preapproval_id=preapproval-registration',
+        ], 201),
     ]);
 });
 
-$payload = function (array $extra = []): array {
+function registrationPayload(array $extra = []): array
+{
     $suffix = bin2hex(random_bytes(4));
 
     return array_merge([
@@ -70,64 +51,40 @@ $payload = function (array $extra = []): array {
         'password' => 'password123',
         'password_confirmation' => 'password123',
     ], $extra);
-};
+}
 
-it('defaults to free-trial when plan_slug is omitted', function () use ($payload): void {
-    $response = $this->postJson('/api/v1/register-tenant', $payload());
+it('defaults to a local free trial without calling Mercado Pago', function (): void {
+    $response = $this->postJson('/api/v1/register-tenant', registrationPayload())->assertCreated();
 
-    $response->assertCreated();
-    expect($response->json('data.checkout_url'))->toBeNull();
-    expect($this->fakeCheckout->calls)->toBeEmpty();
-
-    $tenant = Tenant::query()->first();
-    expect($tenant)->not->toBeNull();
-    expect(Subscription::query()->where('tenant_id', $tenant->id)->count())->toBe(1);
+    expect($response->json('data.checkout_url'))->toBeNull()
+        ->and(Subscription::query()->count())->toBe(1);
+    Http::assertNothingSent();
 });
 
-it('accepts explicit free-trial plan_slug without checkout', function () use ($payload): void {
-    $response = $this->postJson('/api/v1/register-tenant', $payload(['plan_slug' => 'free-trial']));
+it('creates a Mercado Pago checkout for a paid plan and defers activation', function (): void {
+    $response = $this->postJson('/api/v1/register-tenant', registrationPayload([
+        'plan_slug' => 'pro-mensual',
+    ]))->assertCreated();
 
-    $response->assertCreated();
-    expect($response->json('data.checkout_url'))->toBeNull();
-    expect($this->fakeCheckout->calls)->toBeEmpty();
+    expect($response->json('data.checkout_url'))->toStartWith('https://www.mercadopago.com.pe/')
+        ->and(Subscription::query()->count())->toBe(0)
+        ->and(BillingCheckout::query()->where('provider_id', 'preapproval-registration')->exists())->toBeTrue()
+        ->and(Tenant::query()->count())->toBe(1);
 });
 
-it('returns checkout_url for paid plan and defers local subscription', function () use ($payload): void {
-    $response = $this->postJson('/api/v1/register-tenant', $payload(['plan_slug' => 'pro-mensual']));
-
-    $response->assertCreated();
-    expect($response->json('data.checkout_url'))->toStartWith('https://checkout.stripe.com/');
-
-    expect($this->fakeCheckout->calls)->toHaveCount(1);
-    expect($this->fakeCheckout->calls[0]['plan_slug'])->toBe('pro-mensual');
-    expect($this->fakeCheckout->calls[0]['success_url'])->toContain('/billing/success');
-    expect($this->fakeCheckout->calls[0]['cancel_url'])->toContain('/billing/cancel');
-
-    $tenant = Tenant::query()->first();
-    expect($tenant)->not->toBeNull();
-    // Paid plans defer subscription creation to the Stripe webhook.
-    expect(Subscription::query()->where('tenant_id', $tenant->id)->count())->toBe(0);
-});
-
-it('rejects unknown plan_slug', function () use ($payload): void {
-    $this->postJson('/api/v1/register-tenant', $payload(['plan_slug' => 'does-not-exist']))
-        ->assertStatus(422)
-        ->assertJsonValidationErrors(['plan_slug']);
-
-    expect(Tenant::query()->count())->toBe(0);
-});
-
-it('rejects inactive plan_slug', function () use ($payload): void {
+it('rejects unknown or inactive plans before provisioning a tenant', function (): void {
     Plan::query()->create([
-        'name' => 'Old Plan',
-        'slug' => 'old-plan',
+        'name' => 'Inactive',
+        'slug' => 'inactive-plan',
         'price' => 10,
         'duration_days' => 30,
         'is_active' => false,
-        'stripe_price_id' => 'price_old',
     ]);
 
-    $this->postJson('/api/v1/register-tenant', $payload(['plan_slug' => 'old-plan']))
-        ->assertStatus(422)
-        ->assertJsonValidationErrors(['plan_slug']);
+    $this->postJson('/api/v1/register-tenant', registrationPayload(['plan_slug' => 'ghost']))
+        ->assertStatus(422);
+    $this->postJson('/api/v1/register-tenant', registrationPayload(['plan_slug' => 'inactive-plan']))
+        ->assertStatus(422);
+
+    expect(Tenant::query()->count())->toBe(0);
 });

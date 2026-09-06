@@ -10,14 +10,14 @@ use Illuminate\Support\Carbon;
 
 /**
  * Safety-net cron that marks `expired` any active/trial subscription whose
- * period has lapsed without renewal. Stripe-backed subs get a grace window
+ * period has lapsed without renewal. Provider-backed subs get a grace window
  * because the renewal webhook may arrive with delay.
  */
 final class ExpireSubscriptionsCommand extends Command
 {
     protected $signature = 'subscriptions:expire
                             {--dry-run : Reportar sin escribir cambios.}
-                            {--grace-hours=24 : Horas de gracia para subs Stripe.}';
+                            {--grace-hours=24 : Horas de gracia para suscripciones de pasarela.}';
 
     protected $description = 'Marca expired las suscripciones activas/trial cuyo periodo ya venció.';
 
@@ -26,7 +26,7 @@ final class ExpireSubscriptionsCommand extends Command
         $dryRun = (bool) $this->option('dry-run');
         $graceHours = max(0, (int) $this->option('grace-hours'));
         $now = Carbon::now();
-        $stripeCutoff = $now->copy()->subHours($graceHours);
+        $providerCutoff = $now->copy()->subHours($graceHours);
 
         $trialIds = Subscription::query()
             ->where('status', 'trial')
@@ -36,23 +36,23 @@ final class ExpireSubscriptionsCommand extends Command
 
         $localActiveIds = Subscription::query()
             ->where('status', 'active')
-            ->whereNull('stripe_id')
+            ->whereNull('provider_id')
             ->whereNotNull('ends_at')
             ->where('ends_at', '<', $now)
             ->pluck('id');
 
-        $stripeActiveIds = Subscription::query()
+        $providerActiveIds = Subscription::query()
             ->where('status', 'active')
-            ->whereNotNull('stripe_id')
+            ->whereNotNull('provider_id')
             ->whereNotNull('ends_at')
-            ->where('ends_at', '<', $stripeCutoff)
+            ->where('ends_at', '<', $providerCutoff)
             ->pluck('id');
 
         $this->info("Trials vencidos: {$trialIds->count()}");
-        $this->info("Locales (sin Stripe) vencidos: {$localActiveIds->count()}");
-        $this->info("Stripe vencidos (>{$graceHours}h sin renovar): {$stripeActiveIds->count()}");
+        $this->info("Locales (sin pasarela) vencidos: {$localActiveIds->count()}");
+        $this->info("Pasarela vencidos (>{$graceHours}h sin renovar): {$providerActiveIds->count()}");
 
-        $total = $trialIds->count() + $localActiveIds->count() + $stripeActiveIds->count();
+        $total = $trialIds->count() + $localActiveIds->count() + $providerActiveIds->count();
 
         if ($dryRun) {
             $this->line("[dry-run] No se aplicaron cambios. Total candidatos: {$total}");
@@ -66,7 +66,7 @@ final class ExpireSubscriptionsCommand extends Command
             return self::SUCCESS;
         }
 
-        $allIds = $trialIds->merge($localActiveIds)->merge($stripeActiveIds)->all();
+        $allIds = $trialIds->merge($localActiveIds)->merge($providerActiveIds)->all();
         Subscription::query()->whereIn('id', $allIds)->update(['status' => 'expired']);
 
         $this->info("✔ Total marcadas expired: {$total}");

@@ -7,13 +7,17 @@ import { Card, CardContent } from "@/components/ui/card";
 
 interface BillingState {
     tenant_id: string;
-    has_stripe_customer: boolean;
+    billing_provider: string | null;
+    has_payment_subscription: boolean;
     subscription: {
         status: string;
         starts_at: string | null;
         ends_at: string | null;
         trial_ends_at: string | null;
-        stripe_id: string | null;
+        provider: string | null;
+        provider_id: string | null;
+        provider_status: string | null;
+        next_billing_at: string | null;
     } | null;
     plan: {
         id: number;
@@ -31,18 +35,15 @@ interface PlanOption {
     description: string | null;
     price: number;
     duration_days: number;
-    stripe_price_id: string | null;
 }
 
 interface Invoice {
     id: string;
-    number: string | null;
-    total: number;
+    reference: string | null;
+    amount: number;
     currency: string;
     status: string | null;
-    created_at: number;
-    hosted_invoice_url: string | null;
-    invoice_pdf: string | null;
+    paid_at: string | null;
 }
 
 const billing = ref<BillingState | null>(null);
@@ -94,19 +95,21 @@ async function upgradeTo(slug: string) {
     }
 }
 
-async function openPortal() {
+async function updateSubscriptionStatus(status: "authorized" | "paused" | "cancelled") {
+    if (status === "cancelled" && !window.confirm("¿Cancelar la suscripción? Esta acción detendrá los próximos cobros.")) {
+        return;
+    }
+
     actionLoading.value = true;
     error.value = null;
     try {
-        const { data } = await apiClient.post<{ portal_url: string }>(
-            "/v1/billing/portal",
-            {},
+        await apiClient.patch(
+            "/v1/billing/subscription/status",
+            { status },
         );
-        if (data.data.portal_url) {
-            window.location.href = data.data.portal_url;
-        }
+        await load();
     } catch (err: any) {
-        error.value = err?.response?.data?.message ?? "No se pudo abrir el portal";
+        error.value = err?.response?.data?.message ?? "No se pudo actualizar la suscripción";
     } finally {
         actionLoading.value = false;
     }
@@ -131,14 +134,9 @@ function formatDate(iso: string | null) {
     return new Date(iso).toLocaleDateString();
 }
 
-function formatStripeAmount(cents: number, currency: string) {
+function formatAmount(amount: number, currency: string) {
     const symbol = currency.toLowerCase() === "pen" ? "S/" : currency.toUpperCase();
-    return `${symbol} ${(cents / 100).toFixed(2)}`;
-}
-
-function formatTimestamp(unix: number) {
-    if (!unix) return "—";
-    return new Date(unix * 1000).toLocaleDateString();
+    return `${symbol} ${Number(amount).toFixed(2)}`;
 }
 
 onMounted(load);
@@ -186,7 +184,7 @@ onMounted(load);
                             </div>
                             <div>
                                 <dt class="text-muted-foreground">Próximo cobro</dt>
-                                <dd>{{ formatDate(billing.subscription?.ends_at ?? null) }}</dd>
+                                <dd>{{ formatDate(billing.subscription?.next_billing_at ?? billing.subscription?.ends_at ?? null) }}</dd>
                             </div>
                             <div v-if="billing.subscription?.trial_ends_at">
                                 <dt class="text-muted-foreground">Fin del trial</dt>
@@ -194,13 +192,30 @@ onMounted(load);
                             </div>
                         </dl>
 
-                        <div v-if="billing.has_stripe_customer" class="pt-2">
+                        <div v-if="billing.has_payment_subscription" class="flex flex-wrap gap-2 pt-2">
                             <Button
+                                v-if="billing.subscription?.provider_status === 'authorized'"
                                 variant="outline"
                                 :disabled="actionLoading"
-                                @click="openPortal"
+                                @click="updateSubscriptionStatus('paused')"
                             >
-                                Administrar pago
+                                Pausar cobros
+                            </Button>
+                            <Button
+                                v-if="billing.subscription?.provider_status === 'paused'"
+                                variant="outline"
+                                :disabled="actionLoading"
+                                @click="updateSubscriptionStatus('authorized')"
+                            >
+                                Reactivar cobros
+                            </Button>
+                            <Button
+                                v-if="!['cancelled', 'canceled'].includes(billing.subscription?.provider_status ?? '')"
+                                variant="destructive"
+                                :disabled="actionLoading"
+                                @click="updateSubscriptionStatus('cancelled')"
+                            >
+                                Cancelar suscripción
                             </Button>
                         </div>
                     </CardContent>
@@ -208,7 +223,7 @@ onMounted(load);
 
                 <Card v-if="invoices.length">
                     <CardContent class="p-6">
-                        <h2 class="text-base font-semibold mb-3">Facturas</h2>
+                        <h2 class="text-base font-semibold mb-3">Historial de pagos</h2>
                         <table class="w-full text-sm">
                             <thead>
                                 <tr class="text-left text-xs text-muted-foreground border-b">
@@ -216,7 +231,6 @@ onMounted(load);
                                     <th class="py-2">Fecha</th>
                                     <th class="py-2">Monto</th>
                                     <th class="py-2">Estado</th>
-                                    <th class="py-2 text-right">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -226,41 +240,23 @@ onMounted(load);
                                     class="border-b last:border-0"
                                 >
                                     <td class="py-2 font-mono text-xs">
-                                        {{ inv.number ?? inv.id }}
+                                        {{ inv.reference ?? inv.id }}
                                     </td>
-                                    <td class="py-2">{{ formatTimestamp(inv.created_at) }}</td>
+                                    <td class="py-2">{{ formatDate(inv.paid_at) }}</td>
                                     <td class="py-2">
-                                        {{ formatStripeAmount(inv.total, inv.currency) }}
+                                        {{ formatAmount(inv.amount, inv.currency) }}
                                     </td>
                                     <td class="py-2">
                                         <span
                                             :class="[
                                                 'rounded-full px-2 py-0.5 text-xs',
-                                                inv.status === 'paid'
+                                                inv.status === 'completed'
                                                     ? 'bg-green-100 text-green-700'
                                                     : 'bg-muted text-muted-foreground',
                                             ]"
                                         >
                                             {{ inv.status ?? "—" }}
                                         </span>
-                                    </td>
-                                    <td class="py-2 text-right space-x-2">
-                                        <a
-                                            v-if="inv.hosted_invoice_url"
-                                            :href="inv.hosted_invoice_url"
-                                            target="_blank"
-                                            class="text-xs underline text-primary"
-                                        >
-                                            Ver
-                                        </a>
-                                        <a
-                                            v-if="inv.invoice_pdf"
-                                            :href="inv.invoice_pdf"
-                                            target="_blank"
-                                            class="text-xs underline text-primary"
-                                        >
-                                            PDF
-                                        </a>
                                     </td>
                                 </tr>
                             </tbody>
@@ -271,7 +267,7 @@ onMounted(load);
                 <Card v-if="plans.length">
                     <CardContent class="p-6">
                         <h2 class="text-base font-semibold mb-3">
-                            {{ billing.has_stripe_customer ? "Cambiar de plan" : "Actualizar a un plan pago" }}
+                            {{ billing.has_payment_subscription ? "Cambiar de plan" : "Actualizar a un plan pago" }}
                         </h2>
                         <div class="grid gap-3 md:grid-cols-2">
                             <div

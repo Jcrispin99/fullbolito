@@ -37,7 +37,7 @@ onMounted(() => {
   if (!store.catalog) store.fetchCatalog()
 })
 
-const formatPrice = (n: number) => `$${n.toFixed(2)}`
+const formatPrice = (n: number) => `S/ ${n.toFixed(2)}`
 
 // ─── Banner: feature missing (router redirect with ?missing=key) ─────────────
 const missingFeature = computed(() => (route.query.missing as string | undefined) ?? null)
@@ -48,7 +48,7 @@ const missingApp = computed(() => {
 
 // ─── Derived state ───────────────────────────────────────────────────────────
 const currentPlanSlug = computed(() => store.catalog?.current_plan?.slug ?? null)
-const hasStripe = computed(() => store.catalog?.has_stripe_subscription === true)
+const hasPaymentSubscription = computed(() => store.catalog?.has_payment_subscription === true)
 const addons = computed<AppItem[]>(() => store.catalog?.apps.filter((a) => a.is_addon) ?? [])
 
 const monthlyTotal = computed(() => {
@@ -114,8 +114,7 @@ async function confirmPlanSwitch(): Promise<void> {
   if (!plan) return
   try {
     await store.switchPlan(plan.slug)
-    toast.success(`Plan actualizado a "${plan.name}"`)
-    await authStore.fetchUser()
+    toast.info('Completa la autorización en Mercado Pago para aplicar el cambio.')
   } catch {
     toast.error(store.error ?? 'No se pudo cambiar el plan')
   } finally {
@@ -423,10 +422,9 @@ async function confirmPlanSwitch(): Promise<void> {
               cada {{ planToConfirm?.duration_days }} días y la fecha de renovación
               se reiniciará desde hoy.
             </span>
-            <span v-if="hasStripe" class="block">
-              Tu suscripción de Stripe se actualizará al nuevo precio
-              <strong>con prorrateo</strong>: la diferencia del periodo actual
-              se acreditará o cobrará en la próxima factura.
+            <span v-if="hasPaymentSubscription" class="block">
+              Mercado Pago solicitará una nueva autorización. El plan actual
+              seguirá activo hasta que el nuevo checkout sea confirmado.
             </span>
             <span v-if="addonsLostByConfirmedPlan.length" class="block">
               Los siguientes add-ons quedarán incluidos en el nuevo plan y se

@@ -99,6 +99,66 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true, defaultApp: 'General' },
   },
 
+  // Courts
+  {
+    path: '/admin/courts',
+    name: 'CourtsIndex',
+    component: () => import('@tenant/views/Courts/Index.vue'),
+    meta: { requiresAuth: true, defaultApp: 'Canchas' },
+  },
+  {
+    path: '/admin/courts/create',
+    name: 'CourtsCreate',
+    component: () => import('@tenant/views/Courts/FormPage.vue'),
+    meta: { requiresAuth: true, defaultApp: 'Canchas' },
+  },
+  {
+    path: '/admin/courts/:id/edit',
+    name: 'CourtsEdit',
+    component: () => import('@tenant/views/Courts/FormPage.vue'),
+    meta: { requiresAuth: true, defaultApp: 'Canchas' },
+  },
+
+  // Court Schedules
+  {
+    path: '/admin/court-schedules',
+    name: 'CourtSchedulesIndex',
+    component: () => import('@tenant/views/CourtSchedules/Index.vue'),
+    meta: { requiresAuth: true, defaultApp: 'Canchas' },
+  },
+  {
+    path: '/admin/court-schedules/create',
+    name: 'CourtSchedulesCreate',
+    component: () => import('@tenant/views/CourtSchedules/FormPage.vue'),
+    meta: { requiresAuth: true, defaultApp: 'Canchas' },
+  },
+  {
+    path: '/admin/court-schedules/:id/edit',
+    name: 'CourtSchedulesEdit',
+    component: () => import('@tenant/views/CourtSchedules/FormPage.vue'),
+    meta: { requiresAuth: true, defaultApp: 'Canchas' },
+  },
+
+  // Reservations
+  {
+    path: '/admin/reservations',
+    name: 'ReservationsIndex',
+    component: () => import('@tenant/views/Reservations/Index.vue'),
+    meta: { requiresAuth: true, defaultApp: 'Canchas' },
+  },
+  {
+    path: '/admin/reservations/create',
+    name: 'ReservationsCreate',
+    component: () => import('@tenant/views/Reservations/FormPage.vue'),
+    meta: { requiresAuth: true, defaultApp: 'Canchas' },
+  },
+  {
+    path: '/admin/reservations/:id/edit',
+    name: 'ReservationsEdit',
+    component: () => import('@tenant/views/Reservations/FormPage.vue'),
+    meta: { requiresAuth: true, defaultApp: 'Canchas' },
+  },
+
   // Warehouses
   {
     path: '/admin/warehouses',
@@ -482,6 +542,25 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@tenant/views/Pos/CloseSession.vue'),
       },
     ],
+  },
+
+  // ─── Reservas públicas (sin auth) ────────────────────────
+  // IMPORTANTE: estas rutas DEBEN ir antes del catch-all '/:slug'
+  // para que '/canchas' y '/canchas/...' las matcheen y no caigan al builder.
+  {
+    path: '/canchas',
+    name: 'CourtsCatalog',
+    component: () => import('@tenant/views/Public/CourtsCatalog.vue'),
+  },
+  {
+    path: '/canchas/:slug',
+    name: 'CourtDetail',
+    component: () => import('@tenant/views/Public/CourtDetail.vue'),
+  },
+  {
+    path: '/reservas/:code',
+    name: 'ReservationStatus',
+    component: () => import('@tenant/views/Public/ReservationStatus.vue'),
   },
 
   // ─── Página pública por slug (catch-all, DEBE ir al final) ─

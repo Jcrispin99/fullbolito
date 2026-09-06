@@ -25,8 +25,6 @@ class ModuleResource extends JsonResource
             'description' => $this->description,
             'icon' => $this->icon,
             'addon_price' => (float) $this->addon_price,
-            'stripe_price_id' => $this->stripe_price_id,
-            'stripe_product_id' => $this->stripe_product_id,
             'is_active' => $this->is_active,
             'sort_order' => $this->sort_order,
             'is_addon' => $this->isAddon(),

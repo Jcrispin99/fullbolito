@@ -15,6 +15,7 @@ use App\Models\Partner;
 use App\Models\PosSession;
 use App\Models\PosSessionPayment;
 use App\Models\Sale;
+use App\Models\Sequence;
 use App\Models\Tax;
 use App\Models\UnitOfMeasure;
 use App\Models\User;
@@ -257,12 +258,17 @@ final class SaleController extends ApiController
             $serie = 'B001';
             $correlative = '0000001';
 
-            if ($defaultJournal->sequence) {
+            if ($defaultJournal->sequence_id) {
+                // lockForUpdate: evita que dos ventas concurrentes lean el
+                // mismo next_number antes de incrementarlo (ver mismo fix en
+                // ReservationController::nextDocumentNumber).
+                $sequence = Sequence::query()->lockForUpdate()->findOrFail($defaultJournal->sequence_id);
+
                 $serie = $defaultJournal->code;
-                $correlative = str_pad((string) $defaultJournal->sequence->next_number, $defaultJournal->sequence->sequence_size, '0', STR_PAD_LEFT);
+                $correlative = str_pad((string) $sequence->next_number, $sequence->sequence_size, '0', STR_PAD_LEFT);
 
                 // Consumir permanentemente el número (avanzar +1)
-                $defaultJournal->sequence->increment('next_number', $defaultJournal->sequence->step);
+                $sequence->increment('next_number', $sequence->step);
             }
 
             $sale = Sale::create([

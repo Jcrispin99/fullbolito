@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Middleware\CheckTenantFeature;
 use App\Http\Middleware\CheckTenantSubscription;
 use App\Http\Middleware\EnsureEmailVerified;
+use App\Http\Middleware\EnsureTenantBillingManager;
 use App\Http\Middleware\ForceJsonResponse;
 use App\Http\Middleware\InitializeTenancyIfNotCentralDomain;
 use App\Http\Middleware\LogApiRequests;
@@ -29,9 +30,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'subscription.check' => CheckTenantSubscription::class,
             'tenant.feature' => CheckTenantFeature::class,
             'company.filter' => ParseCompanyFilter::class,
-            'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
-            'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
-            'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
+            'billing.manage' => EnsureTenantBillingManager::class,
+            'role' => Spatie\Permission\Middleware\RoleMiddleware::class,
+            'permission' => Spatie\Permission\Middleware\PermissionMiddleware::class,
+            'role_or_permission' => Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

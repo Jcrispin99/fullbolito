@@ -66,8 +66,11 @@ export interface Subscription {
     tenant_id: string;
     plan_id: number;
     status: string;
-    stripe_id: string | null;
-    stripe_status: string | null;
+    provider: string | null;
+    provider_id: string | null;
+    provider_status: string | null;
+    external_reference: string | null;
+    next_billing_at: string | null;
     starts_at: string;
     ends_at: string | null;
     trial_ends_at: string | null;
@@ -89,7 +92,6 @@ export interface Plan {
     includes_all_modules?: boolean;
     module_ids?: number[];
     modules?: Array<{ id: number; key: string; label: string; icon: string | null }>;
-    stripe_product_id: string | null;
     created_at: string;
     updated_at: string;
 }
@@ -101,7 +103,6 @@ export interface Module {
     description: string | null;
     icon: string | null;
     addon_price: number;
-    stripe_price_id: string | null;
     is_active: boolean;
     sort_order: number;
     is_addon: boolean;

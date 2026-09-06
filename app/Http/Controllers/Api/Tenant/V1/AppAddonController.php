@@ -7,17 +7,16 @@ namespace App\Http\Controllers\Api\Tenant\V1;
 use App\Http\Controllers\Api\ApiController;
 use App\Models\Module;
 use App\Models\Tenant;
-use App\Services\StripeAddonService;
+use App\Services\MercadoPago\MercadoPagoBillingService;
 use App\Services\TenantAppService;
 use Illuminate\Http\JsonResponse;
 
 final class AppAddonController extends ApiController
 {
     public function __construct(
-        private readonly StripeAddonService $stripe,
+        private readonly MercadoPagoBillingService $billing,
         private readonly TenantAppService $catalog,
-    ) {
-    }
+    ) {}
 
     public function attach(string $key): JsonResponse
     {
@@ -52,14 +51,25 @@ final class AppAddonController extends ApiController
             return $this->error("Module [{$key}] is included in the current plan.", 422);
         }
 
+        if (! $this->billing->hasActiveSubscription($tenant)) {
+            return $this->error('Necesitas una suscripción activa de Mercado Pago para modificar addons pagos.', 422);
+        }
+
+        $addons = $tenant->getAddonFeatures();
         if ($attach) {
-            $this->stripe->attach($tenant, $module);
+            if (! in_array($key, $addons, true)) {
+                $addons[] = $key;
+            }
+            $this->billing->updateForAddons($tenant, array_values($addons));
             $tenant->addAddon($key);
         } else {
-            $this->stripe->detach($tenant, $module);
+            $addons = array_values(array_filter($addons, fn (string $addon) => $addon !== $key));
+            $this->billing->updateForAddons($tenant, $addons);
             $tenant->removeAddon($key);
         }
 
-        return $this->success($this->catalog->getAppsData($tenant->fresh()));
+        $freshTenant = $tenant->fresh();
+
+        return $this->success($this->catalog->getAppsData($freshTenant ?? $tenant));
     }
 }

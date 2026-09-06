@@ -24,8 +24,11 @@ function makeSub(array $attrs): Subscription
         'plan_id' => $plan->id,
     ], $attrs));
 
-    if (! empty($attrs['stripe_id'])) {
-        $sub->forceFill(['stripe_id' => $attrs['stripe_id']])->save();
+    if (! empty($attrs['provider_id'])) {
+        $sub->forceFill([
+            'provider' => 'mercadopago',
+            'provider_id' => $attrs['provider_id'],
+        ])->save();
     }
 
     return $sub->fresh();
@@ -52,7 +55,7 @@ it('marks expired trials whose trial_ends_at has passed', function (): void {
     expect($stillValid->fresh()->status)->toBe('trial');
 });
 
-it('marks expired local active subs (no stripe_id) without grace', function (): void {
+it('marks expired local active subs (no provider_id) without grace', function (): void {
     $expired = makeSub([
         'status' => 'active',
         'starts_at' => now()->subDays(31),
@@ -64,19 +67,19 @@ it('marks expired local active subs (no stripe_id) without grace', function (): 
     expect($expired->fresh()->status)->toBe('expired');
 });
 
-it('respects grace window for Stripe-backed active subs', function (): void {
+it('respects grace window for provider-backed active subs', function (): void {
     $withinGrace = makeSub([
         'status' => 'active',
         'starts_at' => now()->subDays(30),
         'ends_at' => now()->subHours(2),
-        'stripe_id' => 'sub_within_grace',
+        'provider_id' => 'sub_within_grace',
     ]);
 
     $pastGrace = makeSub([
         'status' => 'active',
         'starts_at' => now()->subDays(30),
         'ends_at' => now()->subHours(48),
-        'stripe_id' => 'sub_past_grace',
+        'provider_id' => 'sub_past_grace',
     ]);
 
     $this->artisan('subscriptions:expire', ['--grace-hours' => 24])->assertSuccessful();

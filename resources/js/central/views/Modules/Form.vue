@@ -26,7 +26,6 @@ const form = ref({
     description: "",
     icon: "",
     addon_price: 0,
-    stripe_price_id: "",
     sort_order: 0,
     is_active: true,
 });
@@ -41,7 +40,6 @@ watch(
                 description: newData.description || "",
                 icon: newData.icon || "",
                 addon_price: Number(newData.addon_price ?? 0),
-                stripe_price_id: newData.stripe_price_id || "",
                 sort_order: Number(newData.sort_order ?? 0),
                 is_active: newData.is_active ?? true,
             };
@@ -56,7 +54,6 @@ const submit = () => {
         // Send empty strings as null so the API validates as nullable.
         description: form.value.description || null,
         icon: form.value.icon || null,
-        stripe_price_id: form.value.stripe_price_id || null,
     });
 };
 
@@ -131,7 +128,7 @@ defineExpose({ submit });
                     </div>
                 </div>
 
-                <div class="grid gap-4 md:grid-cols-2">
+                <div class="max-w-sm">
                     <div class="space-y-2">
                         <Label htmlFor="addon_price">Precio addon</Label>
                         <Input
@@ -148,14 +145,6 @@ defineExpose({ submit });
                         </p>
                     </div>
 
-                    <div class="space-y-2">
-                        <Label htmlFor="stripe_price_id">Stripe price ID</Label>
-                        <Input
-                            id="stripe_price_id"
-                            v-model="form.stripe_price_id"
-                            placeholder="price_..."
-                        />
-                    </div>
                 </div>
 
                 <div class="flex items-center gap-3 pt-2">

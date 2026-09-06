@@ -8,6 +8,16 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @property int $id
+ * @property string $key
+ * @property string $label
+ * @property string|null $description
+ * @property string|null $icon
+ * @property string $addon_price
+ * @property bool $is_active
+ * @property int $sort_order
+ */
 final class Module extends Model
 {
     use HasFactory;
@@ -18,8 +28,6 @@ final class Module extends Model
         'description',
         'icon',
         'addon_price',
-        'stripe_price_id',
-        'stripe_product_id',
         'is_active',
         'sort_order',
     ];
@@ -36,7 +44,9 @@ final class Module extends Model
      */
     public function getConnectionName(): string
     {
-        return config('tenancy.database.central_connection') ?? parent::getConnectionName();
+        $connection = config('tenancy.database.central_connection');
+
+        return is_string($connection) ? $connection : 'mysql';
     }
 
     public function isAddon(): bool

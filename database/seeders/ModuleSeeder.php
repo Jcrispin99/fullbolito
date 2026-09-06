@@ -28,7 +28,6 @@ final class ModuleSeeder extends Seeder
                 array_merge([
                     'description' => null,
                     'addon_price' => 0,
-                    'stripe_price_id' => null,
                     'is_active' => true,
                 ], $module),
             );

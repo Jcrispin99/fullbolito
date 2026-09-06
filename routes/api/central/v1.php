@@ -3,7 +3,10 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\Central\V1\ModuleController;
+use App\Http\Controllers\Api\Central\V1\MercadoPagoWebhookController;
 use App\Http\Controllers\Api\Central\V1\PlanController;
+use App\Http\Controllers\Api\Central\V1\PublicMarketplaceController;
+use App\Http\Controllers\Api\Central\V1\PublicUbigeoController;
 use App\Http\Controllers\Api\Central\V1\SubscriptionController;
 use App\Http\Controllers\Api\Central\V1\TenantController;
 use App\Http\Controllers\Api\Central\V1\TenantRegistrationController;
@@ -23,11 +26,35 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
 
+    Route::post('webhooks/mercadopago', MercadoPagoWebhookController::class)
+        ->middleware('throttle:120,1')
+        ->name('central.webhooks.mercadopago');
+
     Route::post('register-tenant', [TenantRegistrationController::class, 'register'])->name('central.tenants.register');
 
     // Permitir ver planes públicamente (para landing page)
     Route::get('plans', [PlanController::class, 'index'])->name('central.plans.index');
     Route::get('plans/{plan}', [PlanController::class, 'show'])->name('central.plans.show');
+
+    // Marketplace público: agrega canchas de todos los tenants.
+    // Estrategia v1: iteración en vivo (Opción A). Cuando escale → cache central.
+    Route::middleware('throttle:60,1')->group(function () {
+        Route::get('marketplace/courts', [PublicMarketplaceController::class, 'courts'])
+            ->name('central.marketplace.courts');
+
+        // Catálogo INEI público (para selectores cascade del marketplace).
+        // URIs bajo `marketplace/` para no chocar con las rutas ubigeo del
+        // tenant (que viven en el mismo `api/v1/` prefix y serían registradas
+        // después, sobrescribiendo estas).
+        Route::get('marketplace/ubigeo/departments', [PublicUbigeoController::class, 'departments'])
+            ->name('central.marketplace.ubigeo.departments');
+        Route::get('marketplace/ubigeo/departments/{department}/provinces', [PublicUbigeoController::class, 'provinces'])
+            ->name('central.marketplace.ubigeo.provinces');
+        Route::get('marketplace/ubigeo/provinces/{province}/districts', [PublicUbigeoController::class, 'districts'])
+            ->name('central.marketplace.ubigeo.districts');
+        Route::get('marketplace/ubigeo/resolve/{code}', [PublicUbigeoController::class, 'resolve'])
+            ->name('central.marketplace.ubigeo.resolve');
+    });
 
     // Gestión autenticada
     Route::middleware('auth:sanctum')->group(function () {

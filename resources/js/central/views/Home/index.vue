@@ -6,11 +6,11 @@ import { useAuthStore } from "@central/stores/auth"
 import { Button } from "@/components/ui/button"
 import {
   GalleryVerticalEnd,
-  ShieldCheck,
-  Zap,
+  CalendarCheck,
   LayoutGrid,
-  Boxes,
-  HeartHandshake,
+  Wallet,
+  Goal,
+  Bell,
   BarChart3,
   Sparkles,
   Check,
@@ -35,35 +35,51 @@ const plans = ref<PlanCard[]>([
   {
     slug: "free-trial",
     name: "Free Trial",
-    description: "Probá la plataforma 14 días sin tarjeta.",
+    description: "Probá Canchapp 14 días sin tarjeta.",
     price: 0,
     duration_days: 14,
-    features: ["1 sede", "Hasta 50 comprobantes", "Soporte por email"],
+    features: ["1 sede, hasta 2 canchas", "Reservas online ilimitadas", "Soporte por email"],
   },
   {
-    slug: "basico-mensual",
-    name: "Básico",
-    description: "Para negocios que recién arrancan.",
-    price: 29.99,
+    slug: "starter-mensual",
+    name: "Starter",
+    description: "Para complejos que recién arrancan online.",
+    price: 49,
     duration_days: 30,
-    features: ["1 sede", "Comprobantes ilimitados", "POS offline", "Reportes básicos"],
+    features: [
+      "1 sede, hasta 4 canchas",
+      "Pagos online (Mercado Pago / Yape)",
+      "Recordatorios por email",
+      "Reportes básicos",
+    ],
   },
   {
     slug: "pro-mensual",
     name: "Pro",
-    description: "Lo más elegido por restaurantes en operación.",
-    price: 59.99,
+    description: "Lo más elegido por complejos en operación.",
+    price: 99,
     duration_days: 30,
-    features: ["Hasta 3 sedes", "Inventario + lotes", "Loyalty incluido", "Soporte prioritario"],
+    features: [
+      "Hasta 3 sedes, canchas ilimitadas",
+      "Recordatorios por WhatsApp",
+      "Señas y reglas de cancelación",
+      "Página pública personalizable",
+      "Soporte prioritario",
+    ],
     highlight: true,
   },
   {
     slug: "enterprise-anual",
     name: "Enterprise",
     description: "Cadenas y operaciones grandes.",
-    price: 499.99,
+    price: 499,
     duration_days: 365,
-    features: ["Sedes ilimitadas", "Todos los módulos", "SLA 99.9%", "Onboarding dedicado"],
+    features: [
+      "Sedes y canchas ilimitadas",
+      "Multi-usuario con roles",
+      "API y exportaciones",
+      "Onboarding dedicado y SLA",
+    ],
   },
 ])
 
@@ -103,39 +119,39 @@ const intervalLabel = (p: PlanCard) => {
 
 const features = [
   {
-    icon: ShieldCheck,
-    title: "Facturación SUNAT",
-    body: "Boletas, facturas, notas y guías electrónicas. Anulación en un click.",
+    icon: CalendarCheck,
+    title: "Reservas online 24/7",
+    body: "Tus clientes reservan desde el celular, sin llamadas ni WhatsApp. Vos te enterás al instante.",
     tone: "primary" as const,
-  },
-  {
-    icon: Zap,
-    title: "POS offline-first",
-    body: "Vendé sin internet. La sincronización corre sola cuando vuelve.",
-    tone: "secondary" as const,
   },
   {
     icon: LayoutGrid,
-    title: "Multi-sede",
-    body: "Stock por sucursal, transferencias, consolidado central.",
-    tone: "primary" as const,
-  },
-  {
-    icon: Boxes,
-    title: "Inventario con lotes",
-    body: "Trazabilidad de vencimientos, alertas y bloqueo automático.",
+    title: "Grilla de horarios visual",
+    body: "Mirá la ocupación de todas tus canchas en una sola pantalla. Arrastrás, movés, cancelás.",
     tone: "secondary" as const,
   },
   {
-    icon: HeartHandshake,
-    title: "Loyalty integrado",
-    body: "Programa de puntos opcional, conectado al POS desde el día uno.",
+    icon: Wallet,
+    title: "Cobros y señas integrados",
+    body: "Cobrá el total o solo la seña al reservar. Mercado Pago, Yape, Plin y transferencia.",
+    tone: "primary" as const,
+  },
+  {
+    icon: Goal,
+    title: "Multi-cancha y multi-deporte",
+    body: "Fútbol 5/7/11, pádel, vóley, básquet. Cada cancha con su precio, horario y reglas.",
+    tone: "secondary" as const,
+  },
+  {
+    icon: Bell,
+    title: "Recordatorios automáticos",
+    body: "WhatsApp y email antes del partido. Menos ausencias, menos canchas vacías.",
     tone: "primary" as const,
   },
   {
     icon: BarChart3,
-    title: "Reportes en vivo",
-    body: "Ventas, márgenes y movimientos en tiempo real desde cualquier lado.",
+    title: "Reportes que importan",
+    body: "Ocupación por horario, ingresos por cancha, clientes recurrentes. Decisiones con datos.",
     tone: "secondary" as const,
   },
 ]
@@ -143,19 +159,27 @@ const features = [
 const steps = [
   {
     n: "01",
-    title: "Creá tu cuenta",
-    body: "Registrate gratis y tu workspace queda listo en segundos.",
+    title: "Creá tu complejo",
+    body: "Registrate gratis y cargá tus canchas, horarios y precios en minutos.",
   },
   {
     n: "02",
-    title: "Configurá tu negocio",
-    body: "Cargá tus productos, sedes y certificado SUNAT desde un wizard guiado.",
+    title: "Compartí tu link de reservas",
+    body: "Tu página pública queda lista. La pegás en Instagram, WhatsApp o Google.",
   },
   {
     n: "03",
-    title: "Empezá a operar",
-    body: "Vendé desde el POS, emití comprobantes y mirá tus reportes.",
+    title: "Recibí reservas y cobrá",
+    body: "Los jugadores reservan y pagan online. Vos solo abrís la cancha.",
   },
+]
+
+const mockCourts = ["Cancha 1", "Cancha 2", "Cancha 3"]
+const mockHours = ["17", "18", "19", "20", "21", "22", "23", "00"]
+const mockGrid: number[][] = [
+  [0, 1, 1, 1, 0, 1, 1, 0],
+  [0, 0, 1, 1, 1, 1, 0, 0],
+  [1, 1, 0, 1, 2, 1, 1, 0],
 ]
 </script>
 
@@ -167,10 +191,11 @@ const steps = [
           <div class="bg-primary text-primary-foreground flex size-8 items-center justify-center rounded-lg shadow-md shadow-primary/20">
             <GalleryVerticalEnd class="size-4" />
           </div>
-          <span>RestOP</span>
+          <span>Canchapp</span>
         </RouterLink>
 
         <nav class="hidden items-center gap-7 text-sm text-muted-foreground md:flex">
+          <RouterLink :to="{ name: 'Marketplace' }" class="transition hover:text-foreground">Reservar cancha</RouterLink>
           <a href="#features" class="transition hover:text-foreground">Producto</a>
           <a href="#how" class="transition hover:text-foreground">Cómo funciona</a>
           <a href="#pricing" class="transition hover:text-foreground">Planes</a>
@@ -207,24 +232,24 @@ const steps = [
       <div class="mx-auto max-w-6xl px-6 pb-20 pt-20 text-center sm:pt-28">
         <div class="mx-auto inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-medium text-primary">
           <Sparkles class="size-3" />
-          Nueva integración SUNAT — sin papeleo
+          Nuevo · Reservas online 24/7 sin llamadas ni WhatsApp
         </div>
 
         <h1 class="mx-auto mt-6 max-w-3xl text-balance text-5xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
           El sistema operativo<br>
           <span class="bg-gradient-to-r from-primary via-primary to-secondary bg-clip-text text-transparent">
-            de tu negocio.
+            de tu complejo deportivo.
           </span>
         </h1>
 
         <p class="mx-auto mt-6 max-w-2xl text-balance text-base text-muted-foreground sm:text-lg">
-          Facturación electrónica, POS offline, inventario y multi-sede en una sola plataforma. Sin instalar nada.
+          Gestioná canchas, horarios, reservas y pagos desde un solo lugar. Tus clientes reservan online, vos cobrás sin perseguir a nadie.
         </p>
 
         <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
           <Button v-if="!isAuthenticated" as-child size="lg" class="gap-2">
             <RouterLink :to="{ name: 'Register' }">
-              Empezar gratis
+              Empezá gratis
               <ArrowRight class="size-4" />
             </RouterLink>
           </Button>
@@ -235,7 +260,7 @@ const steps = [
             </RouterLink>
           </Button>
           <Button as-child variant="outline" size="lg">
-            <a href="#features">Ver el producto</a>
+            <a href="#features">Ver demo</a>
           </Button>
         </div>
 
@@ -263,44 +288,52 @@ const steps = [
                 <div class="md:col-span-9 space-y-4">
                   <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
                     <div class="rounded-xl border border-border bg-background/60 p-3">
-                      <div class="text-[10px] uppercase tracking-wider text-muted-foreground">Ventas hoy</div>
-                      <div class="mt-1 text-lg font-bold">S/ 4,820</div>
+                      <div class="text-[10px] uppercase tracking-wider text-muted-foreground">Reservas hoy</div>
+                      <div class="mt-1 text-lg font-bold">12</div>
                     </div>
                     <div class="rounded-xl border border-border bg-background/60 p-3">
-                      <div class="text-[10px] uppercase tracking-wider text-muted-foreground">Comprobantes</div>
-                      <div class="mt-1 text-lg font-bold">68</div>
+                      <div class="text-[10px] uppercase tracking-wider text-muted-foreground">Ocupación</div>
+                      <div class="mt-1 text-lg font-bold">78%</div>
                     </div>
                     <div class="rounded-xl border border-border bg-background/60 p-3">
-                      <div class="text-[10px] uppercase tracking-wider text-muted-foreground">Ticket prom.</div>
-                      <div class="mt-1 text-lg font-bold">S/ 70.8</div>
+                      <div class="text-[10px] uppercase tracking-wider text-muted-foreground">Ingresos</div>
+                      <div class="mt-1 text-lg font-bold">S/ 1,240</div>
                     </div>
                     <div class="rounded-xl border border-border bg-background/60 p-3">
-                      <div class="text-[10px] uppercase tracking-wider text-muted-foreground">Stock crítico</div>
-                      <div class="mt-1 text-lg font-bold text-primary">3</div>
+                      <div class="text-[10px] uppercase tracking-wider text-muted-foreground">Próxima</div>
+                      <div class="mt-1 text-lg font-bold text-primary">19:00</div>
                     </div>
                   </div>
-                  <div class="flex h-44 items-end gap-2 rounded-xl border border-border bg-background/60 p-4">
-                    <div v-for="(h, i) in [40, 65, 50, 80, 55, 90, 70, 95, 60, 75, 88, 100]" :key="i"
-                      class="flex-1 rounded-md"
-                      :class="i % 3 === 0 ? 'bg-primary/80' : 'bg-secondary/70'"
-                      :style="{ height: h + '%' }"
-                    ></div>
+                  <div class="rounded-xl border border-border bg-background/60 p-4">
+                    <div class="grid items-center gap-1.5 text-[10px]" style="grid-template-columns: 4.5rem repeat(8, minmax(0, 1fr));">
+                      <div></div>
+                      <div v-for="h in mockHours" :key="'h' + h" class="text-center text-muted-foreground">{{ h }}h</div>
+                      <template v-for="(row, ri) in mockGrid" :key="'r' + ri">
+                        <div class="text-muted-foreground">{{ mockCourts[ri] }}</div>
+                        <div
+                          v-for="(cell, ci) in row"
+                          :key="'c' + ri + '-' + ci"
+                          class="h-7 rounded"
+                          :class="cell === 1 ? 'bg-primary/80' : cell === 2 ? 'bg-amber-500/70' : 'bg-muted'"
+                        ></div>
+                      </template>
+                    </div>
                   </div>
                   <div class="space-y-2">
                     <div class="flex items-center gap-3 rounded-lg border border-border bg-background/60 p-3 text-sm">
                       <div class="size-2 rounded-full bg-emerald-500"></div>
-                      <div class="flex-1 truncate">Boleta B001-00231 — Cliente final</div>
-                      <div class="font-medium">S/ 89.00</div>
+                      <div class="flex-1 truncate">Cancha 1 · 19:00–20:00 — Juan Pérez · Pagado</div>
+                      <div class="font-medium">S/ 80.00</div>
                     </div>
                     <div class="flex items-center gap-3 rounded-lg border border-border bg-background/60 p-3 text-sm">
                       <div class="size-2 rounded-full bg-emerald-500"></div>
-                      <div class="flex-1 truncate">Factura F001-00118 — Inversiones SAC</div>
-                      <div class="font-medium">S/ 1,240.00</div>
+                      <div class="flex-1 truncate">Cancha 3 · 20:00–21:00 — Los Pibes FC · Seña</div>
+                      <div class="font-medium">S/ 120.00</div>
                     </div>
                     <div class="flex items-center gap-3 rounded-lg border border-border bg-background/60 p-3 text-sm">
                       <div class="size-2 rounded-full bg-amber-500"></div>
-                      <div class="flex-1 truncate">Boleta B001-00230 — pendiente firma</div>
-                      <div class="font-medium">S/ 45.50</div>
+                      <div class="flex-1 truncate">Cancha 2 · 21:00–22:00 — Pendiente confirmación</div>
+                      <div class="font-medium">S/ 50.00</div>
                     </div>
                   </div>
                 </div>
@@ -316,10 +349,10 @@ const steps = [
         <div class="mx-auto max-w-2xl text-center">
           <span class="text-sm font-medium text-primary">Todo en un solo lugar</span>
           <h2 class="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
-            Lo que necesitás para operar, sin frankenstein de apps.
+            Lo que necesitás para llenar tus canchas, sin pegar apps con cinta.
           </h2>
           <p class="mt-4 text-muted-foreground">
-            Reemplazá facturador, POS, control de stock y reportes con una sola plataforma.
+            Reemplazá agenda en papel, planilla de Excel y mensajes sueltos por una sola plataforma.
           </p>
         </div>
 
@@ -349,7 +382,7 @@ const steps = [
         <div class="mx-auto max-w-2xl text-center">
           <span class="text-sm font-medium text-primary">Cómo funciona</span>
           <h2 class="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
-            De cero a facturando en menos de 10 minutos.
+            De cero a recibir reservas en menos de 10 minutos.
           </h2>
         </div>
 
@@ -445,7 +478,7 @@ const steps = [
               <h2 class="text-3xl font-bold tracking-tight sm:text-4xl">
                 Empezá hoy.<br>
                 <span class="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                  Sin tarjeta, sin compromiso.
+                  Sin tarjeta, sin instalar nada.
                 </span>
               </h2>
               <p class="mt-4 max-w-md text-muted-foreground">
@@ -460,7 +493,7 @@ const steps = [
                 <RouterLink :to="{ name: 'Dashboard' }">Ir al Dashboard</RouterLink>
               </Button>
               <Button as-child variant="outline" size="lg">
-                <a href="#features">Ver el producto</a>
+                <a href="#features">Ver demo</a>
               </Button>
             </div>
           </div>
@@ -474,7 +507,7 @@ const steps = [
           <div class="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
             <GalleryVerticalEnd class="size-3" />
           </div>
-          <span>© {{ new Date().getFullYear() }} RestOP. Todos los derechos reservados.</span>
+          <span>© {{ new Date().getFullYear() }} Canchapp. Todos los derechos reservados.</span>
         </div>
         <div class="flex items-center gap-5">
           <a href="#features" class="transition hover:text-foreground">Producto</a>

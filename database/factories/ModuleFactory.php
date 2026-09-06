@@ -28,7 +28,6 @@ final class ModuleFactory extends Factory
             'description' => fake()->sentence(),
             'icon' => null,
             'addon_price' => 0,
-            'stripe_price_id' => null,
             'is_active' => true,
             'sort_order' => 0,
         ];

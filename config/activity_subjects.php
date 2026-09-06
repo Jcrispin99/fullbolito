@@ -19,5 +19,8 @@ return [
     'movement' => App\Models\Movement::class,
     'paymentMethod' => App\Models\PaymentMethod::class,
     'posConfig' => App\Models\PosConfig::class,
+    'court' => App\Models\Court::class,
+    'courtSchedule' => App\Models\CourtSchedule::class,
+    'reservation' => App\Models\Reservation::class,
 
 ];

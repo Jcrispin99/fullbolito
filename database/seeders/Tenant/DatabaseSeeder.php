@@ -41,6 +41,10 @@ final class DatabaseSeeder extends Seeder
             MovementSeeder::class,
             TransferSeeder::class,
             LoyaltySeeder::class,
+            // Vertical: canchas deportivas
+            CourtSeeder::class,
+            CourtScheduleSeeder::class,
+            ReservationSeeder::class,
             SiteSeeder::class,
         ]);
     }

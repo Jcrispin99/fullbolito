@@ -1,8 +1,14 @@
 <script setup lang="ts">
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Plus, LayoutGrid, LayoutList } from "lucide-vue-next";
-import { computed, ref, watch, onUnmounted } from "vue";
+import { computed, ref, watch, onUnmounted, type Component } from "vue";
 import PageHeader from "@/components/PageHeader.vue";
+
+export interface ViewModeOption {
+    value: string;
+    icon: Component;
+    label?: string;
+}
 
 const props = withDefaults(
     defineProps<{
@@ -13,12 +19,15 @@ const props = withDefaults(
         currentPage: number;
         loading?: boolean;
         canCreate?: boolean;
+        canSearch?: boolean;
         search?: string;
         selectedItems?: any[];
-        viewMode?: "table" | "grid";
+        viewMode?: string;
+        viewModes?: ViewModeOption[];
     }>(),
     {
         selectedItems: () => [],
+        canSearch: true,
     },
 );
 
@@ -26,9 +35,18 @@ const emit = defineEmits<{
     (e: "create"): void;
     (e: "update:perPage", value: number | string): void;
     (e: "update:search", value: string): void;
-    (e: "update:viewMode", value: "table" | "grid"): void;
+    (e: "update:viewMode", value: string): void;
     (e: "pageChange", page: number): void;
 }>();
+
+const DEFAULT_VIEW_MODES: ViewModeOption[] = [
+    { value: "table", icon: LayoutList, label: "Tabla" },
+    { value: "grid", icon: LayoutGrid, label: "Grid" },
+];
+
+const resolvedViewModes = computed<ViewModeOption[]>(
+    () => props.viewModes ?? DEFAULT_VIEW_MODES,
+);
 
 // Debounced search: input updates immediately, emit fires after 300ms
 const localSearch = ref(props.search || "");
@@ -111,7 +129,7 @@ const handleRangeInput = (event: Event) => {
                 v-else
                 class="flex items-center gap-2 w-full max-w-lg animate-in fade-in zoom-in-95 duration-200"
             >
-                <div class="relative flex-1">
+                <div v-if="canSearch" class="relative flex-1">
                     <input
                         :value="localSearch"
                         @input="handleSearchInput"
@@ -163,26 +181,26 @@ const handleRangeInput = (event: Event) => {
                     </Button>
                 </div>
 
-                <div class="flex items-center gap-1 bg-muted/50 p-0.5 rounded-md ml-4" v-if="viewMode !== undefined">
+                <div
+                    v-if="viewMode !== undefined"
+                    class="flex items-center gap-1 bg-muted/50 p-0.5 rounded-md ml-4"
+                >
                     <Button
+                        v-for="m in resolvedViewModes"
+                        :key="m.value"
                         variant="ghost"
                         size="icon"
                         class="h-7 w-7 rounded-sm"
-                        :class="viewMode === 'table' ? 'bg-background shadow-sm text-foreground' : ''"
-                        @click="$emit('update:viewMode', 'table')"
+                        :class="
+                            viewMode === m.value
+                                ? 'bg-background shadow-sm text-foreground'
+                                : ''
+                        "
+                        :title="m.label || m.value"
+                        @click="$emit('update:viewMode', m.value)"
                     >
-                        <LayoutList class="h-4 w-4" />
-                        <span class="sr-only">List View</span>
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        class="h-7 w-7 rounded-sm"
-                        :class="viewMode === 'grid' ? 'bg-background shadow-sm text-foreground' : ''"
-                        @click="$emit('update:viewMode', 'grid')"
-                    >
-                        <LayoutGrid class="h-4 w-4" />
-                        <span class="sr-only">Grid View</span>
+                        <component :is="m.icon" class="h-4 w-4" />
+                        <span class="sr-only">{{ m.label || m.value }}</span>
                     </Button>
                 </div>
             </div>

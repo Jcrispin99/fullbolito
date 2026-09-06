@@ -18,9 +18,6 @@
 /public/storage
 /storage/*.key
 /storage/pail
-/storage/one/app/mpdf
-/storage/one/app/billing/certs/*.pem
-/storage/one/app/billing/sales
 /vendor
 Homestead.json
 Homestead.yaml
@@ -38,8 +35,12 @@ database/*.sqlite
 # Per-tenant SQLite files (stancl/tenancy with sqlite driver — created mostly by tests)
 /database/saas_base-*
 
-# Per-tenant storage folders (stancl/tenancy FilesystemTenancyBootstrapper)
-# These get created from tests / migrate:fresh and accumulate.
-/storage/acme-*
-/storage/biz-*
-/storage/exp_*
+# Per-tenant storage (stancl/tenancy FilesystemTenancyBootstrapper)
+# Tenant IDs are dynamic (UUIDGenerator) and test/seed tenants use varying
+# prefixes (test_*, wh_*, exp_*, orphan_*, etc.), so match the fixed
+# subfolder structure inside any tenant instead of specific tenant names.
+/storage/*/app/billing/certs/
+/storage/*/app/billing/sales/
+/storage/*/app/mpdf/
+/storage/*/app/imports/
+/storage/*/app/public/

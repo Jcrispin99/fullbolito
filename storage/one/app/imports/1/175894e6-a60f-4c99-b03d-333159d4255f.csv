@@ -1,5 +1,0 @@
-Name,Document Type,Document Number,Email,Phone,Status
-Cliente Test 1,DNI,11111111,test1@example.com,999111111,active
-Cliente Test 2,DNI,22222222,test2@example.com,999222222,active
-Cliente Bad Email,DNI,33333333,not-an-email,999333333,active
-Sin Nombre,DNI,44444444,nameless@example.com,999444444,active

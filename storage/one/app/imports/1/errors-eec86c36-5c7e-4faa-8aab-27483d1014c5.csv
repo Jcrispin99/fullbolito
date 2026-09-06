@@ -1,2 +1,0 @@
-﻿name,description,parent_id,is_active,_row,_error
-"Categoria Mala","Tiene padre que no existe","Categoria Inexistente",true,3,"Could not resolve [Categoría padre] = [Categoria Inexistente] in category."

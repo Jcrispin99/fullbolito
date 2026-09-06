@@ -1,5 +1,0 @@
-name,description,parent_id,is_active
-Bebidas Naturales,"Jugos y aguas saludables",,true
-Aguas,"Aguas con y sin gas",Bebidas Naturales,true
-Galletas,"Galletas dulces y saladas",8,1
-Snacks Salados,"Papas y similares",8,sí

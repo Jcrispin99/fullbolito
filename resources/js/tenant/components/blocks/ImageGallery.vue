@@ -66,7 +66,7 @@ const placeholderCount = computed(() => {
       >
         <ImagePlus :size="22" :stroke-width="1.5" />
         <span v-if="i === 1" class="font-medium">Galería vacía</span>
-        <span v-if="i === 1" class="text-[10px] opacity-70">Agregá imágenes desde el panel →</span>
+        <span v-if="i === 1" class="text-[10px] opacity-70">Agrega imágenes desde el panel →</span>
       </div>
     </div>
   </div>

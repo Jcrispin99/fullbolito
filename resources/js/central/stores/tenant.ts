@@ -60,7 +60,7 @@ export const useTenantStore = defineStore("tenant", () => {
         } catch (err: any) {
             if (isAbortError(err)) return;
             error.value =
-                err.response?.data?.message || "Error fetching tenants";
+                err.response?.data?.message || "No se pudieron cargar los negocios";
             throw err;
         } finally {
             isLoading.value = false;
@@ -76,7 +76,7 @@ export const useTenantStore = defineStore("tenant", () => {
             return data.data as any;
         } catch (err: any) {
             error.value =
-                err.response?.data?.message || "Error fetching tenant";
+                err.response?.data?.message || "No se pudo cargar el negocio";
             throw err;
         } finally {
             isLoading.value = false;
@@ -96,7 +96,7 @@ export const useTenantStore = defineStore("tenant", () => {
             return tenant;
         } catch (err: any) {
             error.value =
-                err.response?.data?.message || "Error registering tenant";
+                err.response?.data?.message || "No se pudo registrar el negocio";
             throw err;
         } finally {
             isLoading.value = false;
@@ -117,7 +117,7 @@ export const useTenantStore = defineStore("tenant", () => {
             return data.data as any;
         } catch (err: any) {
             error.value =
-                err.response?.data?.message || "Error updating tenant";
+                err.response?.data?.message || "No se pudo actualizar el negocio";
             throw err;
         } finally {
             isLoading.value = false;
@@ -133,7 +133,7 @@ export const useTenantStore = defineStore("tenant", () => {
             if (currentTenant.value?.id === id) currentTenant.value = null;
         } catch (err: any) {
             error.value =
-                err.response?.data?.message || "Error deleting tenant";
+                err.response?.data?.message || "No se pudo eliminar el negocio";
             throw err;
         } finally {
             isLoading.value = false;
@@ -155,7 +155,7 @@ export const useTenantStore = defineStore("tenant", () => {
             return data.data as any;
         } catch (err: any) {
             error.value =
-                err.response?.data?.message || "Error renewing subscription";
+                err.response?.data?.message || "No se pudo renovar la suscripción";
             throw err;
         } finally {
             isLoading.value = false;

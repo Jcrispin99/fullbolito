@@ -64,11 +64,11 @@ defineExpose({ submit })
       <form @submit.prevent="submit" class="space-y-6">
         <div class="grid gap-4 md:grid-cols-2">
           <div class="space-y-2">
-            <Label htmlFor="name">Name</Label>
+            <Label htmlFor="name">Nombre</Label>
             <Input
               id="name"
               v-model="form.name"
-              placeholder="e.g. Central Admin"
+              placeholder="p. ej., Administrador central"
               :disabled="isLoading"
               required
             />
@@ -78,12 +78,12 @@ defineExpose({ submit })
           </div>
 
           <div class="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">Correo electrónico</Label>
             <Input
               id="email"
               v-model="form.email"
               type="email"
-              placeholder="user@example.com"
+              placeholder="usuario@ejemplo.com"
               :disabled="isLoading"
               required
             />
@@ -94,7 +94,7 @@ defineExpose({ submit })
         </div>
 
         <div class="space-y-2">
-          <Label htmlFor="role">Role</Label>
+          <Label htmlFor="role">Rol</Label>
           <Input id="role" v-model="form.role" :disabled="isLoading" />
           <p v-if="errors?.role" class="text-sm text-destructive">
             {{ errors.role }}
@@ -103,7 +103,7 @@ defineExpose({ submit })
 
         <div class="grid gap-4 md:grid-cols-2">
           <div class="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">Contraseña</Label>
             <Input
               id="password"
               v-model="form.password"
@@ -117,7 +117,7 @@ defineExpose({ submit })
           </div>
 
           <div class="space-y-2">
-            <Label htmlFor="password_confirmation">Confirm Password</Label>
+            <Label htmlFor="password_confirmation">Confirmar contraseña</Label>
             <Input
               id="password_confirmation"
               v-model="form.password_confirmation"
@@ -137,4 +137,3 @@ defineExpose({ submit })
     </CardContent>
   </Card>
 </template>
-

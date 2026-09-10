@@ -5,10 +5,10 @@ import path from 'path'
 
 export default defineConfig({
     server: {
-        host: 'saas_base.test',
+        host: 'fullbolito.test',
         port: 5173,
         hmr: {
-            host: 'saas_base.test',
+            host: 'fullbolito.test',
         },
         watch: {
             // Ignore tenant SQLite DBs and storage churn — Pest creates and

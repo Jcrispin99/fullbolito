@@ -46,10 +46,10 @@ async function handleLogin() {
     <FieldGroup>
       <div class="flex flex-col items-center gap-1 text-center">
         <h1 class="text-2xl font-bold">
-          Login to your account
+          Inicia sesión en tu cuenta
         </h1>
         <p class="text-muted-foreground text-sm text-balance">
-          Enter your email below to login to your account
+          Ingresa tu correo electrónico para iniciar sesión
         </p>
       </div>
 
@@ -59,7 +59,7 @@ async function handleLogin() {
 
       <Field>
         <FieldLabel for="email">
-          Email
+          Correo electrónico
         </FieldLabel>
         <Input 
           id="email" 
@@ -72,13 +72,13 @@ async function handleLogin() {
       <Field>
         <div class="flex items-center">
           <FieldLabel for="password">
-            Password
+            Contraseña
           </FieldLabel>
           <a
             href="#"
             class="ml-auto text-sm underline-offset-4 hover:underline"
           >
-            Forgot your password?
+            ¿Olvidaste tu contraseña?
           </a>
         </div>
         <Input 
@@ -90,10 +90,10 @@ async function handleLogin() {
       </Field>
       <Field>
         <Button type="submit" :disabled="loading">
-          {{ loading ? 'Logging in...' : 'Login' }}
+          {{ loading ? 'Iniciando sesión...' : 'Iniciar sesión' }}
         </Button>
       </Field>
-      <FieldSeparator>Or continue with</FieldSeparator>
+      <FieldSeparator>O continúa con</FieldSeparator>
       <Field>
         <Button variant="outline" type="button">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="mr-2 h-4 w-4">
@@ -102,11 +102,11 @@ async function handleLogin() {
               fill="currentColor"
             />
           </svg>
-          Login with GitHub
+          Iniciar sesión con GitHub
         </Button>
         <FieldDescription class="text-center">
-          Don't have an account?
-          <a href="#">Sign up</a>
+          ¿No tienes una cuenta?
+          <a href="#">Regístrate</a>
         </FieldDescription>
       </Field>
     </FieldGroup>

@@ -35,10 +35,10 @@ function updateColor(key: string, value: string) {
 
       <!-- Typography -->
       <section>
-        <h4 class="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Tipografia</h4>
+        <h4 class="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Tipografía</h4>
         <div class="space-y-3">
           <div>
-            <label class="block text-xs font-medium mb-1">Fuente titulos</label>
+            <label class="block text-xs font-medium mb-1">Fuente de títulos</label>
             <input :value="siteConfig.site.theme.typography.heading_font" type="text" class="w-full px-2 py-1.5 border rounded text-sm bg-background" @change="siteConfig.updateTheme({ typography: { ...siteConfig.site!.theme!.typography, heading_font: ($event.target as HTMLInputElement).value } })" />
           </div>
           <div>
@@ -56,10 +56,10 @@ function updateColor(key: string, value: string) {
       <section>
         <h4 class="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Bordes</h4>
         <div>
-          <label class="block text-xs font-medium mb-1">Border radius</label>
+          <label class="block text-xs font-medium mb-1">Redondeo de bordes</label>
           <select :value="siteConfig.site.theme.borders.radius" class="w-full px-2 py-1.5 border rounded text-sm bg-background" @change="siteConfig.updateTheme({ borders: { ...siteConfig.site!.theme!.borders, radius: ($event.target as HTMLSelectElement).value as any } })">
             <option value="none">Ninguno</option>
-            <option value="sm">Pequeno</option>
+            <option value="sm">Pequeño</option>
             <option value="md">Medio</option>
             <option value="lg">Grande</option>
             <option value="full">Completo</option>

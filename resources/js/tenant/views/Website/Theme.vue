@@ -18,7 +18,7 @@ async function updateColor(key: string, value: string) {
 <template>
   <DashboardLayout>
     <div class="max-w-3xl mx-auto p-6">
-      <h1 class="text-2xl font-bold mb-6">Tema Visual</h1>
+      <h1 class="text-2xl font-bold mb-6">Tema visual</h1>
       <div v-if="siteConfig.isLoading" class="text-muted-foreground">Cargando...</div>
       <div v-else-if="siteConfig.site?.theme" class="space-y-8">
         <section>
@@ -53,7 +53,7 @@ async function updateColor(key: string, value: string) {
         <section>
           <h2 class="text-lg font-semibold mb-4">Bordes</h2>
           <div>
-            <label class="block text-sm font-medium mb-1">Border radius</label>
+            <label class="block text-sm font-medium mb-1">Redondeo de bordes</label>
             <select :value="siteConfig.site.theme.borders.radius" class="w-full max-w-xs px-3 py-2 border rounded text-sm bg-background" @change="siteConfig.updateTheme({ borders: { ...siteConfig.site!.theme!.borders, radius: ($event.target as HTMLSelectElement).value as any } })">
               <option value="none">Ninguno</option>
               <option value="sm">Pequeño</option>

@@ -485,8 +485,8 @@ const transitionIcon = (
                     >
                         <CardContent class="pt-6">
                             <p class="text-sm">
-                                <span class="font-semibold">Hold activo:</span>
-                                el slot queda bloqueado hasta
+                                <span class="font-semibold">Reserva en espera:</span>
+                                el horario queda bloqueado hasta
                                 <span class="font-mono">{{
                                     formatDateTime(currentReservation.held_until)
                                 }}</span
@@ -522,7 +522,7 @@ const transitionIcon = (
             <AlertDialogHeader>
                 <AlertDialogTitle>Cancelar reserva</AlertDialogTitle>
                 <AlertDialogDescription>
-                    La reserva quedará en estado "Cancelada" y el slot se
+                    La reserva quedará en estado "Cancelada" y el horario se
                     liberará. Opcionalmente puedes registrar un motivo.
                 </AlertDialogDescription>
             </AlertDialogHeader>

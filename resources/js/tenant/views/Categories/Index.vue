@@ -52,11 +52,11 @@ type ColumnKey = "name" | "full_name" | "parent" | "is_active" | "created";
 const COLUMN_STORAGE_KEY = "categories_table_columns";
 
 const columnOptions: { key: ColumnKey; label: string }[] = [
-    { key: "name", label: "Name" },
-    { key: "full_name", label: "Full Name" },
-    { key: "parent", label: "Parent ID" },
-    { key: "is_active", label: "Active" },
-    { key: "created", label: "Created" },
+    { key: "name", label: "Nombre" },
+    { key: "full_name", label: "Nombre completo" },
+    { key: "parent", label: "Categoría principal" },
+    { key: "is_active", label: "Activa" },
+    { key: "created", label: "Creada" },
 ];
 
 const defaultColumnVisibility: Record<ColumnKey, boolean> = {
@@ -113,14 +113,14 @@ const currentStatus = ref("active");
 const filterLabel = computed(() => {
     switch (currentStatus.value) {
         case "active":
-            return "Active Categories";
+            return "Categorías activas";
         case "inactive":
         case "archived":
-            return "Inactive Categories";
+            return "Categorías inactivas";
         case "all":
-            return "All Categories";
+            return "Todas las categorías";
         default:
-            return "Filter";
+            return "Filtrar";
     }
 });
 
@@ -182,8 +182,8 @@ const handleBatchDelete = async () => {
     if (selectedCategories.value.length === 0) return;
 
     confirmDialog.value?.show(
-        "Delete Categories",
-        `Are you sure you want to delete ${selectedCategories.value.length} categories?`,
+        "Eliminar categorías",
+        `¿Confirmas que deseas eliminar ${selectedCategories.value.length} categorías?`,
         async () => {
             await categoryStore.deleteCategories(selectedCategories.value);
             loadCategories(meta.value.current_page);
@@ -196,8 +196,8 @@ const handleBatchToggleActive = () => {
     if (selectedCategories.value.length === 0) return;
 
     confirmDialog.value?.show(
-        "Toggle Active",
-        `Are you sure you want to toggle active for ${selectedCategories.value.length} categories?`,
+        "Cambiar estado",
+        `¿Confirmas que deseas cambiar el estado de ${selectedCategories.value.length} categorías?`,
         async () => {
             await Promise.all(
                 selectedCategories.value.map((id) =>
@@ -212,10 +212,10 @@ const handleBatchToggleActive = () => {
 </script>
 
 <template>
-    <DashboardLayout :breadcrumbs="[{ label: 'Categories' }]">
+    <DashboardLayout :breadcrumbs="[{ label: 'Categorías' }]">
         <div class="space-y-6">
             <ModuleHeader
-                title="Categories"
+                title="Categorías"
                 :items-count="categories.length"
                 :total-items="meta.total"
                 :per-page="meta.per_page"
@@ -243,19 +243,19 @@ const handleBatchToggleActive = () => {
                                 <span class="hidden sm:inline">{{
                                     filterLabel
                                 }}</span>
-                                <span class="sm:hidden">Filter</span>
+                                <span class="sm:hidden">Filtrar</span>
                                 <ChevronDown class="h-4 w-4 opacity-50 ml-1" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             <DropdownMenuItem @click="setFilter('active')">
-                                Active Categories
+                                Categorías activas
                             </DropdownMenuItem>
                             <DropdownMenuItem @click="setFilter('inactive')">
-                                Inactive Categories
+                                Categorías inactivas
                             </DropdownMenuItem>
                             <DropdownMenuItem @click="setFilter('all')">
-                                All Categories
+                                Todas las categorías
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
@@ -269,18 +269,18 @@ const handleBatchToggleActive = () => {
                                 size="sm"
                                 class="h-9 gap-1"
                             >
-                                Actions
+                                Acciones
                                 <ChevronDown class="h-4 w-4 opacity-50" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" class="w-[180px]">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem @click="handleBatchToggleActive">
                                 <Power
                                     class="mr-2 h-4 w-4 text-muted-foreground"
                                 />
-                                Toggle Active
+                                Cambiar estado
                             </DropdownMenuItem>
                             <DropdownMenuItem @click="ieToolbar?.openExport()">
                                 <Download
@@ -303,7 +303,7 @@ const handleBatchToggleActive = () => {
                                 class="text-destructive"
                             >
                                 <Trash2 class="mr-2 h-4 w-4" />
-                                Delete
+                                Eliminar
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
@@ -314,7 +314,7 @@ const handleBatchToggleActive = () => {
                 :view-mode="viewMode"
                 :is-loading="isLoading"
                 :is-empty="categories.length === 0"
-                empty-message="No categories found."
+                empty-message="No se encontraron categorías."
             >
                 <template #table>
                     <Table>
@@ -327,19 +327,19 @@ const handleBatchToggleActive = () => {
                                     />
                                 </TableHead>
                                 <TableHead v-if="columnVisibility.name"
-                                    >Name</TableHead
+                                    >Nombre</TableHead
                                 >
                                 <TableHead v-if="columnVisibility.full_name"
-                                    >Full Name</TableHead
+                                    >Nombre completo</TableHead
                                 >
                                 <TableHead v-if="columnVisibility.parent"
-                                    >Parent ID</TableHead
+                                    >Categoría principal</TableHead
                                 >
                                 <TableHead v-if="columnVisibility.is_active"
-                                    >Active</TableHead
+                                    >Activa</TableHead
                                 >
                                 <TableHead v-if="columnVisibility.created"
-                                    >Created</TableHead
+                                    >Creada</TableHead
                                 >
                                 <TableColumnSettingsHead
                                     v-model="columnVisibility"
@@ -353,14 +353,14 @@ const handleBatchToggleActive = () => {
                                 <TableCell
                                     :colspan="tableColspan"
                                     class="text-center py-8"
-                                    >Loading...</TableCell
+                                    >Cargando...</TableCell
                                 >
                             </TableRow>
                             <TableRow v-else-if="categories.length === 0">
                                 <TableCell
                                     :colspan="tableColspan"
                                     class="text-center py-8 text-muted-foreground"
-                                    >No categories found.</TableCell
+                                    >No se encontraron categorías.</TableCell
                                 >
                             </TableRow>
                             <TableRow
@@ -399,7 +399,7 @@ const handleBatchToggleActive = () => {
                                                 : 'bg-gray-400',
                                         ]"
                                     >
-                                        {{ c.is_active ? "Active" : "Inactive" }}
+                                        {{ c.is_active ? "Activa" : "Inactiva" }}
                                     </span>
                                 </TableCell>
                                 <TableCell v-if="columnVisibility.created">
@@ -429,18 +429,18 @@ const handleBatchToggleActive = () => {
                                             : 'bg-gray-400',
                                     ]"
                                 >
-                                    {{ c.is_active ? "Active" : "Inactive" }}
+                                    {{ c.is_active ? "Activa" : "Inactiva" }}
                                 </span>
                             </div>
                         </div>
 
                         <div class="grid grid-cols-2 gap-2 text-sm mt-1">
                             <div v-if="columnVisibility.full_name" class="col-span-2">
-                                <span class="text-xs text-muted-foreground block mb-0.5">Full Name</span>
+                                <span class="text-xs text-muted-foreground block mb-0.5">Nombre completo</span>
                                 <div class="truncate" :title="c.full_name || ''">{{ c.full_name || '-' }}</div>
                             </div>
                             <div v-if="columnVisibility.parent">
-                                <span class="text-xs text-muted-foreground block mb-0.5">Parent ID</span>
+                                <span class="text-xs text-muted-foreground block mb-0.5">Categoría principal</span>
                                 <div>{{ c.parent_id || '-' }}</div>
                             </div>
                         </div>

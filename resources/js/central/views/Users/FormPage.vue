@@ -74,7 +74,7 @@ const handleCancel = () => {
   router.push("/users")
 }
 
-const pageTitle = computed(() => (mode.value === "edit" ? "Edit User" : "Create User"))
+const pageTitle = computed(() => (mode.value === "edit" ? "Editar usuario" : "Crear usuario"))
 
 const handleSave = () => {
   userForm.value?.submit()
@@ -84,8 +84,8 @@ const handleDelete = () => {
   if (!userId.value) return
   const id = userId.value
   confirmDialog.value?.show(
-    "Delete user",
-    "Are you sure you want to delete this user? This action cannot be undone.",
+    "Eliminar usuario",
+    "¿Seguro que deseas eliminar este usuario? Esta acción no se puede deshacer.",
     async () => {
       isLoading.value = true
       try {
@@ -99,8 +99,8 @@ const handleDelete = () => {
 }
 
 const breadcrumbs = computed(() => [
-  { label: "Users", href: "/users" },
-  { label: mode.value === "edit" ? "Edit User" : "Create User" },
+  { label: "Usuarios", href: "/users" },
+  { label: mode.value === "edit" ? "Editar usuario" : "Crear usuario" },
 ])
 </script>
 
@@ -112,7 +112,7 @@ const breadcrumbs = computed(() => [
           variant="outline"
           size="icon"
           class="h-9 w-9"
-          aria-label="Back"
+          aria-label="Volver"
           @click="handleCancel"
         >
           <ArrowLeft class="h-4 w-4" />
@@ -122,7 +122,7 @@ const breadcrumbs = computed(() => [
       <template #trailing>
         <Button size="sm" class="h-9" :disabled="isLoading" @click="handleSave">
           <Save class="mr-2 h-4 w-4" />
-          {{ isLoading ? "Saving..." : mode === "edit" ? "Update User" : "Create User" }}
+          {{ isLoading ? "Guardando..." : mode === "edit" ? "Actualizar usuario" : "Crear usuario" }}
         </Button>
         <DropdownMenu v-if="canManageUser">
           <DropdownMenuTrigger as-child>
@@ -130,17 +130,17 @@ const breadcrumbs = computed(() => [
               variant="outline"
               size="icon"
               class="h-9 w-9"
-              aria-label="User settings"
+              aria-label="Configuración del usuario"
             >
               <Settings2 class="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" class="w-[200px]">
-            <DropdownMenuLabel>User</DropdownMenuLabel>
+            <DropdownMenuLabel>Usuario</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem class="text-destructive" @click="handleDelete">
               <Trash2 class="mr-2 h-4 w-4" />
-              Delete
+              Eliminar
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -164,4 +164,3 @@ const breadcrumbs = computed(() => [
   </DashboardLayout>
   <ConfirmDialog ref="confirmDialog" />
 </template>
-

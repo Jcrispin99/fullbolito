@@ -18,7 +18,7 @@ const fmtDate = (iso: string | null | undefined) => {
     if (!iso) return "-";
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return "-";
-    return d.toLocaleString("es", { dateStyle: "medium" });
+    return d.toLocaleString("es-PE", { dateStyle: "medium" });
 };
 
 const planLabel = (s: any) => {
@@ -39,7 +39,7 @@ const paymentLabel = (p: any) => {
     <Card class="h-full">
         <CardHeader>
             <CardTitle class="flex items-center justify-between gap-2">
-                <span>Billing</span>
+                <span>Facturación</span>
                 <span class="text-xs text-muted-foreground">
                     {{ subscriptions.length }}
                 </span>
@@ -47,7 +47,7 @@ const paymentLabel = (p: any) => {
         </CardHeader>
         <CardContent class="text-sm space-y-4">
             <div v-if="subscriptions.length === 0" class="text-muted-foreground">
-                No billing history.
+                No hay historial de facturación.
             </div>
             <div v-else class="space-y-4">
                 <div
@@ -64,11 +64,11 @@ const paymentLabel = (p: any) => {
                         </div>
                     </div>
                     <div class="text-xs text-muted-foreground">
-                        <span>Start: {{ fmtDate((s as any).starts_at) }}</span>
+                        <span>Inicio: {{ fmtDate((s as any).starts_at) }}</span>
                         <span class="mx-2">·</span>
-                        <span>End: {{ fmtDate((s as any).ends_at) }}</span>
+                        <span>Fin: {{ fmtDate((s as any).ends_at) }}</span>
                         <span class="mx-2">·</span>
-                        <span>Trial: {{ fmtDate((s as any).trial_ends_at) }}</span>
+                        <span>Prueba: {{ fmtDate((s as any).trial_ends_at) }}</span>
                     </div>
 
                     <div
@@ -76,7 +76,7 @@ const paymentLabel = (p: any) => {
                         class="space-y-1"
                     >
                         <div class="text-xs font-semibold text-muted-foreground">
-                            Payments
+                            Pagos
                         </div>
                         <ul class="list-disc space-y-1 pl-5 text-muted-foreground">
                             <li v-for="p in (s as any).payments" :key="p.id">
@@ -86,11 +86,10 @@ const paymentLabel = (p: any) => {
                         </ul>
                     </div>
                     <div v-else class="text-xs text-muted-foreground">
-                        No payments.
+                        No hay pagos.
                     </div>
                 </div>
             </div>
         </CardContent>
     </Card>
 </template>
-

@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Route;
 | Central API V1 Routes
 |--------------------------------------------------------------------------
 |
-| Rutas API versionadas SOLO para el dominio central (saas_restop.test).
+| Rutas API versionadas SOLO para el dominio central (fullbolito.test).
 | Estas rutas NO están disponibles en los subdominios de tenants.
 |
 */

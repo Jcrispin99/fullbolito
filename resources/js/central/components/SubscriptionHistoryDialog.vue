@@ -38,6 +38,22 @@ const sortedSubscriptions = computed(() => {
     });
 });
 
+const formatDate = (iso: string | null | undefined) => {
+    if (!iso) return "-";
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) return "-";
+    return date.toLocaleDateString("es-PE");
+};
+
+const statusLabel = (status: string) => {
+    if (status === "active") return "Activa";
+    if (status === "trial") return "En prueba";
+    if (status === "past_due") return "Pago pendiente";
+    if (status === "cancelled") return "Cancelada";
+    if (status === "expired") return "Vencida";
+    return status;
+};
+
 const show = (t: Partial<Tenant>) => {
     tenant.value = t;
     if (typeof window !== "undefined") {
@@ -60,7 +76,7 @@ defineExpose({ show });
             <AlertDialogHeader>
                 <AlertDialogTitle>Historial de suscripciones</AlertDialogTitle>
                 <AlertDialogDescription>
-                    {{ tenant?.id ? `Tenant: ${tenant.id}` : "" }}
+                    {{ tenant?.id ? `Negocio: ${tenant.id}` : "" }}
                 </AlertDialogDescription>
             </AlertDialogHeader>
 
@@ -77,17 +93,17 @@ defineExpose({ show });
                             <TableHead>Estado</TableHead>
                             <TableHead>Inicio</TableHead>
                             <TableHead>Fin</TableHead>
-                            <TableHead>Trial fin</TableHead>
+                            <TableHead>Fin de prueba</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         <TableRow v-for="s in sortedSubscriptions" :key="s.id">
                             <TableCell class="font-medium">{{ s.id }}</TableCell>
                             <TableCell>{{ s.plan?.name ?? `Plan #${s.plan_id}` }}</TableCell>
-                            <TableCell>{{ s.status }}</TableCell>
-                            <TableCell>{{ s.starts_at }}</TableCell>
-                            <TableCell>{{ s.ends_at ?? "-" }}</TableCell>
-                            <TableCell>{{ s.trial_ends_at ?? "-" }}</TableCell>
+                            <TableCell>{{ statusLabel(s.status) }}</TableCell>
+                            <TableCell>{{ formatDate(s.starts_at) }}</TableCell>
+                            <TableCell>{{ formatDate(s.ends_at) }}</TableCell>
+                            <TableCell>{{ formatDate(s.trial_ends_at) }}</TableCell>
                         </TableRow>
                     </TableBody>
                 </Table>

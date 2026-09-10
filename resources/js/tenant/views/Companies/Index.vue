@@ -52,13 +52,13 @@ type ColumnKey = "business" | "ruc" | "email" | "phone" | "branch" | "active" | 
 const COLUMN_STORAGE_KEY = "companies_table_columns";
 
 const columnOptions: { key: ColumnKey; label: string }[] = [
-    { key: "business", label: "Business" },
+    { key: "business", label: "Razón social" },
     { key: "ruc", label: "RUC" },
-    { key: "email", label: "Email" },
-    { key: "phone", label: "Phone" },
-    { key: "branch", label: "Branch Code" },
-    { key: "active", label: "Active" },
-    { key: "created", label: "Created" },
+    { key: "email", label: "Correo electrónico" },
+    { key: "phone", label: "Teléfono" },
+    { key: "branch", label: "Código de establecimiento" },
+    { key: "active", label: "Activo" },
+    { key: "created", label: "Creado" },
 ];
 
 const defaultColumnVisibility: Record<ColumnKey, boolean> = {
@@ -117,14 +117,14 @@ const currentStatus = ref("active");
 const filterLabel = computed(() => {
     switch (currentStatus.value) {
         case "active":
-            return "Active Companies";
+            return "Empresas activas";
         case "inactive":
         case "archived":
-            return "Inactive Companies";
+            return "Empresas inactivas";
         case "all":
-            return "All Companies";
+            return "Todas las empresas";
         default:
-            return "Filter";
+            return "Filtrar";
     }
 });
 
@@ -188,8 +188,8 @@ const handleToggleActive = async (id: number) => {
 
 const handleDelete = async (id: number) => {
     confirmDialog.value?.show(
-        "Delete Company",
-        "Are you sure you want to delete this company?",
+        "Eliminar empresa",
+        "¿Confirmas que deseas eliminar esta empresa?",
         async () => {
             await companyStore.deleteCompany(id);
             loadCompanies(meta.value.current_page);
@@ -201,8 +201,8 @@ const handleBatchDelete = async () => {
     if (selectedCompanies.value.length === 0) return;
 
     confirmDialog.value?.show(
-        "Delete Companies",
-        `Are you sure you want to delete ${selectedCompanies.value.length} companies?`,
+        "Eliminar empresas",
+        `¿Confirmas que deseas eliminar ${selectedCompanies.value.length} empresas?`,
         async () => {
             await companyStore.deleteCompanies(selectedCompanies.value);
             loadCompanies(meta.value.current_page);
@@ -217,8 +217,8 @@ const handleBatchToggleActive = () => {
     }
 
     confirmDialog.value?.show(
-        "Toggle Active",
-        `Are you sure you want to toggle active for ${selectedCompanies.value.length} companies?`,
+        "Cambiar estado",
+        `¿Confirmas que deseas cambiar el estado de ${selectedCompanies.value.length} empresas?`,
         async () => {
             await Promise.all(
                 selectedCompanies.value.map((id) =>
@@ -233,10 +233,10 @@ const handleBatchToggleActive = () => {
 </script>
 
 <template>
-    <DashboardLayout :breadcrumbs="[{ label: 'Companies' }]">
+    <DashboardLayout :breadcrumbs="[{ label: 'Empresas' }]">
         <div class="space-y-6">
             <ModuleHeader
-                title="Companies"
+                title="Empresas"
                 :items-count="companies.length"
                 :total-items="meta.total"
                 :per-page="meta.per_page"
@@ -264,19 +264,19 @@ const handleBatchToggleActive = () => {
                                 <span class="hidden sm:inline">{{
                                     filterLabel
                                 }}</span>
-                                <span class="sm:hidden">Filter</span>
+                                <span class="sm:hidden">Filtrar</span>
                                 <ChevronDown class="h-4 w-4 opacity-50 ml-1" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             <DropdownMenuItem @click="setFilter('active')">
-                                Active Companies
+                                Empresas activas
                             </DropdownMenuItem>
                             <DropdownMenuItem @click="setFilter('inactive')">
-                                Inactive Companies
+                                Empresas inactivas
                             </DropdownMenuItem>
                             <DropdownMenuItem @click="setFilter('all')">
-                                All Companies
+                                Todas las empresas
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
@@ -290,18 +290,18 @@ const handleBatchToggleActive = () => {
                                 size="sm"
                                 class="h-9 gap-1"
                             >
-                                Actions
+                                Acciones
                                 <ChevronDown class="h-4 w-4 opacity-50" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" class="w-[180px]">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem @click="handleBatchToggleActive">
                                 <Power
                                     class="mr-2 h-4 w-4 text-muted-foreground"
                                 />
-                                Toggle Active
+                                Cambiar estado
                             </DropdownMenuItem>
                             <DropdownMenuItem @click="ieToolbar?.openExport()">
                                 <Download
@@ -324,7 +324,7 @@ const handleBatchToggleActive = () => {
                                 class="text-destructive"
                             >
                                 <Trash2 class="mr-2 h-4 w-4" />
-                                Delete
+                                Eliminar
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
@@ -335,7 +335,7 @@ const handleBatchToggleActive = () => {
                 :view-mode="viewMode"
                 :is-loading="isLoading"
                 :is-empty="companies.length === 0"
-                empty-message="No companies found."
+                empty-message="No se encontraron empresas."
             >
                 <template #table>
                     <Table>
@@ -348,25 +348,25 @@ const handleBatchToggleActive = () => {
                                     />
                                 </TableHead>
                                 <TableHead v-if="columnVisibility.business"
-                                    >Business</TableHead
+                                    >Razón social</TableHead
                                 >
                                 <TableHead v-if="columnVisibility.ruc"
                                     >RUC</TableHead
                                 >
                                 <TableHead v-if="columnVisibility.email"
-                                    >Email</TableHead
+                                    >Correo electrónico</TableHead
                                 >
                                 <TableHead v-if="columnVisibility.phone"
-                                    >Phone</TableHead
+                                    >Teléfono</TableHead
                                 >
                                 <TableHead v-if="columnVisibility.branch"
-                                    >Branch Code</TableHead
+                                    >Código de establecimiento</TableHead
                                 >
                                 <TableHead v-if="columnVisibility.active"
-                                    >Active</TableHead
+                                    >Activo</TableHead
                                 >
                                 <TableHead v-if="columnVisibility.created"
-                                    >Created</TableHead
+                                    >Creado</TableHead
                                 >
                                 <TableColumnSettingsHead
                                     v-model="columnVisibility"
@@ -380,14 +380,14 @@ const handleBatchToggleActive = () => {
                                 <TableCell
                                     :colspan="tableColspan"
                                     class="text-center py-8"
-                                    >Loading...</TableCell
+                                    >Cargando...</TableCell
                                 >
                             </TableRow>
                             <TableRow v-else-if="companies.length === 0">
                                 <TableCell
                                     :colspan="tableColspan"
                                     class="text-center py-8 text-muted-foreground"
-                                    >No companies found.</TableCell
+                                    >No se encontraron empresas.</TableCell
                                 >
                             </TableRow>
                             <TableRow
@@ -432,7 +432,7 @@ const handleBatchToggleActive = () => {
                                                 : 'bg-gray-400',
                                         ]"
                                     >
-                                        {{ c.active ? "Active" : "Inactive" }}
+                                        {{ c.active ? "Activa" : "Inactiva" }}
                                     </span>
                                 </TableCell>
                                 <TableCell v-if="columnVisibility.created">
@@ -462,7 +462,7 @@ const handleBatchToggleActive = () => {
                                             : 'bg-gray-400',
                                     ]"
                                 >
-                                    {{ c.active ? "Active" : "Inactive" }}
+                                    {{ c.active ? "Activa" : "Inactiva" }}
                                 </span>
                                 <span v-if="columnVisibility.ruc" class="text-xs font-mono text-muted-foreground">{{ c.ruc }}</span>
                             </div>
@@ -470,15 +470,15 @@ const handleBatchToggleActive = () => {
 
                         <div class="grid grid-cols-2 gap-2 text-sm mt-1">
                             <div v-if="columnVisibility.email">
-                                <span class="text-xs text-muted-foreground block mb-0.5">Email</span>
+                                <span class="text-xs text-muted-foreground block mb-0.5">Correo electrónico</span>
                                 <div class="truncate" :title="c.email || ''">{{ c.email || '-' }}</div>
                             </div>
                             <div v-if="columnVisibility.phone">
-                                <span class="text-xs text-muted-foreground block mb-0.5">Phone</span>
+                                <span class="text-xs text-muted-foreground block mb-0.5">Teléfono</span>
                                 <div>{{ c.phone || '-' }}</div>
                             </div>
                             <div v-if="columnVisibility.branch" class="col-span-2">
-                                <span class="text-xs text-muted-foreground block mb-0.5">Branch Code</span>
+                                <span class="text-xs text-muted-foreground block mb-0.5">Código de establecimiento</span>
                                 <div>{{ c.branch_code || '-' }}</div>
                             </div>
                         </div>

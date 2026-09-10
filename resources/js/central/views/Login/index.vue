@@ -11,7 +11,7 @@ import LoginForm from "@central/components/LoginForm.vue"
           <div class="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
             <GalleryVerticalEnd class="size-4" />
           </div>
-          RestOP Central
+          Fullbolito
         </a>
       </div>
       <div class="flex flex-1 items-center justify-center">
@@ -23,7 +23,7 @@ import LoginForm from "@central/components/LoginForm.vue"
     <div class="bg-muted relative hidden lg:block">
       <img
         src="https://images.unsplash.com/photo-1556742049-0cfed4f7a07d?q=80&w=2560&auto=format&fit=crop"
-        alt="Image"
+        alt="Gestión de pagos en Fullbolito"
         class="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
       >
     </div>

@@ -54,11 +54,11 @@ type ColumnKey = "name" | "document" | "contact" | "status" | "created";
 const COLUMN_STORAGE_KEY = "customers_table_columns";
 
 const columnOptions: { key: ColumnKey; label: string }[] = [
-    { key: "name", label: "Name" },
-    { key: "document", label: "Document" },
-    { key: "contact", label: "Contact" },
-    { key: "status", label: "Status" },
-    { key: "created", label: "Created" },
+    { key: "name", label: "Nombre" },
+    { key: "document", label: "Documento" },
+    { key: "contact", label: "Contacto" },
+    { key: "status", label: "Estado" },
+    { key: "created", label: "Creado" },
 ];
 
 const defaultColumnVisibility: Record<ColumnKey, boolean> = {
@@ -115,14 +115,14 @@ const currentStatus = ref("active");
 const filterLabel = computed(() => {
     switch (currentStatus.value) {
         case "active":
-            return "Active Customers";
+            return "Clientes activos";
         case "inactive":
         case "archived":
-            return "Inactive Customers";
+            return "Clientes inactivos";
         case "all":
-            return "All Customers";
+            return "Todos los clientes";
         default:
-            return "Filter";
+            return "Filtrar";
     }
 });
 
@@ -173,8 +173,8 @@ const handleBatchDelete = async () => {
     if (selectedCustomers.value.length === 0) return;
 
     confirmDialog.value?.show(
-        "Delete Customers",
-        `Are you sure you want to delete ${selectedCustomers.value.length} customers?`,
+        "Eliminar clientes",
+        `¿Confirmas que deseas eliminar ${selectedCustomers.value.length} clientes?`,
         async () => {
             await customerStore.deleteCustomers(selectedCustomers.value);
             loadCustomers(meta.value?.current_page || 1);
@@ -215,8 +215,8 @@ const handleBatchToggleActive = () => {
     if (selectedCustomers.value.length === 0) return;
 
     confirmDialog.value?.show(
-        "Toggle Active",
-        `Are you sure you want to toggle active for ${selectedCustomers.value.length} customers?`,
+        "Cambiar estado",
+        `¿Confirmas que deseas cambiar el estado de ${selectedCustomers.value.length} clientes?`,
         async () => {
             await Promise.all(
                 selectedCustomers.value.map((id) =>
@@ -231,10 +231,10 @@ const handleBatchToggleActive = () => {
 </script>
 
 <template>
-    <DashboardLayout :breadcrumbs="[{ label: 'Customers' }]">
+    <DashboardLayout :breadcrumbs="[{ label: 'Clientes' }]">
         <div class="space-y-6">
             <ModuleHeader
-                title="Customers"
+                title="Clientes"
                 :items-count="customers.length"
                 :total-items="meta?.total || 0"
                 :per-page="meta?.per_page || 15"
@@ -262,19 +262,19 @@ const handleBatchToggleActive = () => {
                                 <span class="hidden sm:inline">{{
                                     filterLabel
                                 }}</span>
-                                <span class="sm:hidden">Filter</span>
+                                <span class="sm:hidden">Filtrar</span>
                                 <ChevronDown class="h-4 w-4 opacity-50 ml-1" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             <DropdownMenuItem @click="setFilter('active')">
-                                Active Customers
+                                Clientes activos
                             </DropdownMenuItem>
                             <DropdownMenuItem @click="setFilter('inactive')">
-                                Inactive Customers
+                                Clientes inactivos
                             </DropdownMenuItem>
                             <DropdownMenuItem @click="setFilter('all')">
-                                All Customers
+                                Todos los clientes
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
@@ -288,18 +288,18 @@ const handleBatchToggleActive = () => {
                                 size="sm"
                                 class="h-9 gap-1"
                             >
-                                Actions
+                                Acciones
                                 <ChevronDown class="h-4 w-4 opacity-50" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" class="w-[180px]">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem @click="handleBatchToggleActive">
                                 <Power
                                     class="mr-2 h-4 w-4 text-muted-foreground"
                                 />
-                                Toggle Active
+                                Cambiar estado
                             </DropdownMenuItem>
                             <DropdownMenuItem @click="openExportDialog">
                                 <Download
@@ -319,7 +319,7 @@ const handleBatchToggleActive = () => {
                                 class="text-destructive"
                             >
                                 <Trash2 class="mr-2 h-4 w-4" />
-                                Delete
+                                Eliminar
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
@@ -330,7 +330,7 @@ const handleBatchToggleActive = () => {
                 :view-mode="viewMode"
                 :is-loading="isLoading"
                 :is-empty="customers.length === 0"
-                empty-message="No customers found."
+                empty-message="No se encontraron clientes."
             >
                 <template #table>
                     <Table>
@@ -342,11 +342,11 @@ const handleBatchToggleActive = () => {
                                         @update:checked="toggleSelectAll"
                                     />
                                 </TableHead>
-                                <TableHead v-if="columnVisibility.name">Name</TableHead>
-                                <TableHead v-if="columnVisibility.document">Document</TableHead>
-                                <TableHead v-if="columnVisibility.contact">Contact</TableHead>
-                                <TableHead v-if="columnVisibility.status">Status</TableHead>
-                                <TableHead v-if="columnVisibility.created">Created</TableHead>
+                                <TableHead v-if="columnVisibility.name">Nombre</TableHead>
+                                <TableHead v-if="columnVisibility.document">Documento</TableHead>
+                                <TableHead v-if="columnVisibility.contact">Contacto</TableHead>
+                                <TableHead v-if="columnVisibility.status">Estado</TableHead>
+                                <TableHead v-if="columnVisibility.created">Creado</TableHead>
                                 <TableColumnSettingsHead
                                     v-model="columnVisibility"
                                     :columns="columnOptions"
@@ -359,14 +359,14 @@ const handleBatchToggleActive = () => {
                                 <TableCell
                                     :colspan="tableColspan"
                                     class="text-center py-8"
-                                    >Loading...</TableCell
+                                    >Cargando...</TableCell
                                 >
                             </TableRow>
                             <TableRow v-else-if="customers.length === 0">
                                 <TableCell
                                     :colspan="tableColspan"
                                     class="text-center py-8 text-muted-foreground"
-                                    >No customers found.</TableCell
+                                    >No se encontraron clientes.</TableCell
                                 >
                             </TableRow>
                             <TableRow
@@ -410,7 +410,7 @@ const handleBatchToggleActive = () => {
                                                 : 'bg-gray-400',
                                         ]"
                                     >
-                                        {{ s.status === 'active' ? 'Active' : 'Inactive' }}
+                                        {{ s.status === 'active' ? 'Activo' : 'Inactivo' }}
                                     </span>
                                 </TableCell>
                                 <TableCell v-if="columnVisibility.created">
@@ -440,14 +440,14 @@ const handleBatchToggleActive = () => {
                                             : 'bg-gray-400',
                                     ]"
                                 >
-                                    {{ s.status === 'active' ? 'Active' : 'Inactive' }}
+                                    {{ s.status === 'active' ? 'Activo' : 'Inactivo' }}
                                 </span>
                             </div>
                         </div>
                         
                         <div class="grid grid-cols-2 gap-2 text-sm mt-1">
                             <div v-if="columnVisibility.document">
-                                <span class="text-xs text-muted-foreground block mb-0.5">Document</span>
+                                <span class="text-xs text-muted-foreground block mb-0.5">Documento</span>
                                 <div v-if="s.document_type || s.document_number">
                                     <span class="text-xs font-medium">{{ s.document_type || 'N/A' }}</span>
                                     <div class="font-mono text-muted-foreground truncate">{{ s.document_number || '-' }}</div>
@@ -455,7 +455,7 @@ const handleBatchToggleActive = () => {
                                 <span v-else class="text-muted-foreground">-</span>
                             </div>
                             <div v-if="columnVisibility.contact">
-                                <span class="text-xs text-muted-foreground block mb-0.5">Contact</span>
+                                <span class="text-xs text-muted-foreground block mb-0.5">Contacto</span>
                                 <div class="truncate" :title="s.email || ''">{{ s.email || '-' }}</div>
                                 <div class="text-xs text-muted-foreground truncate">{{ s.phone || '-' }}</div>
                             </div>

@@ -32,10 +32,10 @@ const COLUMN_STORAGE_KEY = "tenants_table_columns"
 
 const columnOptions: { key: ColumnKey; label: string }[] = [
   { key: "id", label: "ID" },
-  { key: "business", label: "Business" },
-  { key: "domains", label: "Domains" },
-  { key: "owner", label: "Owner" },
-  { key: "created", label: "Created" },
+  { key: "business", label: "Negocio" },
+  { key: "domains", label: "Dominios" },
+  { key: "owner", label: "Propietario" },
+  { key: "created", label: "Creado" },
 ]
 
 const defaultColumnVisibility: Record<ColumnKey, boolean> = {
@@ -131,7 +131,7 @@ const formatCreated = (iso: string | null | undefined) => {
   if (!iso) return "-"
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return "-"
-  return d.toLocaleString("es", { dateStyle: "medium" })
+  return d.toLocaleString("es-PE", { dateStyle: "medium" })
 }
 
 const canCreate = computed(() =>
@@ -140,10 +140,10 @@ const canCreate = computed(() =>
 </script>
 
 <template>
-  <DashboardLayout :breadcrumbs="[{ label: 'Tenants' }]">
+  <DashboardLayout :breadcrumbs="[{ label: 'Negocios' }]">
     <div class="space-y-6">
       <ModuleHeader
-        title="Tenants"
+        title="Negocios"
         :items-count="filteredTenants.length"
         :total-items="meta.total"
         :per-page="meta.per_page"
@@ -169,10 +169,10 @@ const canCreate = computed(() =>
                 />
               </TableHead>
               <TableHead v-if="columnVisibility.id">ID</TableHead>
-              <TableHead v-if="columnVisibility.business">Business</TableHead>
-              <TableHead v-if="columnVisibility.domains">Domains</TableHead>
-              <TableHead v-if="columnVisibility.owner">Owner</TableHead>
-              <TableHead v-if="columnVisibility.created">Created</TableHead>
+              <TableHead v-if="columnVisibility.business">Negocio</TableHead>
+              <TableHead v-if="columnVisibility.domains">Dominios</TableHead>
+              <TableHead v-if="columnVisibility.owner">Propietario</TableHead>
+              <TableHead v-if="columnVisibility.created">Creado</TableHead>
               <TableColumnSettingsHead
                 v-model="columnVisibility"
                 :columns="columnOptions"
@@ -183,14 +183,14 @@ const canCreate = computed(() =>
           <TableBody>
             <TableRow v-if="isLoading">
               <TableCell :colspan="tableColspan" class="text-center py-8"
-                >Loading...</TableCell
+                >Cargando...</TableCell
               >
             </TableRow>
             <TableRow v-else-if="filteredTenants.length === 0">
               <TableCell
                 :colspan="tableColspan"
                 class="text-center py-8 text-muted-foreground"
-                >No tenants found.</TableCell
+                >No se encontraron negocios.</TableCell
               >
             </TableRow>
             <TableRow
@@ -226,7 +226,7 @@ const canCreate = computed(() =>
                     v-if="(tenant.domains || []).length > 2"
                     class="text-xs text-muted-foreground"
                   >
-                    +{{ (tenant.domains || []).length - 2 }} more
+                    +{{ (tenant.domains || []).length - 2 }} más
                   </span>
                 </div>
               </TableCell>

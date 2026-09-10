@@ -29,7 +29,7 @@ const props = withDefaults(
         perPage?: number;
     }>(),
     {
-        title: "Logs",
+        title: "Actividad",
         subjectId: null,
         perPage: 20,
     },
@@ -42,8 +42,8 @@ const total = ref<number | null>(null);
 
 const canLoad = computed(() => !!props.subjectId);
 
-const rtf = new Intl.RelativeTimeFormat("es", { numeric: "auto" });
-const df = new Intl.DateTimeFormat("es", {
+const rtf = new Intl.RelativeTimeFormat("es-PE", { numeric: "auto" });
+const df = new Intl.DateTimeFormat("es-PE", {
     day: "numeric",
     month: "long",
     year: "numeric",
@@ -69,8 +69,8 @@ const toRelativeTime = (iso: string | null) => {
 };
 
 const causerName = (it: ActivityItem) => {
-    if (!it.causer) return "System";
-    return it.causer.name || it.causer.email || `User ${it.causer.id}`;
+    if (!it.causer) return "Sistema";
+    return it.causer.name || it.causer.email || `Usuario ${it.causer.id}`;
 };
 
 const causerInitials = (it: ActivityItem) => {
@@ -91,7 +91,7 @@ const humanizeKey = (key: string) => {
     const map: Record<string, string> = {
         user_id: "Propietario",
         business_name: "Negocio",
-        owner_email: "Email",
+        owner_email: "Correo electrónico",
         owner_phone: "Teléfono",
         name: "Nombre",
         slug: "Slug",
@@ -138,6 +138,13 @@ const mainMessage = (it: ActivityItem) => {
     if (it.event === "deleted") return "Registro eliminado.";
     if (it.event === "updated") return "Se actualizó el registro.";
     return it.description || "Actividad registrada.";
+};
+
+const eventLabel = (event: string) => {
+    if (event === "created") return "Creado";
+    if (event === "updated") return "Actualizado";
+    if (event === "deleted") return "Eliminado";
+    return event;
 };
 
 const summarizeChange = (it: ActivityItem) => {
@@ -195,7 +202,7 @@ const load = async () => {
         total.value = data.data.meta.total;
     } catch (e: any) {
         error.value =
-            e?.response?.data?.message || e?.message || "Error loading logs";
+            e?.response?.data?.message || e?.message || "No se pudo cargar la actividad";
     } finally {
         isLoading.value = false;
     }
@@ -232,17 +239,17 @@ watch(
         </div>
         <div class="text-sm">
             <div v-if="!canLoad" class="text-muted-foreground">
-                No logs yet.
+                Aún no hay actividad.
             </div>
             <div v-else-if="isLoading" class="text-muted-foreground">
-                Loading...
+                Cargando...
             </div>
             <div v-else-if="error" class="text-destructive">
                 {{ error }}
             </div>
             <div v-else class="space-y-5">
                 <div v-if="items.length === 0" class="text-muted-foreground">
-                    No logs found.
+                    No se encontró actividad.
                 </div>
                 <div
                     v-for="group in grouped"
@@ -318,7 +325,7 @@ watch(
                                 v-else-if="it.event"
                                 class="mt-1 text-[10px] uppercase font-medium tracking-wider text-muted-foreground"
                             >
-                                {{ it.event }}
+                                {{ eventLabel(it.event) }}
                             </div>
                         </div>
                     </div>

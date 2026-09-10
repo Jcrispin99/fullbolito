@@ -78,17 +78,17 @@ defineExpose({ submit });
 
 <template>
     <Card class="w-full relative overflow-hidden">
-        <CornerRibbon v-if="archived" label="Inactive" tone="danger" />
+        <CornerRibbon v-if="archived" label="Inactiva" tone="danger" />
         <CardContent class="pt-6">
             <form @submit.prevent="submit" class="space-y-6">
                 <!-- Row 1 -->
                 <div class="grid gap-4 md:grid-cols-2">
                     <div class="space-y-2 md:col-span-2">
-                        <Label htmlFor="business_name">Business Name</Label>
+                        <Label htmlFor="business_name">Razón social</Label>
                         <UnderlineInput
                             id="business_name"
                             v-model="form.business_name"
-                            placeholder="e.g. Acme Corp"
+                            placeholder="Ej. Empresa Ejemplo S.A.C."
                             required
                         />
                         <p v-if="errors?.business_name" class="text-sm text-destructive">
@@ -97,11 +97,11 @@ defineExpose({ submit });
                     </div>
 
                     <div class="space-y-2">
-                        <Label htmlFor="trade_name">Trade Name</Label>
+                        <Label htmlFor="trade_name">Nombre comercial</Label>
                         <UnderlineInput
                             id="trade_name"
                             v-model="form.trade_name"
-                            placeholder="e.g. Acme"
+                            placeholder="Ej. Empresa Ejemplo"
                         />
                         <p v-if="errors?.trade_name" class="text-sm text-destructive">
                             {{ errors.trade_name }}
@@ -116,7 +116,7 @@ defineExpose({ submit });
                         <UnderlineInput
                             id="ruc"
                             v-model="form.ruc"
-                            placeholder="e.g. 20123456789"
+                            placeholder="Ej. 20123456789"
                             required
                         />
                         <p v-if="errors?.ruc" class="text-sm text-destructive">
@@ -125,12 +125,12 @@ defineExpose({ submit });
                     </div>
 
                     <div class="space-y-2">
-                        <Label htmlFor="email">Email</Label>
+                        <Label htmlFor="email">Correo electrónico</Label>
                         <UnderlineInput
                             id="email"
                             type="email"
                             v-model="form.email"
-                            placeholder="e.g. contact@acme.com"
+                            placeholder="Ej. contacto@empresa.com"
                         />
                         <p v-if="errors?.email" class="text-sm text-destructive">
                             {{ errors.email }}
@@ -141,11 +141,11 @@ defineExpose({ submit });
                 <!-- Row 3 -->
                 <div class="grid gap-4 md:grid-cols-2">
                     <div class="space-y-2">
-                        <Label htmlFor="phone">Phone</Label>
+                        <Label htmlFor="phone">Teléfono</Label>
                         <UnderlineInput
                             id="phone"
                             v-model="form.phone"
-                            placeholder="e.g. +51 987654321"
+                            placeholder="Ej. +51 987 654 321"
                         />
                         <p v-if="errors?.phone" class="text-sm text-destructive">
                             {{ errors.phone }}
@@ -157,7 +157,7 @@ defineExpose({ submit });
                         <UnderlineInput
                             id="ubigeo"
                             v-model="form.ubigeo"
-                            placeholder="e.g. 150101"
+                            placeholder="Ej. 150101"
                         />
                         <p v-if="errors?.ubigeo" class="text-sm text-destructive">
                             {{ errors.ubigeo }}
@@ -167,11 +167,11 @@ defineExpose({ submit });
 
                 <!-- Row 4 -->
                 <div class="space-y-2">
-                    <Label htmlFor="address">Address</Label>
+                    <Label htmlFor="address">Dirección</Label>
                     <UnderlineInput
                         id="address"
                         v-model="form.address"
-                        placeholder="e.g. Av. Build 123"
+                        placeholder="Ej. Av. Principal 123"
                     />
                     <p v-if="errors?.address" class="text-sm text-destructive">
                         {{ errors.address }}
@@ -181,11 +181,11 @@ defineExpose({ submit });
                 <!-- Row 5 -->
                 <div class="grid gap-4 md:grid-cols-2">
                     <div class="space-y-2">
-                        <Label htmlFor="branch_code">Branch Code</Label>
+                        <Label htmlFor="branch_code">Código de establecimiento</Label>
                         <UnderlineInput
                             id="branch_code"
                             v-model="form.branch_code"
-                            placeholder="e.g. 000"
+                            placeholder="Ej. 000"
                         />
                         <p v-if="errors?.branch_code" class="text-sm text-destructive">
                             {{ errors.branch_code }}
@@ -193,7 +193,7 @@ defineExpose({ submit });
                     </div>
 
                     <div class="space-y-2">
-                        <Label htmlFor="parent_id">Parent Company</Label>
+                        <Label htmlFor="parent_id">Empresa matriz</Label>
                         <SearchSelect
                             id="parent_id"
                             v-model="form.parent_id"
@@ -209,7 +209,7 @@ defineExpose({ submit });
                 <!-- Row 6 -->
                 <div class="grid gap-4 md:grid-cols-2">
                     <div class="space-y-2">
-                        <Label htmlFor="is_main">Main Office</Label>
+                        <Label htmlFor="is_main">Sede principal</Label>
                         <div class="flex items-center gap-2 pt-2">
                             <Checkbox
                                 id="is_main"

@@ -150,7 +150,7 @@ async function confirmPlanSwitch(): Promise<void> {
             El módulo "{{ missingApp.label }}" no está activo en tu cuenta.
           </p>
           <p>
-            Actívalo abajo como add-on
+            Actívalo abajo como complemento
             (<strong>{{ formatPrice(missingApp.addon_price) }}/mes</strong>)
             o cambia a un plan que lo incluya.
           </p>
@@ -208,7 +208,7 @@ async function confirmPlanSwitch(): Promise<void> {
                 class="text-xs text-muted-foreground"
               >
                 {{ formatPrice(store.catalog.current_plan.price) }} plan
-                + {{ formatPrice(store.catalog.addon_total) }} add-ons
+                + {{ formatPrice(store.catalog.addon_total) }} en complementos
               </p>
             </div>
           </div>
@@ -219,7 +219,7 @@ async function confirmPlanSwitch(): Promise<void> {
           <div class="space-y-1">
             <h2 class="text-xl font-bold">Elige tu plan</h2>
             <p class="text-sm text-muted-foreground">
-              Cambia cuando lo necesites. Los add-ons activos se mantienen.
+              Cambia cuando lo necesites. Los complementos activos se mantienen.
             </p>
           </div>
 
@@ -389,7 +389,7 @@ async function confirmPlanSwitch(): Promise<void> {
                     v-if="store.togglingKey === addon.key"
                     class="w-4 h-4 mr-2 animate-spin"
                   />
-                  {{ addon.is_active_addon ? 'Desactivar' : 'Activar add-on' }}
+                  {{ addon.is_active_addon ? 'Desactivar' : 'Activar complemento' }}
                 </Button>
               </CardContent>
             </Card>
@@ -424,11 +424,11 @@ async function confirmPlanSwitch(): Promise<void> {
             </span>
             <span v-if="hasPaymentSubscription" class="block">
               Mercado Pago solicitará una nueva autorización. El plan actual
-              seguirá activo hasta que el nuevo checkout sea confirmado.
+              seguirá activo hasta que se confirme el nuevo proceso de pago.
             </span>
             <span v-if="addonsLostByConfirmedPlan.length" class="block">
-              Los siguientes add-ons quedarán incluidos en el nuevo plan y se
-              dejarán de cobrar como add-on:
+              Los siguientes complementos quedarán incluidos en el nuevo plan y se
+              dejarán de cobrar por separado:
               <strong>{{ addonsLostByConfirmedPlan.join(', ') }}</strong>.
             </span>
           </AlertDialogDescription>

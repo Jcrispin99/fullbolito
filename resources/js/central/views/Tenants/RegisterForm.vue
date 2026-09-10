@@ -36,11 +36,11 @@ defineExpose({ submit })
       <form @submit.prevent="submit" class="space-y-6">
         <div class="grid gap-4 md:grid-cols-2">
           <div class="space-y-2">
-            <Label htmlFor="first_name">First Name</Label>
+            <Label htmlFor="first_name">Nombre</Label>
             <Input
               id="first_name"
               v-model="form.first_name"
-              placeholder="John"
+              placeholder="Juan"
               :disabled="isLoading"
               required
             />
@@ -50,11 +50,11 @@ defineExpose({ submit })
           </div>
 
           <div class="space-y-2">
-            <Label htmlFor="last_name">Last Name</Label>
+            <Label htmlFor="last_name">Apellido</Label>
             <Input
               id="last_name"
               v-model="form.last_name"
-              placeholder="Doe"
+              placeholder="Pérez"
               :disabled="isLoading"
               required
             />
@@ -66,12 +66,12 @@ defineExpose({ submit })
 
         <div class="grid gap-4 md:grid-cols-2">
           <div class="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">Correo electrónico</Label>
             <Input
               id="email"
               v-model="form.email"
               type="email"
-              placeholder="user@example.com"
+              placeholder="usuario@ejemplo.com"
               :disabled="isLoading"
               required
             />
@@ -81,11 +81,11 @@ defineExpose({ submit })
           </div>
 
           <div class="space-y-2">
-            <Label htmlFor="phone">Phone</Label>
+            <Label htmlFor="phone">Teléfono</Label>
             <Input
               id="phone"
               v-model="form.phone"
-              placeholder="+1234567890"
+              placeholder="+51 999 999 999"
               :disabled="isLoading"
               required
             />
@@ -96,11 +96,11 @@ defineExpose({ submit })
         </div>
 
         <div class="space-y-2">
-          <Label htmlFor="business_name">Business Name</Label>
+          <Label htmlFor="business_name">Nombre del negocio</Label>
           <Input
             id="business_name"
             v-model="form.business_name"
-            placeholder="Acme Inc"
+            placeholder="Complejo Deportivo Los Andes"
             :disabled="isLoading"
             required
           />
@@ -111,7 +111,7 @@ defineExpose({ submit })
 
         <div class="grid gap-4 md:grid-cols-2">
           <div class="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">Contraseña</Label>
             <Input
               id="password"
               v-model="form.password"
@@ -125,7 +125,7 @@ defineExpose({ submit })
           </div>
 
           <div class="space-y-2">
-            <Label htmlFor="password_confirmation">Confirm Password</Label>
+            <Label htmlFor="password_confirmation">Confirmar contraseña</Label>
             <Input
               id="password_confirmation"
               v-model="form.password_confirmation"
@@ -145,4 +145,3 @@ defineExpose({ submit })
     </CardContent>
   </Card>
 </template>
-

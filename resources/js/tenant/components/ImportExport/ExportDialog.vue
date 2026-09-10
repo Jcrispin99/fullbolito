@@ -484,7 +484,7 @@ const handleExport = async () => {
                                 v-if="selectedFields.length === 0"
                                 class="text-center text-sm text-muted-foreground py-8 px-3"
                             >
-                                Aún no has seleccionado columnas. Haz click
+                                Aún no has seleccionado columnas. Haz clic
                                 en los campos de la izquierda.
                             </div>
                             <div

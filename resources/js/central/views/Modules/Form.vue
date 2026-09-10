@@ -71,7 +71,7 @@ defineExpose({ submit });
                         <Input
                             id="label"
                             v-model="form.label"
-                            placeholder="ej. Ventas"
+                            placeholder="p. ej., Ventas"
                             required
                         />
                         <p v-if="errors?.label" class="text-sm text-destructive">
@@ -84,7 +84,7 @@ defineExpose({ submit });
                         <Input
                             id="key"
                             v-model="form.key"
-                            placeholder="ej. sales"
+                            placeholder="p. ej., ventas"
                             :disabled="mode === 'edit'"
                             required
                         />
@@ -112,7 +112,7 @@ defineExpose({ submit });
                         <Input
                             id="icon"
                             v-model="form.icon"
-                            placeholder="ej. shopping-cart"
+                            placeholder="p. ej., shopping-cart"
                         />
                         <p class="text-xs text-muted-foreground">
                             Nombre del icono lucide-vue-next.
@@ -130,7 +130,7 @@ defineExpose({ submit });
 
                 <div class="max-w-sm">
                     <div class="space-y-2">
-                        <Label htmlFor="addon_price">Precio addon</Label>
+                        <Label htmlFor="addon_price">Precio adicional</Label>
                         <Input
                             id="addon_price"
                             type="number"
@@ -138,7 +138,7 @@ defineExpose({ submit });
                             v-model="form.addon_price"
                         />
                         <p class="text-xs text-muted-foreground">
-                            Si es &gt; 0, el módulo se puede contratar como addon.
+                            Si es mayor que 0, el módulo se puede contratar como complemento.
                         </p>
                         <p v-if="errors?.addon_price" class="text-sm text-destructive">
                             {{ errors.addon_price }}

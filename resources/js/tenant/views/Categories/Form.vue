@@ -65,21 +65,21 @@ defineExpose({ submit: handleSubmit });
     <form @submit.prevent="handleSubmit">
         <div class="grid gap-6">
             <Card class="relative overflow-hidden">
-                <CornerRibbon v-if="archived" label="Inactive" tone="danger" />
+                <CornerRibbon v-if="archived" label="Inactiva" tone="danger" />
 
                 <CardContent>
                     <div class="grid gap-6 pt-2">
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <div class="space-y-2">
                                 <Label for="name">
-                                    Name
+                                    Nombre
                                     <span class="text-destructive">*</span>
                                 </Label>
                                 <UnderlineInput
                                     id="name"
                                     v-model="formData.name"
                                     type="text"
-                                    placeholder="e.g. Beverages"
+                                    placeholder="Ej. Bebidas"
                                     required
                                 />
                                 <p
@@ -90,7 +90,7 @@ defineExpose({ submit: handleSubmit });
                                 </p>
                             </div>
                             <div class="space-y-2">
-                                <Label for="parent_id">Parent Category</Label>
+                                <Label for="parent_id">Categoría principal</Label>
                                 <SearchSelect
                                     id="parent_id"
                                     v-model="formData.parent_id"
@@ -101,11 +101,11 @@ defineExpose({ submit: handleSubmit });
                         </div>
 
                         <div class="space-y-2">
-                            <Label for="description">Description</Label>
+                            <Label for="description">Descripción</Label>
                             <Textarea
                                 id="description"
                                 v-model="formData.description"
-                                placeholder="Details about this category"
+                                placeholder="Detalles de esta categoría"
                                 rows="3"
                             />
                             <p

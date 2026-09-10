@@ -163,7 +163,7 @@ function close() {
             </div>
 
             <div v-else-if="field.type === 'asset_list'" class="text-xs text-muted-foreground p-2 border border-dashed rounded">
-              Galeria de imagenes (proximamente)
+              Galería de imágenes (próximamente)
             </div>
           </div>
         </div>
@@ -186,7 +186,7 @@ function close() {
                   @change="updateStyleOverride(key as string, ($event.target as HTMLInputElement).value)"
                 />
                 <span class="text-xs text-muted-foreground">
-                  {{ section.style_overrides?.[key] || 'theme' }}
+                  {{ section.style_overrides?.[key] || 'tema' }}
                 </span>
               </div>
               <select
@@ -195,7 +195,7 @@ function close() {
                 class="w-full px-2 py-1.5 border rounded text-sm bg-background"
                 @change="updateStyleOverride(key as string, ($event.target as HTMLSelectElement).value)"
               >
-                <option value="">Theme default</option>
+                <option value="">Valor predeterminado del tema</option>
                 <option v-for="opt in field.options" :key="opt" :value="opt">{{ opt }}</option>
               </select>
             </div>
@@ -204,7 +204,7 @@ function close() {
 
         <!-- Layout -->
         <div class="space-y-4">
-          <h4 class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Layout</h4>
+          <h4 class="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Disposición</h4>
           <div class="space-y-1">
             <label class="block text-xs font-medium text-muted-foreground">Ancho</label>
             <select
@@ -212,13 +212,13 @@ function close() {
               class="w-full px-2 py-1.5 border rounded text-sm bg-background"
               @change="updateLayout('width', ($event.target as HTMLSelectElement).value)"
             >
-              <option value="full">Full width</option>
+              <option value="full">Ancho completo</option>
               <option value="contained">Contenido</option>
               <option value="narrow">Estrecho</option>
             </select>
           </div>
           <div class="space-y-1">
-            <label class="block text-xs font-medium text-muted-foreground">Padding vertical</label>
+            <label class="block text-xs font-medium text-muted-foreground">Espaciado vertical</label>
             <select
               :value="section.layout.padding_y"
               class="w-full px-2 py-1.5 border rounded text-sm bg-background"

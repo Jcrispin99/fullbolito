@@ -88,7 +88,7 @@ onMounted(fetchStatus)
       <div class="mx-auto flex max-w-3xl items-center justify-between px-6 py-4">
         <RouterLink :to="{ name: 'CourtsCatalog' }" class="flex items-center gap-2">
           <Goal class="size-5 text-primary" />
-          <span class="font-semibold">Canchapp</span>
+          <span class="font-semibold">Fullbolito</span>
         </RouterLink>
       </div>
     </header>

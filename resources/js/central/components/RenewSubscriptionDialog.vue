@@ -14,8 +14,8 @@ import { Label } from "@/components/ui/label";
 import { ref } from "vue";
 
 const open = ref(false);
-const title = ref("Extend access");
-const message = ref("Add days to this tenant subscription.");
+const title = ref("Extender acceso");
+const message = ref("Agrega días a la suscripción de este negocio.");
 const durationDays = ref(15);
 const paymentReference = ref("");
 const onConfirm = ref<
@@ -33,8 +33,8 @@ const show = (
     },
     confirmFn: (payload: { duration_days: number; payment_reference?: string }) => Promise<void> | void,
 ) => {
-    title.value = opts.title ?? "Extend access";
-    message.value = opts.message ?? "Add days to this tenant subscription.";
+    title.value = opts.title ?? "Extender acceso";
+    message.value = opts.message ?? "Agrega días a la suscripción de este negocio.";
     durationDays.value = opts.duration_days ?? 15;
     paymentReference.value = opts.payment_reference ?? "";
     onConfirm.value = confirmFn;
@@ -53,7 +53,7 @@ const show = (
 const handleConfirm = async () => {
     const days = Number(durationDays.value);
     if (!Number.isFinite(days) || days < 1) {
-        error.value = "duration_days must be >= 1";
+        error.value = "La duración debe ser de al menos 1 día";
         return;
     }
 
@@ -69,7 +69,7 @@ const handleConfirm = async () => {
         await onConfirm.value(payload);
         open.value = false;
     } catch (e: any) {
-        error.value = e?.response?.data?.message || e?.message || "Error";
+        error.value = e?.response?.data?.message || e?.message || "No se pudo extender el acceso";
         console.error(e);
     } finally {
         isLoading.value = false;
@@ -91,7 +91,7 @@ defineExpose({ show });
 
             <div class="space-y-4">
                 <div class="space-y-2">
-                    <Label htmlFor="duration_days">Duration (Days)</Label>
+                    <Label htmlFor="duration_days">Duración (días)</Label>
                     <Input
                         id="duration_days"
                         type="number"
@@ -103,11 +103,11 @@ defineExpose({ show });
                 </div>
 
                 <div class="space-y-2">
-                    <Label htmlFor="payment_reference">Reference (Optional)</Label>
+                    <Label htmlFor="payment_reference">Referencia (opcional)</Label>
                     <Input
                         id="payment_reference"
                         v-model="paymentReference"
-                        placeholder="e.g. Courtesy extension - VIP client"
+                        placeholder="p. ej., extensión de cortesía"
                         :disabled="isLoading"
                     />
                 </div>
@@ -118,13 +118,12 @@ defineExpose({ show });
             </div>
 
             <AlertDialogFooter>
-                <AlertDialogCancel :disabled="isLoading">Cancel</AlertDialogCancel>
+                <AlertDialogCancel :disabled="isLoading">Cancelar</AlertDialogCancel>
                 <AlertDialogAction @click.prevent="handleConfirm" :disabled="isLoading">
-                    <span v-if="isLoading">Processing...</span>
-                    <span v-else>Continue</span>
+                    <span v-if="isLoading">Procesando...</span>
+                    <span v-else>Continuar</span>
                 </AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>
     </AlertDialog>
 </template>
-

@@ -437,7 +437,7 @@ const previewWrapperStyle = computed(() => {
                     </label>
                     <label class="flex items-center gap-2 text-[11px] text-muted-foreground cursor-pointer">
                         <Checkbox :checked="showGrid" @update:checked="(v: boolean) => (showGrid = v)" />
-                        <span>Mostrar grilla guía</span>
+                        <span>Mostrar cuadrícula guía</span>
                     </label>
                 </CardContent>
             </Card>
@@ -481,11 +481,11 @@ const previewWrapperStyle = computed(() => {
                 <CardContent class="pt-5 pb-4 space-y-2">
                     <h3 class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Cómo usar</h3>
                     <ul class="text-[11px] text-muted-foreground space-y-1.5 list-disc pl-4">
-                        <li><b>Click</b> en un bloque → seleccionar</li>
-                        <li><b>Arrastrá el bloque</b> → mover libremente (X / Y)</li>
-                        <li><b>Cuadritos azules</b> en los bordes/esquinas → redimensionar</li>
+                        <li><b>Haz clic</b> en un bloque → seleccionar</li>
+                        <li><b>Arrastra el bloque</b> → mover libremente (X / Y)</li>
+                        <li><b>Controles azules</b> en los bordes o esquinas → redimensionar</li>
                         <li><b>Flechas del teclado</b> → mover 1 px (Shift = 10 px)</li>
-                        <li><b>Delete</b> → eliminar bloque seleccionado</li>
+                        <li><b>Tecla Supr.</b> → eliminar el bloque seleccionado</li>
                         <li><b>Barra inferior gris</b> del lienzo → cambiar la altura</li>
                     </ul>
                 </CardContent>
@@ -803,7 +803,7 @@ const previewWrapperStyle = computed(() => {
             <Card v-else class="xl:sticky xl:top-4">
                 <CardContent class="pt-6">
                     <p class="text-sm text-muted-foreground text-center">
-                        Selecciona un bloque para editarlo, o arrastrá uno desde la paleta.
+                        Selecciona un bloque para editarlo o arrastra uno desde la paleta.
                     </p>
                 </CardContent>
             </Card>

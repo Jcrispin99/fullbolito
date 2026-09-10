@@ -40,7 +40,7 @@ final class SiteSeeder extends Seeder
         SiteTheme::query()->firstOrCreate(
             ['site_id' => $site->id],
             [
-                'name' => 'Tema Principal',
+                'name' => 'Tema principal',
                 'is_active' => true,
                 'colors' => [
                     'primary' => '#2563eb',
@@ -137,7 +137,7 @@ final class SiteSeeder extends Seeder
                 'type' => 'static',
                 'status' => 'published',
                 'is_homepage' => true,
-                'seo_title' => config('app.name') . ' - Bienvenidos',
+                'seo_title' => config('app.name') . ' - Bienvenido',
                 'seo_description' => 'El mejor lugar para ti. Descubre nuestros productos y servicios.',
                 'published_at' => now(),
             ],
@@ -152,7 +152,7 @@ final class SiteSeeder extends Seeder
                 'content' => [
                     'heading' => 'Bienvenidos a ' . config('app.name'),
                     'subheading' => 'Tu plataforma digital para crecer',
-                    'cta_text' => 'Conocer mas',
+                    'cta_text' => 'Conoce más',
                     'cta_url' => '/nosotros',
                     'cta_style' => 'solid',
                     'overlay_opacity' => 40,
@@ -169,12 +169,12 @@ final class SiteSeeder extends Seeder
                 'sort_order' => 1,
                 'layout' => ['width' => 'contained', 'padding_y' => 'lg', 'bg_type' => 'none', 'bg_value' => null, 'visibility' => 'all'],
                 'content' => [
-                    'heading' => 'Por que elegirnos',
+                    'heading' => 'Por qué elegirnos',
                     'subheading' => 'Lo que nos hace diferentes',
                     'items' => [
-                        ['icon' => 'star', 'title' => 'Facil de usar', 'description' => 'Interfaz intuitiva que cualquier persona puede manejar sin capacitacion.'],
-                        ['icon' => 'zap', 'title' => 'Rapido y confiable', 'description' => 'Rendimiento optimizado para que tu negocio nunca se detenga.'],
-                        ['icon' => 'shield', 'title' => 'Seguro', 'description' => 'Tus datos protegidos con los mas altos estandares de seguridad.'],
+                        ['icon' => 'star', 'title' => 'Fácil de usar', 'description' => 'Interfaz intuitiva que cualquier persona puede manejar sin capacitación.'],
+                        ['icon' => 'zap', 'title' => 'Rápido y confiable', 'description' => 'Rendimiento optimizado para que tu negocio nunca se detenga.'],
+                        ['icon' => 'shield', 'title' => 'Seguro', 'description' => 'Tus datos están protegidos con los más altos estándares de seguridad.'],
                     ],
                     'columns' => '3',
                 ],
@@ -187,12 +187,12 @@ final class SiteSeeder extends Seeder
                 'sort_order' => 2,
                 'layout' => ['width' => 'contained', 'padding_y' => 'lg', 'bg_type' => 'color', 'bg_value' => '#f0f9ff', 'visibility' => 'all'],
                 'content' => [
-                    'heading' => 'Numeros que hablan',
+                    'heading' => 'Números que hablan',
                     'items' => [
                         ['value' => '500+', 'label' => 'Clientes activos'],
-                        ['value' => '99.9%', 'label' => 'Uptime garantizado'],
+                        ['value' => '99.9%', 'label' => 'Disponibilidad garantizada'],
                         ['value' => '24/7', 'label' => 'Soporte disponible'],
-                        ['value' => '4.9', 'label' => 'Calificacion promedio'],
+                        ['value' => '4.9', 'label' => 'Calificación promedio'],
                     ],
                     'columns' => '4',
                 ],
@@ -206,9 +206,9 @@ final class SiteSeeder extends Seeder
                 'sort_order' => 3,
                 'layout' => ['width' => 'full', 'padding_y' => 'lg', 'bg_type' => 'color', 'bg_value' => '#2563eb', 'visibility' => 'all'],
                 'content' => [
-                    'heading' => 'Listo para empezar?',
+                    'heading' => '¿Listo para empezar?',
                     'body' => 'Crea tu cuenta hoy y lleva tu negocio al siguiente nivel.',
-                    'cta_text' => 'Contactanos',
+                    'cta_text' => 'Contáctanos',
                     'cta_url' => '/contacto',
                     'cta_style' => 'solid',
                 ],
@@ -247,8 +247,8 @@ final class SiteSeeder extends Seeder
                 'type' => 'static',
                 'status' => 'published',
                 'is_homepage' => false,
-                'seo_title' => 'Sobre Nosotros - ' . config('app.name'),
-                'seo_description' => 'Conoce nuestra historia y lo que nos impulsa cada dia.',
+                'seo_title' => 'Sobre nosotros - ' . config('app.name'),
+                'seo_description' => 'Conoce nuestra historia y lo que nos impulsa cada día.',
                 'published_at' => now(),
             ],
         );
@@ -259,7 +259,7 @@ final class SiteSeeder extends Seeder
                 'block_type_key' => 'heading_block',
                 'sort_order' => 0,
                 'layout' => ['width' => 'contained', 'padding_y' => 'lg', 'bg_type' => 'none', 'bg_value' => null, 'visibility' => 'all'],
-                'content' => ['text' => 'Nuestra Historia', 'subtitle' => 'Desde 2018 creando soluciones digitales', 'level' => 'h1', 'text_align' => 'center'],
+                'content' => ['text' => 'Nuestra historia', 'subtitle' => 'Desde 2018 creando soluciones digitales', 'level' => 'h1', 'text_align' => 'center'],
                 'is_visible' => true,
             ]);
 
@@ -270,7 +270,7 @@ final class SiteSeeder extends Seeder
                 'layout' => ['width' => 'narrow', 'padding_y' => 'md', 'bg_type' => 'none', 'bg_value' => null, 'visibility' => 'all'],
                 'content' => [
                     'heading' => '',
-                    'body' => "Comenzamos como un pequeno equipo con una gran vision: hacer la tecnologia accesible para todos los negocios. Hoy ayudamos a cientos de empresas a digitalizar sus operaciones.\n\nNuestro compromiso es simple: crear herramientas potentes pero faciles de usar, con soporte humano y cercano. Cada cliente es parte de nuestra historia.",
+                    'body' => "Comenzamos como un pequeño equipo con una gran visión: hacer que la tecnología sea accesible para todos los negocios. Hoy ayudamos a cientos de empresas a digitalizar sus operaciones.\n\nNuestro compromiso es simple: crear herramientas potentes pero fáciles de usar, con soporte humano y cercano. Cada cliente es parte de nuestra historia.",
                     'text_align' => 'left',
                 ],
                 'is_visible' => true,
@@ -282,8 +282,8 @@ final class SiteSeeder extends Seeder
                 'sort_order' => 2,
                 'layout' => ['width' => 'contained', 'padding_y' => 'lg', 'bg_type' => 'color', 'bg_value' => '#f9fafb', 'visibility' => 'all'],
                 'content' => [
-                    'heading' => 'Nuestro Equipo',
-                    'body' => 'Un equipo multidisciplinario de profesionales apasionados por la tecnologia y el servicio al cliente. Ingenieros, disenadores y consultores trabajando juntos.',
+                    'heading' => 'Nuestro equipo',
+                    'body' => 'Un equipo multidisciplinario de profesionales apasionados por la tecnología y el servicio al cliente. Ingenieros, diseñadores y consultores que trabajan juntos.',
                     'cta_text' => 'Trabaja con nosotros',
                     'cta_url' => '/contacto',
                     'image_fit' => 'cover',
@@ -301,7 +301,7 @@ final class SiteSeeder extends Seeder
                 'status' => 'published',
                 'is_homepage' => false,
                 'seo_title' => 'Servicios - ' . config('app.name'),
-                'seo_description' => 'Conoce todos nuestros servicios y soluciones para tu negocio.',
+                'seo_description' => 'Conoce todos nuestros servicios y las soluciones que tenemos para tu negocio.',
                 'published_at' => now(),
             ],
         );
@@ -312,7 +312,7 @@ final class SiteSeeder extends Seeder
                 'block_type_key' => 'heading_block',
                 'sort_order' => 0,
                 'layout' => ['width' => 'contained', 'padding_top' => 'xl', 'padding_bottom' => 'md', 'padding_x' => 'md', 'margin_top' => 'none', 'margin_bottom' => 'none', 'bg_type' => 'none', 'bg_value' => null, 'bg_overlay' => null, 'bg_position' => 'center', 'bg_size' => 'cover', 'text_align' => 'center', 'anchor_id' => null, 'visibility' => 'all'],
-                'content' => ['text' => 'Nuestros Servicios', 'subtitle' => 'Soluciones adaptadas a tu negocio', 'level' => 'h1', 'text_align' => 'center'],
+                'content' => ['text' => 'Nuestros servicios', 'subtitle' => 'Soluciones adaptadas a tu negocio', 'level' => 'h1', 'text_align' => 'center'],
                 'is_visible' => true,
             ]);
 
@@ -325,11 +325,11 @@ final class SiteSeeder extends Seeder
                     'heading' => '',
                     'subheading' => '',
                     'items' => [
-                        ['icon' => 'globe', 'title' => 'Sitio Web', 'description' => 'Crea tu presencia online con nuestro constructor de sitios web profesional.'],
-                        ['icon' => 'shopping-cart', 'title' => 'E-Commerce', 'description' => 'Vende tus productos online con catalogo, carrito y pasarela de pagos.'],
-                        ['icon' => 'bar-chart', 'title' => 'Reportes', 'description' => 'Visualiza el rendimiento de tu negocio con dashboards en tiempo real.'],
+                        ['icon' => 'globe', 'title' => 'Sitio web', 'description' => 'Crea tu presencia en línea con nuestro constructor profesional de sitios web.'],
+                        ['icon' => 'shopping-cart', 'title' => 'Comercio electrónico', 'description' => 'Vende tus productos en línea con catálogo, carrito y pasarela de pagos.'],
+                        ['icon' => 'bar-chart', 'title' => 'Reportes', 'description' => 'Visualiza el rendimiento de tu negocio con paneles en tiempo real.'],
                         ['icon' => 'users', 'title' => 'CRM', 'description' => 'Gestiona tus clientes, contactos y oportunidades de venta.'],
-                        ['icon' => 'calendar', 'title' => 'Reservas', 'description' => 'Sistema de reservas online para hoteles, restaurantes y servicios.'],
+                        ['icon' => 'calendar', 'title' => 'Reservas', 'description' => 'Sistema de reservas en línea para hoteles, restaurantes y servicios.'],
                         ['icon' => 'package', 'title' => 'Inventario', 'description' => 'Control completo de stock, almacenes y movimientos de productos.'],
                     ],
                     'columns' => '3',
@@ -343,8 +343,8 @@ final class SiteSeeder extends Seeder
                 'sort_order' => 2,
                 'layout' => ['width' => 'full', 'padding_top' => 'xl', 'padding_bottom' => 'xl', 'padding_x' => 'md', 'margin_top' => 'none', 'margin_bottom' => 'none', 'bg_type' => 'color', 'bg_value' => '#0d9488', 'bg_overlay' => null, 'bg_position' => 'center', 'bg_size' => 'cover', 'text_align' => 'center', 'anchor_id' => null, 'visibility' => 'all'],
                 'content' => [
-                    'heading' => 'Necesitas algo personalizado?',
-                    'body' => 'Contactanos y te ayudamos a encontrar la solucion perfecta para tu negocio.',
+                    'heading' => '¿Necesitas algo personalizado?',
+                    'body' => 'Contáctanos y te ayudaremos a encontrar la solución ideal para tu negocio.',
                     'cta_text' => 'Hablar con ventas',
                     'cta_url' => '/contacto',
                     'cta_style' => 'solid',
@@ -363,7 +363,7 @@ final class SiteSeeder extends Seeder
                 'status' => 'published',
                 'is_homepage' => false,
                 'seo_title' => 'Contacto - ' . config('app.name'),
-                'seo_description' => 'Contactanos para consultas, demos o soporte.',
+                'seo_description' => 'Contáctanos para consultas, demostraciones o soporte.',
                 'published_at' => now(),
             ],
         );
@@ -374,7 +374,7 @@ final class SiteSeeder extends Seeder
                 'block_type_key' => 'heading_block',
                 'sort_order' => 0,
                 'layout' => ['width' => 'contained', 'padding_y' => 'lg', 'bg_type' => 'none', 'bg_value' => null, 'visibility' => 'all'],
-                'content' => ['text' => 'Contactanos', 'subtitle' => 'Estamos aqui para ayudarte', 'level' => 'h1', 'text_align' => 'center'],
+                'content' => ['text' => 'Contáctanos', 'subtitle' => 'Estamos aquí para ayudarte', 'level' => 'h1', 'text_align' => 'center'],
                 'is_visible' => true,
             ]);
 
@@ -385,16 +385,16 @@ final class SiteSeeder extends Seeder
                 'layout' => ['width' => 'narrow', 'padding_y' => 'md', 'bg_type' => 'none', 'bg_value' => null, 'visibility' => 'all'],
                 'content' => [
                     'heading' => '',
-                    'description' => 'Llena el formulario y te responderemos lo antes posible.',
+                    'description' => 'Completa el formulario y te responderemos lo antes posible.',
                     'email_to' => 'info@example.com',
                     'fields' => [
                         ['name' => 'name', 'label' => 'Nombre', 'type' => 'text', 'required' => true],
-                        ['name' => 'email', 'label' => 'Email', 'type' => 'email', 'required' => true],
-                        ['name' => 'phone', 'label' => 'Telefono', 'type' => 'text', 'required' => false],
+                        ['name' => 'email', 'label' => 'Correo electrónico', 'type' => 'email', 'required' => true],
+                        ['name' => 'phone', 'label' => 'Teléfono', 'type' => 'text', 'required' => false],
                         ['name' => 'message', 'label' => 'Mensaje', 'type' => 'textarea', 'required' => true],
                     ],
                     'submit_text' => 'Enviar mensaje',
-                    'success_message' => 'Gracias! Te responderemos pronto.',
+                    'success_message' => '¡Gracias! Te responderemos pronto.',
                 ],
                 'is_visible' => true,
             ]);
@@ -407,10 +407,10 @@ final class SiteSeeder extends Seeder
                 'content' => [
                     'heading' => 'Preguntas frecuentes',
                     'items' => [
-                        ['question' => 'Tienen periodo de prueba?', 'answer' => 'Si, ofrecemos 14 dias de prueba gratuita sin compromisos ni tarjeta de credito.'],
-                        ['question' => 'Puedo migrar mis datos?', 'answer' => 'Si, nuestro equipo te ayuda con la migracion de datos desde tu sistema actual sin costo adicional.'],
-                        ['question' => 'Que metodos de pago aceptan?', 'answer' => 'Aceptamos tarjetas de credito/debito, transferencias bancarias y PayPal.'],
-                        ['question' => 'Ofrecen soporte tecnico?', 'answer' => 'Si, soporte 24/7 por chat, email y telefono en todos los planes.'],
+                        ['question' => '¿Tienen período de prueba?', 'answer' => 'Sí, ofrecemos 14 días de prueba gratuita, sin compromiso ni tarjeta de crédito.'],
+                        ['question' => '¿Puedo migrar mis datos?', 'answer' => 'Sí, nuestro equipo te ayuda a migrar los datos desde tu sistema actual sin costo adicional.'],
+                        ['question' => '¿Qué métodos de pago aceptan?', 'answer' => 'Aceptamos tarjetas de crédito o débito y transferencias bancarias.'],
+                        ['question' => '¿Ofrecen soporte técnico?', 'answer' => 'Sí, ofrecemos soporte 24/7 por chat, correo electrónico y teléfono en todos los planes.'],
                     ],
                 ],
                 'is_visible' => true,
@@ -419,14 +419,14 @@ final class SiteSeeder extends Seeder
 
         // ─── Global Section ───────────────────────────────────────
         SiteSection::query()->firstOrCreate(
-            ['site_id' => $site->id, 'is_global' => true, 'global_name' => 'CTA Newsletter'],
+            ['site_id' => $site->id, 'is_global' => true, 'global_name' => 'Suscripción al boletín'],
             [
                 'page_id' => null,
                 'block_type_key' => 'cta_banner',
                 'sort_order' => 0,
                 'layout' => ['width' => 'full', 'padding_y' => 'lg', 'bg_type' => 'color', 'bg_value' => '#0d9488', 'visibility' => 'all'],
                 'content' => [
-                    'heading' => 'Suscribete a nuestro newsletter',
+                    'heading' => 'Suscríbete a nuestro boletín',
                     'body' => 'Recibe ofertas exclusivas y novedades directamente en tu bandeja de entrada.',
                     'cta_text' => 'Suscribirse',
                     'cta_url' => '#newsletter',
@@ -447,7 +447,7 @@ final class SiteSeeder extends Seeder
                 'page_id' => $contactPageId,
                 'section_id' => $contactSectionId,
                 'form_type' => 'contact',
-                'data' => ['name' => 'Maria Garcia', 'email' => 'maria@example.com', 'phone' => '+51 999 111 222', 'message' => 'Hola, me interesa el plan empresarial. Podrian agendarme una demo esta semana?'],
+                'data' => ['name' => 'María García', 'email' => 'maria@example.com', 'phone' => '+51 999 111 222', 'message' => 'Hola, me interesa el plan empresarial. ¿Podrían agendarme una demostración esta semana?'],
                 'ip_address' => '192.168.1.100',
                 'user_agent' => 'Mozilla/5.0',
                 'status' => 'new',
@@ -458,7 +458,7 @@ final class SiteSeeder extends Seeder
                 'page_id' => $contactPageId,
                 'section_id' => $contactSectionId,
                 'form_type' => 'contact',
-                'data' => ['name' => 'Carlos Lopez', 'email' => 'carlos@example.com', 'phone' => '', 'message' => 'Buenas tardes, necesito informacion sobre integraciones con pasarelas de pago locales.'],
+                'data' => ['name' => 'Carlos López', 'email' => 'carlos@example.com', 'phone' => '', 'message' => 'Buenas tardes, necesito información sobre integraciones con pasarelas de pago locales.'],
                 'ip_address' => '192.168.1.101',
                 'user_agent' => 'Mozilla/5.0',
                 'status' => 'new',
@@ -469,7 +469,7 @@ final class SiteSeeder extends Seeder
                 'page_id' => $contactPageId,
                 'section_id' => $contactSectionId,
                 'form_type' => 'contact',
-                'data' => ['name' => 'Ana Torres', 'email' => 'ana.torres@example.com', 'phone' => '+51 988 333 444', 'message' => 'Excelente plataforma! La migracion fue muy fluida y el soporte respondio todas mis dudas rapidamente.'],
+                'data' => ['name' => 'Ana Torres', 'email' => 'ana.torres@example.com', 'phone' => '+51 988 333 444', 'message' => '¡Excelente plataforma! La migración fue muy fluida y el equipo de soporte respondió todas mis dudas rápidamente.'],
                 'ip_address' => '192.168.1.102',
                 'user_agent' => 'Mozilla/5.0',
                 'status' => 'read',
@@ -481,7 +481,7 @@ final class SiteSeeder extends Seeder
                 'page_id' => $contactPageId,
                 'section_id' => $contactSectionId,
                 'form_type' => 'contact',
-                'data' => ['name' => 'Roberto Diaz', 'email' => 'roberto@example.com', 'phone' => '+51 977 555 666', 'message' => 'Necesito una cotizacion para 50 usuarios. Tenemos 3 sucursales y necesitamos multi-almacen.'],
+                'data' => ['name' => 'Roberto Díaz', 'email' => 'roberto@example.com', 'phone' => '+51 977 555 666', 'message' => 'Necesito una cotización para 50 usuarios. Tenemos 3 sucursales y necesitamos trabajar con varios almacenes.'],
                 'ip_address' => '192.168.1.103',
                 'user_agent' => 'Mozilla/5.0',
                 'status' => 'read',
@@ -493,7 +493,7 @@ final class SiteSeeder extends Seeder
                 'page_id' => $contactPageId,
                 'section_id' => $contactSectionId,
                 'form_type' => 'contact',
-                'data' => ['name' => 'Laura Mendez', 'email' => 'laura@example.com', 'phone' => '', 'message' => 'El reporte de ventas no esta mostrando los datos del mes pasado. Pueden revisar?'],
+                'data' => ['name' => 'Laura Méndez', 'email' => 'laura@example.com', 'phone' => '', 'message' => 'El reporte de ventas no muestra los datos del mes pasado. ¿Pueden revisarlo?'],
                 'ip_address' => '192.168.1.104',
                 'user_agent' => 'Mozilla/5.0',
                 'status' => 'archived',

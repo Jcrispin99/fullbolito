@@ -47,13 +47,13 @@ const documentTypeOptions = [
     { value: "DNI", label: "DNI" },
     { value: "RUC", label: "RUC" },
     { value: "CE", label: "CE" },
-    { value: "PASSPORT", label: "Passport" },
+    { value: "PASSPORT", label: "Pasaporte" },
 ];
 
 const genderOptions = [
-    { value: "male", label: "Male" },
-    { value: "female", label: "Female" },
-    { value: "other", label: "Other" },
+    { value: "male", label: "Masculino" },
+    { value: "female", label: "Femenino" },
+    { value: "other", label: "Otro" },
 ];
 
 watch(
@@ -103,7 +103,7 @@ defineExpose({ submit });
             >
                 <CornerRibbon
                     v-if="archived && !compact"
-                    label="Inactive"
+                    label="Inactivo"
                     tone="danger"
                 />
                 <CardContent :class="compact ? 'p-0' : 'pt-6'">
@@ -115,13 +115,13 @@ defineExpose({ submit });
                         >
                             <div class="space-y-2">
                                 <Label htmlFor="name"
-                                    >Customer Name
+                                    >Nombre del cliente
                                     <span class="text-destructive">*</span></Label
                                 >
                                 <UnderlineInput
                                     id="name"
                                     v-model="form.name"
-                                    placeholder="e.g. Acme Corp"
+                                    placeholder="Ej. Juan Pérez"
                                     required
                                 />
                                 <p
@@ -145,7 +145,7 @@ defineExpose({ submit });
                                         "
                                     />
                                     <Label htmlFor="is_supplier"
-                                        >Is also a Supplier?</Label
+                                        >¿También es proveedor?</Label
                                     >
                                 </div>
                             </div>
@@ -155,7 +155,7 @@ defineExpose({ submit });
                         <div class="grid gap-4 md:grid-cols-2">
                             <div class="space-y-2">
                                 <Label htmlFor="document_type"
-                                    >Document Type</Label
+                                    >Tipo de documento</Label
                                 >
                                 <SearchSelect
                                     id="document_type"
@@ -174,12 +174,12 @@ defineExpose({ submit });
 
                             <div class="space-y-2">
                                 <Label htmlFor="document_number"
-                                    >Document Number</Label
+                                    >Número de documento</Label
                                 >
                                 <UnderlineInput
                                     id="document_number"
                                     v-model="form.document_number"
-                                    placeholder="e.g. 12345678"
+                                    placeholder="Ej. 12345678"
                                 />
                                 <p
                                     v-if="errors?.document_number"
@@ -193,12 +193,12 @@ defineExpose({ submit });
                         <!-- Row 3: email + phone -->
                         <div class="grid gap-4 md:grid-cols-2">
                             <div class="space-y-2">
-                                <Label htmlFor="email">Email</Label>
+                                <Label htmlFor="email">Correo electrónico</Label>
                                 <UnderlineInput
                                     id="email"
                                     type="email"
                                     v-model="form.email"
-                                    placeholder="e.g. contact@customer.com"
+                                    placeholder="Ej. cliente@correo.com"
                                 />
                                 <p
                                     v-if="errors?.email"
@@ -209,11 +209,11 @@ defineExpose({ submit });
                             </div>
 
                             <div class="space-y-2">
-                                <Label htmlFor="phone">Phone</Label>
+                                <Label htmlFor="phone">Teléfono</Label>
                                 <UnderlineInput
                                     id="phone"
                                     v-model="form.phone"
-                                    placeholder="e.g. +51 987654321"
+                                    placeholder="Ej. +51 987 654 321"
                                 />
                                 <p
                                     v-if="errors?.phone"
@@ -229,11 +229,11 @@ defineExpose({ submit });
                             <!-- Row 4: address + ubigeo -->
                             <div class="grid gap-4 md:grid-cols-2">
                                 <div class="space-y-2">
-                                    <Label htmlFor="address">Address</Label>
+                                    <Label htmlFor="address">Dirección</Label>
                                     <UnderlineInput
                                         id="address"
                                         v-model="form.address"
-                                        placeholder="e.g. Av. Build 123"
+                                        placeholder="Ej. Av. Principal 123"
                                     />
                                     <p
                                         v-if="errors?.address"
@@ -248,7 +248,7 @@ defineExpose({ submit });
                                     <UnderlineInput
                                         id="ubigeo"
                                         v-model="form.ubigeo"
-                                        placeholder="e.g. 150101"
+                                        placeholder="Ej. 150101"
                                     />
                                     <p
                                         v-if="errors?.ubigeo"
@@ -263,12 +263,12 @@ defineExpose({ submit });
                             <div class="grid gap-4 md:grid-cols-2">
                                 <div class="space-y-2">
                                     <Label htmlFor="payment_terms"
-                                        >Payment Terms</Label
+                                        >Condiciones de pago</Label
                                     >
                                     <UnderlineInput
                                         id="payment_terms"
                                         v-model="form.payment_terms"
-                                        placeholder="e.g. Net 30, COD"
+                                        placeholder="Ej. crédito a 30 días, contado"
                                     />
                                     <p
                                         v-if="errors?.payment_terms"
@@ -279,13 +279,13 @@ defineExpose({ submit });
                                 </div>
 
                                 <div class="space-y-2">
-                                    <Label htmlFor="gender">Gender</Label>
+                                    <Label htmlFor="gender">Género</Label>
                                     <SearchSelect
                                         id="gender"
                                         v-model="form.gender"
                                         :options="genderOptions"
                                         :show-create="false"
-                                        placeholder="Select Gender..."
+                                        placeholder="Selecciona un género..."
                                     />
                                     <p
                                         v-if="errors?.gender"
@@ -300,7 +300,7 @@ defineExpose({ submit });
                             <div class="grid gap-4 md:grid-cols-2">
                                 <div class="space-y-2">
                                     <Label htmlFor="birth_date"
-                                        >Birth Date</Label
+                                        >Fecha de nacimiento</Label
                                     >
                                     <UnderlineInput
                                         id="birth_date"
@@ -316,12 +316,12 @@ defineExpose({ submit });
                                 </div>
 
                                 <div class="space-y-2">
-                                    <Label htmlFor="notes">Notes</Label>
+                                    <Label htmlFor="notes">Notas</Label>
                                     <UnderlineTextarea
                                         id="notes"
                                         v-model="form.notes"
                                         rows="1"
-                                        placeholder="Additional notes..."
+                                        placeholder="Notas adicionales..."
                                     />
                                     <p
                                         v-if="errors?.notes"

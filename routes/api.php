@@ -56,7 +56,7 @@ Route::middleware(['tenant.or.central', 'throttle:6,1'])->group(function () {
 // ============================================
 // RUTAS SOLO PARA CENTRAL
 // ============================================
-// Estas rutas SOLO están disponibles en el dominio central (saas_restop.test)
+// Estas rutas SOLO están disponibles en el dominio central (fullbolito.test)
 
 // Las rutas centrales se protegen via config('tenancy.central_domains')
 // que impide la inicialización de tenancy en esos dominios.

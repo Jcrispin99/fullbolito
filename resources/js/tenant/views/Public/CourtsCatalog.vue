@@ -81,9 +81,9 @@ onMounted(fetchCourts)
     </header>
 
     <main class="mx-auto max-w-6xl px-6 py-10">
-      <h1 class="text-3xl font-bold tracking-tight">Reservá tu cancha</h1>
+      <h1 class="text-3xl font-bold tracking-tight">Reserva tu cancha</h1>
       <p class="mt-2 text-sm text-muted-foreground">
-        Elegí entre nuestras canchas disponibles y reservá en segundos.
+        Elige entre nuestras canchas disponibles y reserva en segundos.
       </p>
 
       <div class="mt-6 grid gap-3 md:grid-cols-2">
@@ -168,7 +168,7 @@ onMounted(fetchCourts)
     <footer class="mt-12 border-t border-border/50">
       <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-6 text-xs text-muted-foreground">
         <span>{{ tenantName }}</span>
-        <span>Powered by Canchapp</span>
+        <span>Con tecnología de Fullbolito</span>
       </div>
     </footer>
   </div>

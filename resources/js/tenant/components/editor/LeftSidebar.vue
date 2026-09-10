@@ -45,7 +45,7 @@ const categories: { key: Cat; label: string; icon: any }[] = [
   { key: 'headers', label: 'Encabezados', icon: PanelsTopLeft },
   { key: 'content', label: 'Contenido', icon: TypeIcon },
   { key: 'media', label: 'Multimedia', icon: ImageIcon },
-  { key: 'grids', label: 'Grillas', icon: LayoutGrid },
+  { key: 'grids', label: 'Cuadrículas', icon: LayoutGrid },
   { key: 'interactive', label: 'Interactivos', icon: MousePointerClick },
 ]
 
@@ -116,7 +116,7 @@ async function createPage() {
 
 function goToPage(page: any) {
   if (page.id === props.pageId) return
-  if (sectionStore.hasPendingChanges() && !confirm('Tenés cambios sin guardar en esta página. ¿Descartarlos y cambiar?')) return
+  if (sectionStore.hasPendingChanges() && !confirm('Tienes cambios sin guardar en esta página. ¿Quieres descartarlos y cambiar de página?')) return
   router.push(page.is_homepage ? '/' : `/${page.slug}`)
 }
 
@@ -175,7 +175,7 @@ async function deletePage(id: number) {
                 :key="block.key"
                 draggable="true"
                 class="block-card group w-full flex items-start gap-2.5 p-2.5 border rounded-lg text-left hover:border-primary hover:bg-primary/5 transition-all cursor-grab active:cursor-grabbing"
-                :title="block.description || 'Click o arrastra al canvas'"
+                :title="block.description || 'Haz clic o arrastra al lienzo'"
                 @click="addBlock(block.key)"
                 @dragstart="onDragStart(block.key, $event)"
                 @dragend="onDragEnd"

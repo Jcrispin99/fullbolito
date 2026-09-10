@@ -50,7 +50,7 @@ return [
         /**
          * Tenant database names are created like this:
          * prefix + tenant_id + suffix.
-         * Example: APP_NAME=restop, tenant_id=cliente1 → restop-cliente1
+         * Example: APP_NAME=fullbolito, tenant_id=cliente1 → fullbolito-cliente1
          */
         'prefix' => mb_strtolower(env('APP_NAME', 'tenant')) . '-',
         'suffix' => '',
@@ -169,7 +169,7 @@ return [
         // Stancl\Tenancy\Features\UniversalRoutes::class,
         // Stancl\Tenancy\Features\TenantConfig::class, // https://tenancyforlaravel.com/docs/v3/features/tenant-config
         // Stancl\Tenancy\Features\CrossDomainRedirect::class, // https://tenancyforlaravel.com/docs/v3/features/cross-domain-redirect
-        // Stancl\Tenancy\Features\ViteBundler::class,
+        Stancl\Tenancy\Features\ViteBundler::class,
     ],
 
     /**

@@ -52,7 +52,7 @@ export const useUserStore = defineStore("user", () => {
             }
         } catch (err: any) {
             if (isAbortError(err)) return;
-            error.value = err.response?.data?.message || "Error fetching users";
+            error.value = err.response?.data?.message || "No se pudieron cargar los usuarios";
             throw err;
         } finally {
             isLoading.value = false;
@@ -67,7 +67,7 @@ export const useUserStore = defineStore("user", () => {
             currentUser.value = data.data as any;
             return data.data as any;
         } catch (err: any) {
-            error.value = err.response?.data?.message || "Error fetching user";
+            error.value = err.response?.data?.message || "No se pudo cargar el usuario";
             throw err;
         } finally {
             isLoading.value = false;
@@ -82,7 +82,7 @@ export const useUserStore = defineStore("user", () => {
             users.value.unshift(data.data as any);
             return data.data as any;
         } catch (err: any) {
-            error.value = err.response?.data?.message || "Error creating user";
+            error.value = err.response?.data?.message || "No se pudo crear el usuario";
             throw err;
         } finally {
             isLoading.value = false;
@@ -104,7 +104,7 @@ export const useUserStore = defineStore("user", () => {
             currentUser.value = data.data as any;
             return data.data as any;
         } catch (err: any) {
-            error.value = err.response?.data?.message || "Error updating user";
+            error.value = err.response?.data?.message || "No se pudo actualizar el usuario";
             throw err;
         } finally {
             isLoading.value = false;
@@ -126,7 +126,7 @@ export const useUserStore = defineStore("user", () => {
                 currentUser.value = null;
             }
         } catch (err: any) {
-            error.value = err.response?.data?.message || "Error deleting user";
+            error.value = err.response?.data?.message || "No se pudo eliminar el usuario";
             throw err;
         } finally {
             isLoading.value = false;

@@ -525,8 +525,8 @@ const handleRowClick = (m: Movement) => {
                         @click="toggleStandalone"
                         :title="
                             standaloneOnly
-                                ? 'Mostrando solo movimientos sueltos. Click para incluir transferencias.'
-                                : 'Mostrando todo (incluye transferencias). Click para ocultarlas.'
+                                ? 'Mostrando solo movimientos sueltos. Haz clic para incluir transferencias.'
+                                : 'Mostrando todo (incluye transferencias). Haz clic para ocultarlas.'
                         "
                     >
                         {{ standaloneOnly ? "Solo sueltos" : "Incluye transferencias" }}

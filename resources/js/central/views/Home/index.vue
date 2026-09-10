@@ -34,22 +34,22 @@ const isAuthenticated = computed(() => authStore.isAuthenticated)
 const plans = ref<PlanCard[]>([
   {
     slug: "free-trial",
-    name: "Free Trial",
-    description: "Probá Canchapp 14 días sin tarjeta.",
+    name: "Prueba gratuita",
+    description: "Prueba Fullbolito gratis por 14 días, sin tarjeta.",
     price: 0,
     duration_days: 14,
-    features: ["1 sede, hasta 2 canchas", "Reservas online ilimitadas", "Soporte por email"],
+    features: ["1 sede, hasta 2 canchas", "Reservas en línea ilimitadas", "Soporte por correo electrónico"],
   },
   {
     slug: "starter-mensual",
-    name: "Starter",
-    description: "Para complejos que recién arrancan online.",
+    name: "Básico",
+    description: "Para complejos que están comenzando a gestionar reservas en línea.",
     price: 49,
     duration_days: 30,
     features: [
       "1 sede, hasta 4 canchas",
-      "Pagos online (Mercado Pago / Yape)",
-      "Recordatorios por email",
+      "Pagos en línea (Mercado Pago / Yape)",
+      "Recordatorios por correo electrónico",
       "Reportes básicos",
     ],
   },
@@ -62,7 +62,7 @@ const plans = ref<PlanCard[]>([
     features: [
       "Hasta 3 sedes, canchas ilimitadas",
       "Recordatorios por WhatsApp",
-      "Señas y reglas de cancelación",
+      "Adelantos y reglas de cancelación",
       "Página pública personalizable",
       "Soporte prioritario",
     ],
@@ -70,15 +70,15 @@ const plans = ref<PlanCard[]>([
   },
   {
     slug: "enterprise-anual",
-    name: "Enterprise",
+    name: "Empresarial",
     description: "Cadenas y operaciones grandes.",
     price: 499,
     duration_days: 365,
     features: [
       "Sedes y canchas ilimitadas",
-      "Multi-usuario con roles",
+      "Varios usuarios con roles",
       "API y exportaciones",
-      "Onboarding dedicado y SLA",
+      "Configuración inicial personalizada y SLA",
     ],
   },
 ])
@@ -120,20 +120,20 @@ const intervalLabel = (p: PlanCard) => {
 const features = [
   {
     icon: CalendarCheck,
-    title: "Reservas online 24/7",
-    body: "Tus clientes reservan desde el celular, sin llamadas ni WhatsApp. Vos te enterás al instante.",
+    title: "Reservas en línea 24/7",
+    body: "Tus clientes reservan desde el celular, sin llamadas ni mensajes de WhatsApp. Recibes una notificación al instante.",
     tone: "primary" as const,
   },
   {
     icon: LayoutGrid,
-    title: "Grilla de horarios visual",
-    body: "Mirá la ocupación de todas tus canchas en una sola pantalla. Arrastrás, movés, cancelás.",
+    title: "Calendario visual de horarios",
+    body: "Consulta la ocupación de todas tus canchas en una sola pantalla. Arrastra, reprograma o cancela reservas fácilmente.",
     tone: "secondary" as const,
   },
   {
     icon: Wallet,
-    title: "Cobros y señas integrados",
-    body: "Cobrá el total o solo la seña al reservar. Mercado Pago, Yape, Plin y transferencia.",
+    title: "Cobros y adelantos integrados",
+    body: "Cobra el total o solo un adelanto al reservar. Mercado Pago, Yape, Plin y transferencia.",
     tone: "primary" as const,
   },
   {
@@ -145,7 +145,7 @@ const features = [
   {
     icon: Bell,
     title: "Recordatorios automáticos",
-    body: "WhatsApp y email antes del partido. Menos ausencias, menos canchas vacías.",
+    body: "WhatsApp y correo electrónico antes del partido. Menos ausencias y menos canchas vacías.",
     tone: "primary" as const,
   },
   {
@@ -159,18 +159,18 @@ const features = [
 const steps = [
   {
     n: "01",
-    title: "Creá tu complejo",
-    body: "Registrate gratis y cargá tus canchas, horarios y precios en minutos.",
+    title: "Crea tu complejo",
+    body: "Regístrate gratis y agrega tus canchas, horarios y precios en minutos.",
   },
   {
     n: "02",
-    title: "Compartí tu link de reservas",
-    body: "Tu página pública queda lista. La pegás en Instagram, WhatsApp o Google.",
+    title: "Comparte tu enlace de reservas",
+    body: "Tu página pública queda lista para compartirla en Instagram, WhatsApp o Google.",
   },
   {
     n: "03",
-    title: "Recibí reservas y cobrá",
-    body: "Los jugadores reservan y pagan online. Vos solo abrís la cancha.",
+    title: "Recibe reservas y pagos",
+    body: "Los jugadores reservan y pagan en línea. Tú solo preparas la cancha.",
   },
 ]
 
@@ -191,7 +191,7 @@ const mockGrid: number[][] = [
           <div class="bg-primary text-primary-foreground flex size-8 items-center justify-center rounded-lg shadow-md shadow-primary/20">
             <GalleryVerticalEnd class="size-4" />
           </div>
-          <span>Canchapp</span>
+          <span>Fullbolito</span>
         </RouterLink>
 
         <nav class="hidden items-center gap-7 text-sm text-muted-foreground md:flex">
@@ -204,7 +204,7 @@ const mockGrid: number[][] = [
         <div class="flex items-center gap-2">
           <template v-if="isAuthenticated">
             <Button as-child variant="ghost" size="sm">
-              <RouterLink :to="{ name: 'Dashboard' }">Ir al Dashboard</RouterLink>
+              <RouterLink :to="{ name: 'Dashboard' }">Ir al panel</RouterLink>
             </Button>
           </template>
           <template v-else>
@@ -232,7 +232,7 @@ const mockGrid: number[][] = [
       <div class="mx-auto max-w-6xl px-6 pb-20 pt-20 text-center sm:pt-28">
         <div class="mx-auto inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-medium text-primary">
           <Sparkles class="size-3" />
-          Nuevo · Reservas online 24/7 sin llamadas ni WhatsApp
+          Nuevo · Reservas en línea 24/7 sin llamadas ni mensajes de WhatsApp
         </div>
 
         <h1 class="mx-auto mt-6 max-w-3xl text-balance text-5xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
@@ -243,19 +243,19 @@ const mockGrid: number[][] = [
         </h1>
 
         <p class="mx-auto mt-6 max-w-2xl text-balance text-base text-muted-foreground sm:text-lg">
-          Gestioná canchas, horarios, reservas y pagos desde un solo lugar. Tus clientes reservan online, vos cobrás sin perseguir a nadie.
+          Administra canchas, horarios, reservas y pagos desde un solo lugar. Tus clientes reservan en línea y tú recibes los pagos sin hacer seguimientos manuales.
         </p>
 
         <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
           <Button v-if="!isAuthenticated" as-child size="lg" class="gap-2">
             <RouterLink :to="{ name: 'Register' }">
-              Empezá gratis
+              Empieza gratis
               <ArrowRight class="size-4" />
             </RouterLink>
           </Button>
           <Button v-else as-child size="lg" class="gap-2">
             <RouterLink :to="{ name: 'Dashboard' }">
-              Ir al Dashboard
+              Ir al panel
               <ArrowRight class="size-4" />
             </RouterLink>
           </Button>
@@ -327,7 +327,7 @@ const mockGrid: number[][] = [
                     </div>
                     <div class="flex items-center gap-3 rounded-lg border border-border bg-background/60 p-3 text-sm">
                       <div class="size-2 rounded-full bg-emerald-500"></div>
-                      <div class="flex-1 truncate">Cancha 3 · 20:00–21:00 — Los Pibes FC · Seña</div>
+                      <div class="flex-1 truncate">Cancha 3 · 20:00–21:00 — Los Halcones FC · Adelanto</div>
                       <div class="font-medium">S/ 120.00</div>
                     </div>
                     <div class="flex items-center gap-3 rounded-lg border border-border bg-background/60 p-3 text-sm">
@@ -349,10 +349,10 @@ const mockGrid: number[][] = [
         <div class="mx-auto max-w-2xl text-center">
           <span class="text-sm font-medium text-primary">Todo en un solo lugar</span>
           <h2 class="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
-            Lo que necesitás para llenar tus canchas, sin pegar apps con cinta.
+            Todo lo que necesitas para mantener tus canchas ocupadas.
           </h2>
           <p class="mt-4 text-muted-foreground">
-            Reemplazá agenda en papel, planilla de Excel y mensajes sueltos por una sola plataforma.
+            Reemplaza la agenda de papel, las hojas de cálculo y los mensajes sueltos por una sola plataforma.
           </p>
         </div>
 
@@ -412,10 +412,10 @@ const mockGrid: number[][] = [
         <div class="mx-auto max-w-2xl text-center">
           <span class="text-sm font-medium text-primary">Planes</span>
           <h2 class="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
-            Pagás lo que usás. Cancelás cuando quieras.
+            Paga solo por lo que usas. Cancela cuando quieras.
           </h2>
           <p class="mt-4 text-muted-foreground">
-            Empezá gratis 14 días, sin tarjeta. Cuando crezcas, pasás a pago.
+            Empieza con 14 días gratis, sin tarjeta. Luego elige el plan que mejor se adapte a tu negocio.
           </p>
         </div>
 
@@ -476,13 +476,13 @@ const mockGrid: number[][] = [
           <div class="relative grid gap-6 md:grid-cols-[1.5fr_1fr] md:items-center">
             <div>
               <h2 class="text-3xl font-bold tracking-tight sm:text-4xl">
-                Empezá hoy.<br>
+                Empieza hoy.<br>
                 <span class="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
                   Sin tarjeta, sin instalar nada.
                 </span>
               </h2>
               <p class="mt-4 max-w-md text-muted-foreground">
-                14 días gratis del plan completo. Si no te convence, no pagás nada.
+                Disfruta 14 días gratis del plan completo. Si no te convence, no pagas nada.
               </p>
             </div>
             <div class="flex flex-wrap gap-3 md:justify-end">
@@ -490,7 +490,7 @@ const mockGrid: number[][] = [
                 <RouterLink :to="{ name: 'Register' }">Crear cuenta</RouterLink>
               </Button>
               <Button v-else as-child size="lg">
-                <RouterLink :to="{ name: 'Dashboard' }">Ir al Dashboard</RouterLink>
+                <RouterLink :to="{ name: 'Dashboard' }">Ir al panel</RouterLink>
               </Button>
               <Button as-child variant="outline" size="lg">
                 <a href="#features">Ver demo</a>
@@ -507,7 +507,7 @@ const mockGrid: number[][] = [
           <div class="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
             <GalleryVerticalEnd class="size-3" />
           </div>
-          <span>© {{ new Date().getFullYear() }} Canchapp. Todos los derechos reservados.</span>
+          <span>© {{ new Date().getFullYear() }} Fullbolito. Todos los derechos reservados.</span>
         </div>
         <div class="flex items-center gap-5">
           <a href="#features" class="transition hover:text-foreground">Producto</a>

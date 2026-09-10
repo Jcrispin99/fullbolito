@@ -63,9 +63,9 @@ const handleRegister = async () => {
   <form @submit.prevent="handleRegister" :class="cn('flex flex-col gap-6', props.class)">
     <FieldGroup>
       <div class="flex flex-col gap-1.5 text-left">
-        <h2 class="text-2xl font-bold tracking-tight">Creá tu cuenta</h2>
+        <h2 class="text-2xl font-bold tracking-tight">Crea tu cuenta</h2>
         <p class="text-muted-foreground text-sm">
-          Tu workspace queda listo apenas confirmás.
+          Tu espacio de trabajo estará listo cuando confirmes tu cuenta.
         </p>
       </div>
 
@@ -89,13 +89,13 @@ const handleRegister = async () => {
       </div>
 
       <Field>
-        <FieldLabel for="email">Email</FieldLabel>
-        <Input id="email" v-model="form.email" type="email" placeholder="vos@ejemplo.com" autocomplete="email" required />
+        <FieldLabel for="email">Correo electrónico</FieldLabel>
+        <Input id="email" v-model="form.email" type="email" placeholder="tu@ejemplo.com" autocomplete="email" required />
       </Field>
 
       <Field>
         <FieldLabel for="business_name">Nombre del negocio</FieldLabel>
-        <Input id="business_name" v-model="form.business_name" type="text" placeholder="Mi Restaurante S.A.C." autocomplete="organization" required />
+        <Input id="business_name" v-model="form.business_name" type="text" placeholder="Complejo Deportivo Los Andes" autocomplete="organization" required />
       </Field>
 
       <Field>
@@ -122,7 +122,7 @@ const handleRegister = async () => {
       </Field>
 
       <FieldDescription class="text-center">
-        ¿Ya tenés cuenta?
+        ¿Ya tienes cuenta?
         <RouterLink :to="{ name: 'Login' }" class="font-medium text-foreground underline-offset-4 hover:underline">
           Iniciar sesión
         </RouterLink>

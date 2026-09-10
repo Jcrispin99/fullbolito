@@ -48,7 +48,7 @@ const confirmDialog = ref<InstanceType<typeof ConfirmDialog> | null>(null);
 
 const canManageCompany = computed(() => mode.value === "edit" && !!companyId.value);
 const archiveLabel = computed(() =>
-    (currentCompany.value as any)?.active === false ? "Activate" : "Deactivate",
+    (currentCompany.value as any)?.active === false ? "Activar" : "Desactivar",
 );
 const isArchived = computed(
     () =>
@@ -93,14 +93,14 @@ const handleSubmit = async (formData: any) => {
     try {
         if (mode.value === "edit" && companyId.value) {
             await companyStore.updateCompany(companyId.value, formData);
-            toast.success("Company updated", {
-                description: "The company was successfully updated.",
+            toast.success("Empresa actualizada", {
+                description: "La empresa se actualizó correctamente.",
             });
             activityLogRef.value?.load();
         } else {
             const created = await companyStore.createCompany(formData);
-            toast.success("Company created", {
-                description: "The company was successfully created.",
+            toast.success("Empresa creada", {
+                description: "La empresa se creó correctamente.",
             });
             router.push(`/admin/companies/${created.id}/edit`);
             return;
@@ -113,13 +113,13 @@ const handleSubmit = async (formData: any) => {
                 flat[k] = Array.isArray(v) ? v[0] : String(v);
             });
             errors.value = flat;
-            toast.error("Validation error", {
-                description: "Please check the form fields for errors.",
+            toast.error("Error de validación", {
+                description: "Revisa los campos del formulario.",
             });
         } else {
             console.error("Error saving company:", err);
-            toast.error("Error saving company", {
-                description: err?.response?.data?.message || "An unexpected error occurred.",
+            toast.error("Error al guardar la empresa", {
+                description: err?.response?.data?.message || "Ocurrió un error inesperado.",
             });
         }
     } finally {
@@ -132,7 +132,7 @@ const handleCancel = () => {
 };
 
 const pageTitle = computed(() =>
-    mode.value === "edit" ? "Edit Company" : "Create Company",
+    mode.value === "edit" ? "Editar empresa" : "Crear empresa",
 );
 
 const handleSave = () => {
@@ -143,8 +143,8 @@ const handleArchive = () => {
     if (!companyId.value) return;
     const id = companyId.value;
     confirmDialog.value?.show(
-        `${archiveLabel.value} company`,
-        `Are you sure you want to ${archiveLabel.value.toLowerCase()} this company?`,
+        `${archiveLabel.value} empresa`,
+        `¿Confirmas que deseas ${archiveLabel.value.toLowerCase()} esta empresa?`,
         async () => {
             isLoading.value = true;
             try {
@@ -161,8 +161,8 @@ const handleDelete = () => {
     if (!companyId.value) return;
     const id = companyId.value;
     confirmDialog.value?.show(
-        "Delete company",
-        "Are you sure you want to delete this company? This action cannot be undone.",
+        "Eliminar empresa",
+        "¿Confirmas que deseas eliminar esta empresa? Esta acción no se puede deshacer.",
         async () => {
             isLoading.value = true;
             try {
@@ -177,8 +177,8 @@ const handleDelete = () => {
 
 // Breadcrumbs
 const breadcrumbs = computed(() => [
-    { label: "Companies", href: "/admin/companies" },
-    { label: mode.value === "edit" ? "Edit Company" : "Create Company" },
+    { label: "Empresas", href: "/admin/companies" },
+    { label: mode.value === "edit" ? "Editar empresa" : "Crear empresa" },
 ]);
 </script>
 
@@ -190,7 +190,7 @@ const breadcrumbs = computed(() => [
                     variant="outline"
                     size="icon"
                     class="h-9 w-9"
-                    aria-label="Back"
+                    aria-label="Volver"
                     @click="handleCancel"
                 >
                     <ArrowLeft class="h-4 w-4" />
@@ -207,10 +207,10 @@ const breadcrumbs = computed(() => [
                     <Save class="mr-2 h-4 w-4" />
                     {{
                         isLoading
-                            ? "Saving..."
+                            ? "Guardando..."
                             : mode === "edit"
-                              ? "Update Company"
-                              : "Create Company"
+                              ? "Actualizar empresa"
+                              : "Crear empresa"
                     }}
                 </Button>
                 <DropdownMenu v-if="canManageCompany">
@@ -219,13 +219,13 @@ const breadcrumbs = computed(() => [
                             variant="outline"
                             size="icon"
                             class="h-9 w-9"
-                            aria-label="Company settings"
+                            aria-label="Opciones de la empresa"
                         >
                             <Settings2 class="h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" class="w-[200px]">
-                        <DropdownMenuLabel>Company Options</DropdownMenuLabel>
+                        <DropdownMenuLabel>Opciones de la empresa</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem @click="handleArchive">
                             <Archive
@@ -239,7 +239,7 @@ const breadcrumbs = computed(() => [
                             @click="handleDelete"
                         >
                             <Trash2 class="mr-2 h-4 w-4" />
-                            Delete
+                            Eliminar
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

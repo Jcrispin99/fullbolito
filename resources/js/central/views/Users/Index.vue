@@ -29,12 +29,12 @@ type ColumnKey = "name" | "email" | "tenant" | "role" | "verified" | "created";
 const COLUMN_STORAGE_KEY = "users_table_columns";
 
 const columnOptions: { key: ColumnKey; label: string }[] = [
-    { key: "name", label: "Name" },
-    { key: "email", label: "Email" },
-    { key: "tenant", label: "Tenant" },
-    { key: "role", label: "Role" },
-    { key: "verified", label: "Verified" },
-    { key: "created", label: "Created" },
+    { key: "name", label: "Nombre" },
+    { key: "email", label: "Correo electrónico" },
+    { key: "tenant", label: "Negocio" },
+    { key: "role", label: "Rol" },
+    { key: "verified", label: "Verificado" },
+    { key: "created", label: "Creado" },
 ];
 
 const defaultColumnVisibility: Record<ColumnKey, boolean> = {
@@ -131,19 +131,29 @@ const primaryTenantLabel = (u: any) => {
     return `${label}${more}`;
 };
 
+const formatRoles = (roles: string[] | undefined) => {
+    return (roles ?? [])
+        .map((role) => {
+            if (role === "superadmin") return "Superadministrador";
+            if (role === "user") return "Usuario";
+            return role;
+        })
+        .join(", ") || "-";
+};
+
 const formatCreated = (iso: string | null | undefined) => {
     if (!iso) return "-";
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return "-";
-    return d.toLocaleString("es", { dateStyle: "medium" });
+    return d.toLocaleString("es-PE", { dateStyle: "medium" });
 };
 </script>
 
 <template>
-    <DashboardLayout :breadcrumbs="[{ label: 'Users' }]">
+    <DashboardLayout :breadcrumbs="[{ label: 'Usuarios' }]">
         <div class="space-y-6">
             <ModuleHeader
-                title="Users"
+                title="Usuarios"
                 :items-count="users.length"
                 :total-items="meta.total"
                 :per-page="meta.per_page"
@@ -169,22 +179,22 @@ const formatCreated = (iso: string | null | undefined) => {
                                 />
                             </TableHead>
                             <TableHead v-if="columnVisibility.name"
-                                >Name</TableHead
+                                >Nombre</TableHead
                             >
                             <TableHead v-if="columnVisibility.email"
-                                >Email</TableHead
+                                >Correo electrónico</TableHead
                             >
                             <TableHead v-if="columnVisibility.tenant"
-                                >Tenant</TableHead
+                                >Negocio</TableHead
                             >
                             <TableHead v-if="columnVisibility.role"
-                                >Role</TableHead
+                                >Rol</TableHead
                             >
                             <TableHead v-if="columnVisibility.verified"
-                                >Verified</TableHead
+                                >Verificado</TableHead
                             >
                             <TableHead v-if="columnVisibility.created"
-                                >Created</TableHead
+                                >Creado</TableHead
                             >
                             <TableColumnSettingsHead
                                 v-model="columnVisibility"
@@ -198,14 +208,14 @@ const formatCreated = (iso: string | null | undefined) => {
                             <TableCell
                                 :colspan="tableColspan"
                                 class="text-center py-8"
-                                >Loading...</TableCell
+                                >Cargando...</TableCell
                             >
                         </TableRow>
                         <TableRow v-else-if="users.length === 0">
                             <TableCell
                                 :colspan="tableColspan"
                                 class="text-center py-8 text-muted-foreground"
-                                >No users found.</TableCell
+                                >No se encontraron usuarios.</TableCell
                             >
                         </TableRow>
                         <TableRow
@@ -243,10 +253,10 @@ const formatCreated = (iso: string | null | undefined) => {
                                 {{ primaryTenantLabel(u) }}
                             </TableCell>
                             <TableCell v-if="columnVisibility.role">
-                                {{ (u.roles ?? []).join(", ") || "-" }}
+                                {{ formatRoles(u.roles) }}
                             </TableCell>
                             <TableCell v-if="columnVisibility.verified">
-                                {{ u.email_verified_at ? "Yes" : "No" }}
+                                {{ u.email_verified_at ? "Sí" : "No" }}
                             </TableCell>
                             <TableCell v-if="columnVisibility.created">
                                 {{ formatCreated(u.created_at) }}

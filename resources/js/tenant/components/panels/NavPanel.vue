@@ -23,7 +23,7 @@ async function addItem() {
 </script>
 
 <template>
-  <BuilderDrawer title="Navegacion" @close="editorMode.closeDrawer()">
+  <BuilderDrawer title="Navegación" @close="editorMode.closeDrawer()">
     <div v-if="navStore.isLoading" class="text-muted-foreground text-sm">Cargando...</div>
     <div v-else-if="headerNav" class="space-y-6">
       <!-- Preview -->
@@ -38,7 +38,7 @@ async function addItem() {
 
       <!-- Items -->
       <section>
-        <h4 class="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Items del menu</h4>
+        <h4 class="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Elementos del menú</h4>
         <div class="space-y-1.5 mb-4">
           <div v-for="item in headerNav.items" :key="item.id" class="flex items-center justify-between p-2 border rounded text-xs">
             <div class="flex items-center gap-2">
@@ -52,16 +52,16 @@ async function addItem() {
 
         <!-- Add item -->
         <div class="space-y-2">
-          <input v-model="newLabel" type="text" class="w-full px-2 py-1.5 border rounded text-sm bg-background" placeholder="Label" />
+          <input v-model="newLabel" type="text" class="w-full px-2 py-1.5 border rounded text-sm bg-background" placeholder="Etiqueta" />
           <div class="flex gap-2">
             <select v-model="newType" class="flex-1 px-2 py-1.5 border rounded text-sm bg-background">
-              <option value="page">Pagina</option>
+              <option value="page">Página</option>
               <option value="url">URL</option>
-              <option value="anchor">Anchor</option>
+              <option value="anchor">Ancla</option>
             </select>
-            <input v-model="newTarget" type="text" class="flex-1 px-2 py-1.5 border rounded text-sm bg-background" placeholder="Target" />
+            <input v-model="newTarget" type="text" class="flex-1 px-2 py-1.5 border rounded text-sm bg-background" placeholder="Destino" />
           </div>
-          <button class="w-full px-3 py-1.5 bg-primary text-primary-foreground rounded text-sm hover:bg-primary/90" :disabled="!newLabel || !newTarget" @click="addItem">Agregar item</button>
+          <button class="w-full px-3 py-1.5 bg-primary text-primary-foreground rounded text-sm hover:bg-primary/90" :disabled="!newLabel || !newTarget" @click="addItem">Agregar elemento</button>
         </div>
       </section>
     </div>

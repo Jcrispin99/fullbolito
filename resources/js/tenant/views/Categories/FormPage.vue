@@ -41,7 +41,7 @@ const errors = ref<Record<string, string>>({});
 
 const canManageCategory = computed(() => isEditing.value && !!categoryId.value);
 const archiveLabel = computed(() =>
-    currentCategory.value?.is_active === false ? "Activate" : "Deactivate",
+    currentCategory.value?.is_active === false ? "Activar" : "Desactivar",
 );
 const isArchived = computed(
     () => isEditing.value && currentCategory.value?.is_active === false,
@@ -83,14 +83,14 @@ const handleSubmit = async (payload: any) => {
     try {
         if (isEditing.value) {
             await categoryStore.updateCategory(categoryId.value, payload);
-            toast.success("Category updated", {
-                description: "The category was successfully updated.",
+            toast.success("Categoría actualizada", {
+                description: "La categoría se actualizó correctamente.",
             });
             activityLogRef.value?.load();
         } else {
             const newCat = await categoryStore.createCategory(payload);
-            toast.success("Category created", {
-                description: "The category was successfully created.",
+            toast.success("Categoría creada", {
+                description: "La categoría se creó correctamente.",
             });
             router.push(`/admin/categories/${newCat.id}/edit`);
             return;
@@ -103,15 +103,15 @@ const handleSubmit = async (payload: any) => {
                 flat[k] = Array.isArray(v) ? v[0] : String(v);
             });
             errors.value = flat;
-            toast.error("Validation error", {
-                description: "Please check the form fields for errors.",
+            toast.error("Error de validación", {
+                description: "Revisa los campos del formulario.",
             });
         } else {
             console.error("Error saving category:", err);
-            toast.error("Error saving category", {
+            toast.error("Error al guardar la categoría", {
                 description:
                     err?.response?.data?.message ||
-                    "An unexpected error occurred.",
+                    "Ocurrió un error inesperado.",
             });
         }
     } finally {
@@ -128,8 +128,8 @@ const handleArchive = async () => {
     const id = categoryId.value;
 
     confirmDialog.value?.show(
-        `${archiveLabel.value} category`,
-        `Are you sure you want to ${archiveLabel.value.toLowerCase()} this category?`,
+        `${archiveLabel.value} categoría`,
+        `¿Confirmas que deseas ${archiveLabel.value.toLowerCase()} esta categoría?`,
         async () => {
             isLoading.value = true;
             try {
@@ -149,8 +149,8 @@ const handleDelete = async () => {
     const id = categoryId.value;
 
     confirmDialog.value?.show(
-        "Delete category",
-        "Are you sure you want to delete this category? This action cannot be undone.",
+        "Eliminar categoría",
+        "¿Confirmas que deseas eliminar esta categoría? Esta acción no se puede deshacer.",
         async () => {
             isLoading.value = true;
             try {
@@ -166,12 +166,12 @@ const handleDelete = async () => {
 };
 
 const pageTitle = computed(() =>
-    isEditing.value ? "Edit Category" : "Create Category",
+    isEditing.value ? "Editar categoría" : "Crear categoría",
 );
 
 const breadcrumbs = computed(() => [
-    { label: "Categories", href: "/admin/categories" },
-    { label: isEditing.value ? "Edit Category" : "Create Category" },
+    { label: "Categorías", href: "/admin/categories" },
+    { label: isEditing.value ? "Editar categoría" : "Crear categoría" },
 ]);
 </script>
 
@@ -183,7 +183,7 @@ const breadcrumbs = computed(() => [
                     variant="outline"
                     size="icon"
                     class="h-9 w-9"
-                    aria-label="Back"
+                    aria-label="Volver"
                     @click="handleCancel"
                 >
                     <ArrowLeft class="h-4 w-4" />
@@ -200,10 +200,10 @@ const breadcrumbs = computed(() => [
                     <Save class="mr-2 h-4 w-4" />
                     {{
                         isLoading
-                            ? "Saving..."
+                            ? "Guardando..."
                             : isEditing
-                              ? "Update Category"
-                              : "Create Category"
+                              ? "Actualizar categoría"
+                              : "Crear categoría"
                     }}
                 </Button>
                 <DropdownMenu v-if="canManageCategory">
@@ -212,13 +212,13 @@ const breadcrumbs = computed(() => [
                             variant="outline"
                             size="icon"
                             class="h-9 w-9"
-                            aria-label="Category settings"
+                            aria-label="Opciones de la categoría"
                         >
                             <Settings2 class="h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" class="w-[200px]">
-                        <DropdownMenuLabel>Category Options</DropdownMenuLabel>
+                        <DropdownMenuLabel>Opciones de la categoría</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem @click="handleArchive">
                             <Archive
@@ -232,7 +232,7 @@ const breadcrumbs = computed(() => [
                             @click="handleDelete"
                         >
                             <Trash2 class="mr-2 h-4 w-4" />
-                            Delete
+                            Eliminar
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

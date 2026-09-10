@@ -41,7 +41,7 @@ const emit = defineEmits<{
 
 const DEFAULT_VIEW_MODES: ViewModeOption[] = [
     { value: "table", icon: LayoutList, label: "Tabla" },
-    { value: "grid", icon: LayoutGrid, label: "Grid" },
+    { value: "grid", icon: LayoutGrid, label: "Cuadrícula" },
 ];
 
 const resolvedViewModes = computed<ViewModeOption[]>(
@@ -114,7 +114,7 @@ const handleRangeInput = (event: Event) => {
                 class="h-9"
             >
                 <Plus class="mr-2 h-4 w-4" />
-                New
+                Nuevo
             </Button>
         </template>
 
@@ -134,7 +134,7 @@ const handleRangeInput = (event: Event) => {
                         :value="localSearch"
                         @input="handleSearchInput"
                         type="text"
-                        placeholder="Search..."
+                        placeholder="Buscar..."
                         class="h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                     />
                 </div>
@@ -166,7 +166,7 @@ const handleRangeInput = (event: Event) => {
                         :disabled="currentPage <= 1 || loading"
                         @click="$emit('pageChange', currentPage - 1)"
                     >
-                        <span class="sr-only">Previous</span>
+                        <span class="sr-only">Anterior</span>
                         <ChevronLeft class="h-4 w-4" />
                     </Button>
                     <Button
@@ -176,7 +176,7 @@ const handleRangeInput = (event: Event) => {
                         :disabled="isLastPage || loading"
                         @click="$emit('pageChange', currentPage + 1)"
                     >
-                        <span class="sr-only">Next</span>
+                        <span class="sr-only">Siguiente</span>
                         <ChevronRight class="h-4 w-4" />
                     </Button>
                 </div>

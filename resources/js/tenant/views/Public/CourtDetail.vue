@@ -358,7 +358,7 @@ onMounted(async () => {
                   <Users class="size-4" /> {{ court.capacity }} jugadores
                 </span>
                 <span class="inline-flex items-center gap-1.5">
-                  <Clock class="size-4" /> {{ court.slot_duration_minutes }} min por slot
+                  <Clock class="size-4" /> Turnos de {{ court.slot_duration_minutes }} min
                 </span>
               </div>
               <p v-if="court.description" class="mt-4 max-w-2xl text-sm text-muted-foreground">
@@ -493,7 +493,7 @@ onMounted(async () => {
           <template v-if="!reservation">
             <h2 class="text-lg font-semibold">Tus datos</h2>
             <p class="mt-1 text-sm text-muted-foreground">
-              Slot seleccionado:
+              Horario seleccionado:
               <span class="font-medium text-foreground">
                 {{ new Date(selectedSlot!.start_at).toLocaleDateString("es-PE", { weekday: "long", day: "numeric", month: "short" }) }}
                 · {{ selectedSlot!.start }} – {{ selectedSlot!.end }} · S/ {{ selectedSlot!.price }}
@@ -604,7 +604,7 @@ onMounted(async () => {
     <footer class="mt-12 border-t border-border/50">
       <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-6 text-xs text-muted-foreground">
         <span>{{ court?.company?.name ?? "Reservas" }}</span>
-        <span>Powered by Canchapp</span>
+        <span>Con tecnología de Fullbolito</span>
       </div>
     </footer>
   </div>

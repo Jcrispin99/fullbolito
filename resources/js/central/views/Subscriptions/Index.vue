@@ -36,7 +36,7 @@ async function load() {
         rows.value = data.data.data;
         summary.value = data.data.summary;
     } catch (err: any) {
-        error.value = err?.response?.data?.message ?? "No se pudo cargar";
+        error.value = err?.response?.data?.message ?? "No se pudieron cargar las suscripciones";
     } finally {
         loading.value = false;
     }
@@ -44,7 +44,16 @@ async function load() {
 
 function formatDate(iso: string | null) {
     if (!iso) return "—";
-    return new Date(iso).toLocaleDateString();
+    return new Date(iso).toLocaleDateString("es-PE");
+}
+
+function statusLabel(status: string) {
+    if (status === "active") return "Activa";
+    if (status === "trial") return "En prueba";
+    if (status === "past_due") return "Pago pendiente";
+    if (status === "cancelled") return "Cancelada";
+    if (status === "expired") return "Vencida";
+    return status;
 }
 
 function badgeClass(status: string) {
@@ -77,13 +86,13 @@ onMounted(load);
             </Card>
             <Card>
                 <CardContent class="p-6">
-                    <div class="text-xs text-muted-foreground">En trial</div>
+                    <div class="text-xs text-muted-foreground">En prueba</div>
                     <div class="text-2xl font-semibold">{{ summary.trial_count }}</div>
                 </CardContent>
             </Card>
             <Card>
                 <CardContent class="p-6">
-                    <div class="text-xs text-muted-foreground">MRR estimado</div>
+                    <div class="text-xs text-muted-foreground">Ingresos mensuales estimados</div>
                     <div class="text-2xl font-semibold">
                         S/ {{ Number(summary.monthly_recurring_revenue).toFixed(2) }}
                     </div>
@@ -100,8 +109,8 @@ onMounted(load);
             >
                 <option value="">Todos</option>
                 <option value="active">Activas</option>
-                <option value="trial">Trial</option>
-                <option value="past_due">Past due</option>
+                <option value="trial">En prueba</option>
+                <option value="past_due">Pago pendiente</option>
                 <option value="cancelled">Canceladas</option>
             </select>
         </div>
@@ -111,7 +120,7 @@ onMounted(load);
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="border-b text-left text-xs text-muted-foreground">
-                            <th class="p-3">Tenant</th>
+                            <th class="p-3">Negocio</th>
                             <th class="p-3">Plan</th>
                             <th class="p-3">Estado</th>
                             <th class="p-3">Inicio</th>
@@ -148,7 +157,7 @@ onMounted(load);
                                 <span
                                     :class="['rounded-full px-2 py-0.5 text-xs', badgeClass(row.status)]"
                                 >
-                                    {{ row.status }}
+                                    {{ statusLabel(row.status) }}
                                 </span>
                             </td>
                             <td class="p-3">{{ formatDate(row.starts_at) }}</td>

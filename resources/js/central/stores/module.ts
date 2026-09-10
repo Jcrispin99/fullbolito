@@ -53,7 +53,7 @@ export const useModuleStore = defineStore("module", () => {
         } catch (err: any) {
             if (isAbortError(err)) return;
             error.value =
-                err.response?.data?.message || "Error fetching modules";
+                err.response?.data?.message || "No se pudieron cargar los módulos";
             throw err;
         } finally {
             isLoading.value = false;
@@ -69,7 +69,7 @@ export const useModuleStore = defineStore("module", () => {
             return data.data;
         } catch (err: any) {
             error.value =
-                err.response?.data?.message || "Error fetching module";
+                err.response?.data?.message || "No se pudo cargar el módulo";
             throw err;
         } finally {
             isLoading.value = false;
@@ -88,7 +88,7 @@ export const useModuleStore = defineStore("module", () => {
             return data.data;
         } catch (err: any) {
             error.value =
-                err.response?.data?.message || "Error creating module";
+                err.response?.data?.message || "No se pudo crear el módulo";
             throw err;
         } finally {
             isLoading.value = false;
@@ -111,7 +111,7 @@ export const useModuleStore = defineStore("module", () => {
             return data.data;
         } catch (err: any) {
             error.value =
-                err.response?.data?.message || "Error updating module";
+                err.response?.data?.message || "No se pudo actualizar el módulo";
             throw err;
         } finally {
             isLoading.value = false;
@@ -126,7 +126,7 @@ export const useModuleStore = defineStore("module", () => {
             modules.value = modules.value.filter((m) => m.id !== Number(id));
         } catch (err: any) {
             error.value =
-                err.response?.data?.message || "Error deleting module";
+                err.response?.data?.message || "No se pudo eliminar el módulo";
             throw err;
         } finally {
             isLoading.value = false;
@@ -143,7 +143,7 @@ export const useModuleStore = defineStore("module", () => {
             );
         } catch (err: any) {
             error.value =
-                err.response?.data?.message || "Error deleting modules";
+                err.response?.data?.message || "No se pudieron eliminar los módulos";
             throw err;
         } finally {
             isLoading.value = false;
@@ -164,7 +164,7 @@ export const useModuleStore = defineStore("module", () => {
             return data.data;
         } catch (err: any) {
             error.value =
-                err.response?.data?.message || "Error updating module status";
+                err.response?.data?.message || "No se pudo actualizar el estado del módulo";
             throw err;
         } finally {
             isLoading.value = false;

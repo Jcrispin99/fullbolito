@@ -482,7 +482,7 @@ const dayHeaderLabel = (d: Date) => {
                 <SheetDescription>
                     {{
                         sheetMode === "create"
-                            ? "Reserva un slot para la cancha seleccionada."
+                            ? "Reserva un horario para la cancha seleccionada."
                             : "Modifica los datos de la reserva."
                     }}
                 </SheetDescription>

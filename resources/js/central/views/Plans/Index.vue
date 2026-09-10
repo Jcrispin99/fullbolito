@@ -49,11 +49,11 @@ type ColumnKey = "name" | "slug" | "price" | "duration" | "status";
 const COLUMN_STORAGE_KEY = "plans_table_columns";
 
 const columnOptions: { key: ColumnKey; label: string }[] = [
-    { key: "name", label: "Name" },
+    { key: "name", label: "Nombre" },
     { key: "slug", label: "Slug" },
-    { key: "price", label: "Price" },
-    { key: "duration", label: "Duration" },
-    { key: "status", label: "Status" },
+    { key: "price", label: "Precio" },
+    { key: "duration", label: "Duración" },
+    { key: "status", label: "Estado" },
 ];
 
 const defaultColumnVisibility: Record<ColumnKey, boolean> = {
@@ -101,13 +101,13 @@ const currentStatus = ref("active");
 const filterLabel = computed(() => {
     switch (currentStatus.value) {
         case "active":
-            return "Active Plans";
+            return "Planes activos";
         case "archived":
-            return "Archived Plans";
+            return "Planes archivados";
         case "all":
-            return "All Plans";
+            return "Todos los planes";
         default:
-            return "Filter";
+            return "Filtrar";
     }
 });
 
@@ -169,8 +169,8 @@ const handleToggleStatus = async (id: number) => {
 
 const handleDelete = async (id: number) => {
     confirmDialog.value?.show(
-        "Delete Plan",
-        "Are you sure you want to delete this plan?",
+        "Eliminar plan",
+        "¿Seguro que deseas eliminar este plan?",
         async () => {
             await planStore.deletePlan(id);
             loadPlans(meta.value.current_page);
@@ -182,8 +182,8 @@ const handleBatchDelete = async () => {
     if (selectedPlans.value.length === 0) return;
 
     confirmDialog.value?.show(
-        "Delete Plans",
-        `Are you sure you want to delete ${selectedPlans.value.length} plans?`,
+        "Eliminar planes",
+        `¿Seguro que deseas eliminar ${selectedPlans.value.length} planes?`,
         async () => {
             await planStore.deletePlans(selectedPlans.value);
             loadPlans(meta.value.current_page);
@@ -198,8 +198,8 @@ const handleBatchToggleStatus = () => {
     }
 
     confirmDialog.value?.show(
-        "Toggle Status",
-        `Are you sure you want to toggle the status for ${selectedPlans.value.length} plans?`,
+        "Cambiar estado",
+        `¿Seguro que deseas cambiar el estado de ${selectedPlans.value.length} planes?`,
         async () => {
             // Use Promise.all to toggle all selected plans
             // Note: In a real app you might want a batch endpoint for this
@@ -216,7 +216,7 @@ const handleBatchToggleStatus = () => {
                 const message =
                     (e as any)?.response?.data?.message ||
                     planStore.error ||
-                    "Error toggling status";
+                    "No se pudo cambiar el estado";
                 alert(message);
             }
         },
@@ -225,10 +225,10 @@ const handleBatchToggleStatus = () => {
 </script>
 
 <template>
-    <DashboardLayout :breadcrumbs="[{ label: 'Plans' }]">
+    <DashboardLayout :breadcrumbs="[{ label: 'Planes' }]">
         <div class="space-y-6">
             <ModuleHeader
-                title="Plans"
+                title="Planes"
                 :items-count="plans.length"
                 :total-items="meta.total"
                 :per-page="meta.per_page"
@@ -255,19 +255,19 @@ const handleBatchToggleStatus = () => {
                                 <span class="hidden sm:inline">{{
                                     filterLabel
                                 }}</span>
-                                <span class="sm:hidden">Filter</span>
+                                <span class="sm:hidden">Filtrar</span>
                                 <ChevronDown class="h-4 w-4 opacity-50 ml-1" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             <DropdownMenuItem @click="setFilter('active')">
-                                Active Plans
+                                Planes activos
                             </DropdownMenuItem>
                             <DropdownMenuItem @click="setFilter('archived')">
-                                Archived Plans
+                                Planes archivados
                             </DropdownMenuItem>
                             <DropdownMenuItem @click="setFilter('all')">
-                                All Plans
+                                Todos los planes
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
@@ -281,18 +281,18 @@ const handleBatchToggleStatus = () => {
                                 size="sm"
                                 class="h-9 gap-1"
                             >
-                                Actions
+                                Acciones
                                 <ChevronDown class="h-4 w-4 opacity-50" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" class="w-[160px]">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem @click="handleBatchToggleStatus">
                                 <Power
                                     class="mr-2 h-4 w-4 text-muted-foreground"
                                 />
-                                Toggle Status
+                                Cambiar estado
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
@@ -300,7 +300,7 @@ const handleBatchToggleStatus = () => {
                                 class="text-destructive"
                             >
                                 <Trash2 class="mr-2 h-4 w-4" />
-                                Delete
+                                Eliminar
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
@@ -318,19 +318,19 @@ const handleBatchToggleStatus = () => {
                                 />
                             </TableHead>
                             <TableHead v-if="columnVisibility.name"
-                                >Name</TableHead
+                                >Nombre</TableHead
                             >
                             <TableHead v-if="columnVisibility.slug"
                                 >Slug</TableHead
                             >
                             <TableHead v-if="columnVisibility.price"
-                                >Price</TableHead
+                                >Precio</TableHead
                             >
                             <TableHead v-if="columnVisibility.duration"
-                                >Duration</TableHead
+                                >Duración</TableHead
                             >
                             <TableHead v-if="columnVisibility.status"
-                                >Status</TableHead
+                                >Estado</TableHead
                             >
                             <TableColumnSettingsHead
                                 v-model="columnVisibility"
@@ -344,14 +344,14 @@ const handleBatchToggleStatus = () => {
                             <TableCell
                                 :colspan="tableColspan"
                                 class="text-center py-8"
-                                >Loading...</TableCell
+                                >Cargando...</TableCell
                             >
                         </TableRow>
                         <TableRow v-else-if="plans.length === 0">
                             <TableCell
                                 :colspan="tableColspan"
                                 class="text-center py-8 text-muted-foreground"
-                                >No plans found.</TableCell
+                                >No se encontraron planes.</TableCell
                             >
                         </TableRow>
                         <TableRow
@@ -378,10 +378,10 @@ const handleBatchToggleStatus = () => {
                                 plan.slug
                             }}</TableCell>
                             <TableCell v-if="columnVisibility.price"
-                                >${{ plan.price }}</TableCell
+                                >S/ {{ Number(plan.price).toFixed(2) }}</TableCell
                             >
                             <TableCell v-if="columnVisibility.duration"
-                                >{{ plan.duration_days }} days</TableCell
+                                >{{ plan.duration_days }} días</TableCell
                             >
                             <TableCell v-if="columnVisibility.status">
                                 <span
@@ -392,7 +392,7 @@ const handleBatchToggleStatus = () => {
                                             : 'bg-gray-100 text-gray-800',
                                     ]"
                                 >
-                                    {{ plan.is_active ? "Active" : "Inactive" }}
+                                    {{ plan.is_active ? "Activo" : "Inactivo" }}
                                 </span>
                             </TableCell>
                             <TableCell />

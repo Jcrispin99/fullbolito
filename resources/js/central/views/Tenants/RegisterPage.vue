@@ -16,8 +16,8 @@ const errors = ref<Record<string, string>>({})
 const registerForm = ref<InstanceType<typeof RegisterForm> | null>(null)
 
 const breadcrumbs = computed(() => [
-  { label: "Tenants", href: "/tenants" },
-  { label: "Create Tenant" },
+  { label: "Negocios", href: "/tenants" },
+  { label: "Crear negocio" },
 ])
 
 const handleCancel = () => {
@@ -49,13 +49,13 @@ const handleSubmit = async (formData: any) => {
 
 <template>
   <DashboardLayout :breadcrumbs="breadcrumbs">
-    <PageHeader title="Create Tenant">
+    <PageHeader title="Crear negocio">
       <template #leading>
         <Button
           variant="outline"
           size="icon"
           class="h-9 w-9"
-          aria-label="Back"
+          aria-label="Volver"
           @click="handleCancel"
         >
           <ArrowLeft class="h-4 w-4" />
@@ -65,7 +65,7 @@ const handleSubmit = async (formData: any) => {
       <template #trailing>
         <Button size="sm" class="h-9" :disabled="isLoading" @click="handleSave">
           <Save class="mr-2 h-4 w-4" />
-          {{ isLoading ? "Creating..." : "Create Tenant" }}
+          {{ isLoading ? "Creando..." : "Crear negocio" }}
         </Button>
       </template>
     </PageHeader>
@@ -84,4 +84,3 @@ const handleSubmit = async (formData: any) => {
     </div>
   </DashboardLayout>
 </template>
-

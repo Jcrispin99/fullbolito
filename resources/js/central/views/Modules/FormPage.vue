@@ -92,7 +92,7 @@ const handleArchive = () => {
     const id = moduleId.value;
     confirmDialog.value?.show(
         `${archiveLabel.value} módulo`,
-        `¿Seguro que quieres ${archiveLabel.value.toLowerCase()} este módulo?`,
+        `¿Seguro que deseas ${archiveLabel.value.toLowerCase()} este módulo?`,
         async () => {
             isLoading.value = true;
             try {
@@ -110,7 +110,7 @@ const handleDelete = () => {
     const id = moduleId.value;
     confirmDialog.value?.show(
         "Eliminar módulo",
-        "¿Seguro que quieres eliminar este módulo? Esta acción no se puede deshacer.",
+        "¿Seguro que deseas eliminar este módulo? Esta acción no se puede deshacer.",
         async () => {
             isLoading.value = true;
             try {

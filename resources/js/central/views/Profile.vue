@@ -13,6 +13,17 @@ onMounted(async () => {
 });
 
 const user = computed(() => authStore.user);
+
+const roleLabel = computed(() => {
+    const roles = user.value?.roles ?? [];
+    return roles
+        .map((role) => {
+            if (role === "superadmin") return "Superadministrador";
+            if (role === "user") return "Usuario";
+            return role;
+        })
+        .join(", ") || "Usuario";
+});
 </script>
 
 <template>
@@ -32,12 +43,12 @@ const user = computed(() => authStore.user);
                             <span class="font-medium">{{ user.name }}</span>
                         </div>
                         <div class="flex items-center justify-between gap-4">
-                            <span class="text-muted-foreground">Email</span>
+                            <span class="text-muted-foreground">Correo electrónico</span>
                             <span class="font-medium">{{ user.email }}</span>
                         </div>
                         <div class="flex items-center justify-between gap-4">
                             <span class="text-muted-foreground">Rol</span>
-                            <span class="font-medium">{{ (user.roles ?? []).join(", ") || "user" }}</span>
+                            <span class="font-medium">{{ roleLabel }}</span>
                         </div>
                     </div>
                 </CardContent>

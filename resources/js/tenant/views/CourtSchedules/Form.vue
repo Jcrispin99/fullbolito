@@ -304,7 +304,7 @@ defineExpose({ submit });
 
                     <div class="space-y-2">
                         <Label htmlFor="slot_duration_minutes"
-                            >Duración slot (min)</Label
+                            >Duración del turno (min)</Label
                         >
                         <UnderlineInput
                             id="slot_duration_minutes"

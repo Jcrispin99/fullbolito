@@ -47,6 +47,26 @@ const sortedPayments = computed(() => {
     });
 });
 
+const formatDate = (iso: string | null | undefined) => {
+    if (!iso) return "-";
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) return "-";
+    return date.toLocaleDateString("es-PE");
+};
+
+const formatAmount = (payment: Payment) => {
+    const amount = Number(payment.amount).toFixed(2);
+    return payment.currency === "PEN" ? `S/ ${amount}` : `${amount} ${payment.currency}`;
+};
+
+const statusLabel = (status: string) => {
+    if (status === "paid" || status === "completed") return "Pagado";
+    if (status === "pending") return "Pendiente";
+    if (status === "failed") return "Fallido";
+    if (status === "refunded") return "Reembolsado";
+    return status;
+};
+
 const show = (t: Partial<Tenant>) => {
     tenant.value = t;
     if (typeof window !== "undefined") {
@@ -69,7 +89,7 @@ defineExpose({ show });
             <AlertDialogHeader>
                 <AlertDialogTitle>Historial de pagos</AlertDialogTitle>
                 <AlertDialogDescription>
-                    {{ tenant?.id ? `Tenant: ${tenant.id}` : "" }}
+                    {{ tenant?.id ? `Negocio: ${tenant.id}` : "" }}
                 </AlertDialogDescription>
             </AlertDialogHeader>
 
@@ -92,10 +112,10 @@ defineExpose({ show });
                     <TableBody>
                         <TableRow v-for="p in sortedPayments" :key="p.id">
                             <TableCell class="font-medium">{{ p.id }}</TableCell>
-                            <TableCell>{{ p.created_at }}</TableCell>
-                            <TableCell>{{ `${p.amount} ${p.currency}` }}</TableCell>
+                            <TableCell>{{ formatDate(p.created_at) }}</TableCell>
+                            <TableCell>{{ formatAmount(p) }}</TableCell>
                             <TableCell>{{ p.method }}</TableCell>
-                            <TableCell>{{ p.status }}</TableCell>
+                            <TableCell>{{ statusLabel(p.status) }}</TableCell>
                             <TableCell class="max-w-[240px] truncate">
                                 {{ p.transaction_id ?? "-" }}
                             </TableCell>

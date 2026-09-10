@@ -16,7 +16,7 @@ final class PlanSeeder extends Seeder
         // en planes — siempre se compran como add-on.
         $plans = [
             [
-                'name' => 'Free Trial',
+                'name' => 'Prueba gratuita',
                 'slug' => 'free-trial',
                 'price' => 0.00,
                 'duration_days' => 14,
@@ -24,7 +24,7 @@ final class PlanSeeder extends Seeder
                 'modules' => ['dashboard', 'inventory', 'sales', 'purchases', 'pos'],
             ],
             [
-                'name' => 'Básico Mensual',
+                'name' => 'Básico mensual',
                 'slug' => 'basico-mensual',
                 'price' => 29.99,
                 'duration_days' => 30,
@@ -32,7 +32,7 @@ final class PlanSeeder extends Seeder
                 'modules' => ['dashboard', 'inventory', 'sales', 'pos'],
             ],
             [
-                'name' => 'Pro Mensual',
+                'name' => 'Pro mensual',
                 'slug' => 'pro-mensual',
                 'price' => 59.99,
                 'duration_days' => 30,
@@ -40,7 +40,7 @@ final class PlanSeeder extends Seeder
                 'modules' => ['dashboard', 'inventory', 'sales', 'purchases', 'pos'],
             ],
             [
-                'name' => 'Enterprise Anual',
+                'name' => 'Empresarial anual',
                 'slug' => 'enterprise-anual',
                 'price' => 499.99,
                 'duration_days' => 365,

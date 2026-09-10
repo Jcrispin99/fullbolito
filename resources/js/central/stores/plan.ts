@@ -52,7 +52,7 @@ export const usePlanStore = defineStore("plan", () => {
             }
         } catch (err: any) {
             if (isAbortError(err)) return;
-            error.value = err.response?.data?.message || "Error fetching plans";
+            error.value = err.response?.data?.message || "No se pudieron cargar los planes";
             throw err;
         } finally {
             isLoading.value = false;
@@ -67,7 +67,7 @@ export const usePlanStore = defineStore("plan", () => {
             currentPlan.value = data.data;
             return data.data;
         } catch (err: any) {
-            error.value = err.response?.data?.message || "Error fetching plan";
+            error.value = err.response?.data?.message || "No se pudo cargar el plan";
             throw err;
         } finally {
             isLoading.value = false;
@@ -82,7 +82,7 @@ export const usePlanStore = defineStore("plan", () => {
             plans.value.push(data.data);
             return data.data;
         } catch (err: any) {
-            error.value = err.response?.data?.message || "Error creating plan";
+            error.value = err.response?.data?.message || "No se pudo crear el plan";
             throw err;
         } finally {
             isLoading.value = false;
@@ -101,7 +101,7 @@ export const usePlanStore = defineStore("plan", () => {
             currentPlan.value = data.data;
             return data.data;
         } catch (err: any) {
-            error.value = err.response?.data?.message || "Error updating plan";
+            error.value = err.response?.data?.message || "No se pudo actualizar el plan";
             throw err;
         } finally {
             isLoading.value = false;
@@ -115,7 +115,7 @@ export const usePlanStore = defineStore("plan", () => {
             await apiClient.delete(`/v1/plans/${id}`);
             plans.value = plans.value.filter((p) => p.id !== Number(id));
         } catch (err: any) {
-            error.value = err.response?.data?.message || "Error deleting plan";
+            error.value = err.response?.data?.message || "No se pudo eliminar el plan";
             throw err;
         } finally {
             isLoading.value = false;
@@ -132,7 +132,7 @@ export const usePlanStore = defineStore("plan", () => {
             );
         } catch (err: any) {
             error.value =
-                err.response?.data?.message || "Error deleting plans";
+                err.response?.data?.message || "No se pudieron eliminar los planes";
             throw err;
         } finally {
             isLoading.value = false;
@@ -153,7 +153,7 @@ export const usePlanStore = defineStore("plan", () => {
             return data.data;
         } catch (err: any) {
             error.value =
-                err.response?.data?.message || "Error updating plan status";
+                err.response?.data?.message || "No se pudo actualizar el estado del plan";
             throw err;
         } finally {
             isLoading.value = false;

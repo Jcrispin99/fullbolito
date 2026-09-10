@@ -102,7 +102,7 @@ const handleCancel = () => {
 };
 
 const pageTitle = computed(() =>
-    mode.value === "edit" ? "Edit Tenant" : "Create Tenant",
+    mode.value === "edit" ? "Editar negocio" : "Crear negocio",
 );
 
 const handleSave = () => {
@@ -113,8 +113,8 @@ const handleDelete = () => {
     if (!tenantId.value) return;
     const id = tenantId.value;
     confirmDialog.value?.show(
-        "Delete tenant",
-        "Are you sure you want to delete this tenant? This action cannot be undone.",
+        "Eliminar negocio",
+        "¿Seguro que deseas eliminar este negocio? Esta acción no se puede deshacer.",
         async () => {
             isLoading.value = true;
             try {
@@ -132,8 +132,8 @@ const handleRenew = () => {
     const id = tenantId.value;
     renewDialog.value?.show(
         {
-            title: "Extend access",
-            message: "Add days to this tenant subscription.",
+            title: "Extender acceso",
+            message: "Agrega días a la suscripción de este negocio.",
             duration_days: 15,
             payment_reference: "",
         },
@@ -159,8 +159,8 @@ const handleOpenPaymentHistory = () => {
 };
 
 const breadcrumbs = computed(() => [
-    { label: "Tenants", href: "/tenants" },
-    { label: mode.value === "edit" ? "Edit Tenant" : "Create Tenant" },
+    { label: "Negocios", href: "/tenants" },
+    { label: mode.value === "edit" ? "Editar negocio" : "Crear negocio" },
 ]);
 </script>
 
@@ -172,7 +172,7 @@ const breadcrumbs = computed(() => [
                     variant="outline"
                     size="icon"
                     class="h-9 w-9"
-                    aria-label="Back"
+                    aria-label="Volver"
                     @click="handleCancel"
                 >
                     <ArrowLeft class="h-4 w-4" />
@@ -212,10 +212,10 @@ const breadcrumbs = computed(() => [
                     <Save class="mr-2 h-4 w-4" />
                     {{
                         isLoading
-                            ? "Saving..."
+                            ? "Guardando..."
                             : mode === "edit"
-                              ? "Update Tenant"
-                              : "Create Tenant"
+                              ? "Actualizar negocio"
+                              : "Crear negocio"
                     }}
                 </Button>
                 <DropdownMenu v-if="canManageTenant">
@@ -224,19 +224,19 @@ const breadcrumbs = computed(() => [
                             variant="outline"
                             size="icon"
                             class="h-9 w-9"
-                            aria-label="Tenant settings"
+                            aria-label="Configuración del negocio"
                         >
                             <Settings2 class="h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" class="w-[200px]">
-                        <DropdownMenuLabel>Tenant</DropdownMenuLabel>
+                        <DropdownMenuLabel>Negocio</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem @click="handleRenew">
                             <TicketPlus
                                 class="mr-2 h-4 w-4 text-muted-foreground"
                             />
-                            Extend access
+                            Extender acceso
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
@@ -244,7 +244,7 @@ const breadcrumbs = computed(() => [
                             @click="handleDelete"
                         >
                             <Trash2 class="mr-2 h-4 w-4" />
-                            Delete
+                            Eliminar
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

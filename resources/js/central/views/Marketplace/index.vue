@@ -225,7 +225,7 @@ const todayIso = new Date().toISOString().slice(0, 10)
           <div class="bg-primary text-primary-foreground flex size-8 items-center justify-center rounded-lg shadow-md shadow-primary/20">
             <GalleryVerticalEnd class="size-4" />
           </div>
-          <span>Canchapp</span>
+          <span>Fullbolito</span>
         </RouterLink>
 
         <nav class="hidden items-center gap-7 text-sm text-muted-foreground md:flex">
@@ -237,7 +237,7 @@ const todayIso = new Date().toISOString().slice(0, 10)
         <div class="flex items-center gap-2">
           <template v-if="isAuthenticated">
             <Button as-child variant="ghost" size="sm">
-              <RouterLink :to="{ name: 'Dashboard' }">Dashboard</RouterLink>
+              <RouterLink :to="{ name: 'Dashboard' }">Panel</RouterLink>
             </Button>
           </template>
           <template v-else>
@@ -260,13 +260,13 @@ const todayIso = new Date().toISOString().slice(0, 10)
 
       <div class="mx-auto max-w-6xl px-6 pb-10 pt-16 text-center sm:pt-20">
         <h1 class="mx-auto max-w-3xl text-balance text-4xl font-bold tracking-tight sm:text-5xl">
-          Encontrá tu cancha y
+          Encuentra tu cancha y
           <span class="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            reservá en segundos.
+            reserva en segundos.
           </span>
         </h1>
         <p class="mx-auto mt-4 max-w-2xl text-balance text-base text-muted-foreground">
-          Buscá entre todos los complejos que ya operan con Canchapp. Filtrá por deporte, zona y horario.
+          Busca entre los complejos que ya trabajan con Fullbolito. Filtra por deporte, zona y horario.
         </p>
       </div>
 
@@ -319,7 +319,7 @@ const todayIso = new Date().toISOString().slice(0, 10)
 
           <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
             <p class="text-xs text-muted-foreground">
-              Filtrá por departamento, provincia o distrito. Cuanto más específico, menos resultados.
+              Filtra por departamento, provincia o distrito. Mientras más específica sea la ubicación, más precisos serán los resultados.
             </p>
             <div class="flex flex-wrap items-center gap-2">
               <Button
@@ -350,7 +350,7 @@ const todayIso = new Date().toISOString().slice(0, 10)
             <h2 class="text-xl font-semibold tracking-tight">Canchas disponibles</h2>
             <p class="mt-1 text-sm text-muted-foreground">
               <template v-if="loading">Buscando…</template>
-              <template v-else-if="errored">No pudimos cargar las canchas. Probá de nuevo en un rato.</template>
+              <template v-else-if="errored">No pudimos cargar las canchas. Inténtalo de nuevo en unos minutos.</template>
               <template v-else-if="meta && meta.total > 0">
                 Mostrando <span class="font-medium text-foreground">{{ showingFrom }}–{{ showingTo }}</span>
                 de <span class="font-medium text-foreground">{{ meta.total }}</span>
@@ -388,7 +388,7 @@ const todayIso = new Date().toISOString().slice(0, 10)
           <Frown class="size-10 text-muted-foreground" />
           <p class="mt-4 text-sm font-medium">No encontramos canchas para esos filtros.</p>
           <p class="mt-1 max-w-sm text-xs text-muted-foreground">
-            Probá ampliar la zona, cambiar de deporte o quitar el filtro de horario.
+            Amplía la zona, cambia de deporte o quita el filtro de horario.
           </p>
           <Button v-if="hasActiveFilters" variant="outline" size="sm" class="mt-5" @click="clearFilters">
             Limpiar filtros
@@ -504,7 +504,7 @@ const todayIso = new Date().toISOString().slice(0, 10)
           <div class="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
             <GalleryVerticalEnd class="size-3" />
           </div>
-          <span>© {{ new Date().getFullYear() }} Canchapp. Todos los derechos reservados.</span>
+          <span>© {{ new Date().getFullYear() }} Fullbolito. Todos los derechos reservados.</span>
         </div>
         <div class="flex items-center gap-5">
           <RouterLink :to="{ name: 'Home' }" class="transition hover:text-foreground">Inicio</RouterLink>

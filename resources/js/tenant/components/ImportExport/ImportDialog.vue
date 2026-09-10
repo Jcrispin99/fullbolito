@@ -363,7 +363,7 @@ const formatBytes = (bytes: number | null) => {
                             <p
                                 class="text-sm text-muted-foreground mt-1"
                             >
-                                o haz click para seleccionar (CSV, XLSX, hasta
+                                o haz clic para seleccionar (CSV, XLSX, hasta
                                 20 MB)
                             </p>
                             <input

@@ -17,7 +17,7 @@ final class SiteBlockCatalogSeeder extends Seeder
         $blocks = [
             [
                 'key' => 'hero_banner',
-                'name' => 'Hero Banner',
+                'name' => 'Banner principal',
                 'description' => 'Banner principal con imagen de fondo, texto y botón de acción.',
                 'category' => 'headers',
                 'icon' => 'image',
@@ -32,7 +32,7 @@ final class SiteBlockCatalogSeeder extends Seeder
                         'cta_style' => ['type' => 'enum', 'options' => ['solid', 'outline', 'ghost'], 'default' => 'solid', 'label' => 'Estilo del botón'],
                         'bg_image' => ['type' => 'asset', 'required' => false, 'label' => 'Imagen de fondo'],
                         'images' => ['type' => 'asset_list', 'required' => false, 'label' => 'Carrusel de imágenes', 'max' => 5],
-                        'overlay_opacity' => ['type' => 'number', 'min' => 0, 'max' => 100, 'default' => 40, 'label' => 'Opacidad del overlay'],
+                        'overlay_opacity' => ['type' => 'number', 'min' => 0, 'max' => 100, 'default' => 40, 'label' => 'Opacidad de la superposición'],
                         'height' => ['type' => 'enum', 'options' => ['sm', 'md', 'lg', 'full'], 'default' => 'lg', 'label' => 'Altura'],
                         'text_align' => ['type' => 'enum', 'options' => ['left', 'center', 'right'], 'default' => 'center', 'label' => 'Alineación'],
                     ],
@@ -204,7 +204,7 @@ final class SiteBlockCatalogSeeder extends Seeder
             [
                 'key' => 'image_block',
                 'name' => 'Imagen',
-                'description' => 'Imagen individual con caption opcional.',
+                'description' => 'Imagen individual con pie de foto opcional.',
                 'category' => 'media',
                 'icon' => 'image',
                 'feature_gate' => null,
@@ -235,8 +235,8 @@ final class SiteBlockCatalogSeeder extends Seeder
             ],
             [
                 'key' => 'image_gallery',
-                'name' => 'Galería de Imágenes',
-                'description' => 'Grilla de imágenes en columnas configurables.',
+                'name' => 'Galería de imágenes',
+                'description' => 'Cuadrícula de imágenes en columnas configurables.',
                 'category' => 'media',
                 'icon' => 'layout-grid',
                 'feature_gate' => null,
@@ -266,7 +266,7 @@ final class SiteBlockCatalogSeeder extends Seeder
             ],
             [
                 'key' => 'features_grid',
-                'name' => 'Grilla de Features',
+                'name' => 'Cuadrícula de funcionalidades',
                 'description' => 'Tarjetas con íconos para destacar características o servicios.',
                 'category' => 'grids',
                 'icon' => 'grid-3x3',
@@ -276,7 +276,7 @@ final class SiteBlockCatalogSeeder extends Seeder
                     'fields' => [
                         'heading' => ['type' => 'string', 'required' => false, 'label' => 'Título de sección'],
                         'subheading' => ['type' => 'string', 'required' => false, 'label' => 'Subtítulo'],
-                        'items' => ['type' => 'asset_list', 'required' => true, 'label' => 'Features', 'max' => 12],
+                        'items' => ['type' => 'asset_list', 'required' => true, 'label' => 'Funcionalidades', 'max' => 12],
                         'columns' => ['type' => 'enum', 'options' => ['2', '3', '4'], 'default' => '3', 'label' => 'Columnas'],
                     ],
                     'style_fields' => [
@@ -342,7 +342,7 @@ final class SiteBlockCatalogSeeder extends Seeder
             ],
             [
                 'key' => 'cta_banner',
-                'name' => 'Call to Action',
+                'name' => 'Llamado a la acción',
                 'description' => 'Banner con llamado a la acción destacado.',
                 'category' => 'interactive',
                 'icon' => 'megaphone',
@@ -381,7 +381,7 @@ final class SiteBlockCatalogSeeder extends Seeder
             ],
             [
                 'key' => 'faq_accordion',
-                'name' => 'Preguntas Frecuentes',
+                'name' => 'Preguntas frecuentes',
                 'description' => 'Acordeón de preguntas y respuestas.',
                 'category' => 'interactive',
                 'icon' => 'help-circle',
@@ -416,7 +416,7 @@ final class SiteBlockCatalogSeeder extends Seeder
             ],
             [
                 'key' => 'contact_form',
-                'name' => 'Formulario de Contacto',
+                'name' => 'Formulario de contacto',
                 'description' => 'Formulario para que los visitantes envíen mensajes.',
                 'category' => 'interactive',
                 'icon' => 'mail',
@@ -426,7 +426,7 @@ final class SiteBlockCatalogSeeder extends Seeder
                     'fields' => [
                         'heading' => ['type' => 'string', 'required' => false, 'label' => 'Título'],
                         'description' => ['type' => 'rich_text', 'required' => false, 'label' => 'Descripción'],
-                        'email_to' => ['type' => 'string', 'required' => true, 'label' => 'Email destinatario'],
+                        'email_to' => ['type' => 'string', 'required' => true, 'label' => 'Correo del destinatario'],
                         'fields' => ['type' => 'asset_list', 'required' => true, 'label' => 'Campos del formulario', 'max' => 10],
                         'submit_text' => ['type' => 'string', 'required' => false, 'label' => 'Texto del botón', 'max' => 30],
                         'success_message' => ['type' => 'string', 'required' => false, 'label' => 'Mensaje de éxito'],
@@ -443,7 +443,7 @@ final class SiteBlockCatalogSeeder extends Seeder
                     'email_to' => '',
                     'fields' => [
                         ['name' => 'name', 'label' => 'Nombre', 'type' => 'text', 'required' => true],
-                        ['name' => 'email', 'label' => 'Email', 'type' => 'email', 'required' => true],
+                        ['name' => 'email', 'label' => 'Correo electrónico', 'type' => 'email', 'required' => true],
                         ['name' => 'message', 'label' => 'Mensaje', 'type' => 'textarea', 'required' => true],
                     ],
                     'submit_text' => 'Enviar',
@@ -459,7 +459,7 @@ final class SiteBlockCatalogSeeder extends Seeder
             ],
             [
                 'key' => 'reservation_widget',
-                'name' => 'Widget de Reservas',
+                'name' => 'Widget de reservas',
                 'description' => 'Formulario de reservas interactivo para el sitio web.',
                 'category' => 'interactive',
                 'icon' => 'calendar',

@@ -216,7 +216,7 @@ defineExpose({ submit });
                             required
                         />
                         <p class="text-xs text-muted-foreground">
-                            Calculado desde la duración del slot, editable.
+                            Se calcula según la duración del turno y se puede editar.
                         </p>
                         <p
                             v-if="errors?.end_at || timeRangeError"

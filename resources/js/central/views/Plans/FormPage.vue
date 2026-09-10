@@ -40,7 +40,7 @@ const confirmDialog = ref<InstanceType<typeof ConfirmDialog> | null>(null);
 
 const canManagePlan = computed(() => mode.value === "edit" && !!planId.value);
 const archiveLabel = computed(() =>
-    (currentPlan.value as any)?.is_active === false ? "Unarchive" : "Archive",
+    (currentPlan.value as any)?.is_active === false ? "Desarchivar" : "Archivar",
 );
 const isArchived = computed(
     () =>
@@ -103,7 +103,7 @@ const handleCancel = () => {
 };
 
 const pageTitle = computed(() =>
-    mode.value === "edit" ? "Edit Plan" : "Create Plan",
+    mode.value === "edit" ? "Editar plan" : "Crear plan",
 );
 
 const handleSave = () => {
@@ -115,7 +115,7 @@ const handleArchive = () => {
     const id = planId.value;
     confirmDialog.value?.show(
         `${archiveLabel.value} plan`,
-        `Are you sure you want to ${archiveLabel.value.toLowerCase()} this plan?`,
+        `¿Seguro que deseas ${archiveLabel.value.toLowerCase()} este plan?`,
         async () => {
             isLoading.value = true;
             try {
@@ -132,8 +132,8 @@ const handleDelete = () => {
     if (!planId.value) return;
     const id = planId.value;
     confirmDialog.value?.show(
-        "Delete plan",
-        "Are you sure you want to delete this plan? This action cannot be undone.",
+        "Eliminar plan",
+        "¿Seguro que deseas eliminar este plan? Esta acción no se puede deshacer.",
         async () => {
             isLoading.value = true;
             try {
@@ -148,8 +148,8 @@ const handleDelete = () => {
 
 // Breadcrumbs
 const breadcrumbs = computed(() => [
-    { label: "Plans", href: "/plans" },
-    { label: mode.value === "edit" ? "Edit Plan" : "Create Plan" },
+    { label: "Planes", href: "/plans" },
+    { label: mode.value === "edit" ? "Editar plan" : "Crear plan" },
 ]);
 </script>
 
@@ -161,7 +161,7 @@ const breadcrumbs = computed(() => [
                     variant="outline"
                     size="icon"
                     class="h-9 w-9"
-                    aria-label="Back"
+                    aria-label="Volver"
                     @click="handleCancel"
                 >
                     <ArrowLeft class="h-4 w-4" />
@@ -178,10 +178,10 @@ const breadcrumbs = computed(() => [
                     <Save class="mr-2 h-4 w-4" />
                     {{
                         isLoading
-                            ? "Saving..."
+                            ? "Guardando..."
                             : mode === "edit"
-                              ? "Update Plan"
-                              : "Create Plan"
+                              ? "Actualizar plan"
+                              : "Crear plan"
                     }}
                 </Button>
                 <DropdownMenu v-if="canManagePlan">
@@ -190,7 +190,7 @@ const breadcrumbs = computed(() => [
                             variant="outline"
                             size="icon"
                             class="h-9 w-9"
-                            aria-label="Plan settings"
+                            aria-label="Configuración del plan"
                         >
                             <Settings2 class="h-4 w-4" />
                         </Button>
@@ -210,7 +210,7 @@ const breadcrumbs = computed(() => [
                             @click="handleDelete"
                         >
                             <Trash2 class="mr-2 h-4 w-4" />
-                            Delete
+                            Eliminar
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

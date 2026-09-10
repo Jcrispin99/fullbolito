@@ -49,7 +49,7 @@ const COLUMN_STORAGE_KEY = "modules_table_columns";
 const columnOptions: { key: ColumnKey; label: string }[] = [
     { key: "label", label: "Nombre" },
     { key: "key", label: "Clave" },
-    { key: "addon_price", label: "Precio addon" },
+    { key: "addon_price", label: "Precio adicional" },
     { key: "is_addon", label: "Tipo" },
     { key: "status", label: "Estado" },
 ];
@@ -238,7 +238,7 @@ const handleBatchToggleStatus = () => {
                             </TableHead>
                             <TableHead v-if="columnVisibility.label">Nombre</TableHead>
                             <TableHead v-if="columnVisibility.key">Clave</TableHead>
-                            <TableHead v-if="columnVisibility.addon_price">Precio addon</TableHead>
+                            <TableHead v-if="columnVisibility.addon_price">Precio adicional</TableHead>
                             <TableHead v-if="columnVisibility.is_addon">Tipo</TableHead>
                             <TableHead v-if="columnVisibility.status">Estado</TableHead>
                             <TableColumnSettingsHead
@@ -274,7 +274,7 @@ const handleBatchToggleStatus = () => {
                                 <code class="text-xs bg-muted px-1.5 py-0.5 rounded">{{ module.key }}</code>
                             </TableCell>
                             <TableCell v-if="columnVisibility.addon_price">
-                                <span v-if="module.addon_price > 0">${{ module.addon_price }}</span>
+                                <span v-if="module.addon_price > 0">S/ {{ Number(module.addon_price).toFixed(2) }}</span>
                                 <span v-else class="text-muted-foreground">—</span>
                             </TableCell>
                             <TableCell v-if="columnVisibility.is_addon">
@@ -286,7 +286,7 @@ const handleBatchToggleStatus = () => {
                                             : 'bg-gray-100 text-gray-800',
                                     ]"
                                 >
-                                    {{ module.is_addon ? "Addon" : "Core" }}
+                                    {{ module.is_addon ? "Complemento" : "Incluido" }}
                                 </span>
                             </TableCell>
                             <TableCell v-if="columnVisibility.status">

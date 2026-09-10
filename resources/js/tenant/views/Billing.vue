@@ -89,7 +89,7 @@ async function upgradeTo(slug: string) {
             window.location.href = data.data.checkout_url;
         }
     } catch (err: any) {
-        error.value = err?.response?.data?.message ?? "No se pudo iniciar el checkout";
+        error.value = err?.response?.data?.message ?? "No se pudo iniciar el proceso de pago";
     } finally {
         actionLoading.value = false;
     }
@@ -148,7 +148,7 @@ onMounted(load);
             <div>
                 <h1 class="text-2xl font-bold">Mi suscripción</h1>
                 <p class="text-muted-foreground text-sm">
-                    Gestioná tu plan y tus pagos.
+                    Gestiona tu plan y tus pagos.
                 </p>
             </div>
 

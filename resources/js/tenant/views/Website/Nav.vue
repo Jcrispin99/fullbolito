@@ -35,7 +35,7 @@ async function addItem() {
           </div>
         </section>
         <section>
-          <h2 class="text-lg font-semibold mb-4">Items del menú</h2>
+          <h2 class="text-lg font-semibold mb-4">Elementos del menú</h2>
           <div class="space-y-2 mb-4">
             <div v-for="item in headerNav.items" :key="item.id" class="flex items-center justify-between p-3 border rounded-lg">
               <div class="flex items-center gap-3">
@@ -48,7 +48,7 @@ async function addItem() {
           </div>
           <div class="flex items-end gap-2">
             <div class="flex-1">
-              <label class="block text-xs font-medium mb-1">Label</label>
+              <label class="block text-xs font-medium mb-1">Etiqueta</label>
               <input v-model="newLabel" type="text" class="w-full px-3 py-2 border rounded text-sm bg-background" placeholder="Ej: Menú" />
             </div>
             <div class="w-24">
@@ -56,11 +56,11 @@ async function addItem() {
               <select v-model="newType" class="w-full px-2 py-2 border rounded text-sm bg-background">
                 <option value="page">Página</option>
                 <option value="url">URL</option>
-                <option value="anchor">Anchor</option>
+                <option value="anchor">Ancla</option>
               </select>
             </div>
             <div class="flex-1">
-              <label class="block text-xs font-medium mb-1">Target</label>
+              <label class="block text-xs font-medium mb-1">Destino</label>
               <input v-model="newTarget" type="text" class="w-full px-3 py-2 border rounded text-sm bg-background" placeholder="Ej: menu" />
             </div>
             <button class="px-4 py-2 bg-primary text-primary-foreground rounded text-sm hover:bg-primary/90" :disabled="!newLabel || !newTarget" @click="addItem">Agregar</button>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Saas_Base - Central</title>
+    <title>{{ ucfirst((string) config('app.name', 'Fullbolito')) }}</title>
     @vite('resources/js/central/main.ts')
 </head>
 <body>

@@ -156,7 +156,7 @@ const customerLabel = (
 
 const statusFilterLabel = computed(() => {
     if (!currentStatus.value) return "Todos los estados";
-    if (currentStatus.value === "blocking") return "Bloquean slot";
+    if (currentStatus.value === "blocking") return "Bloquean horario";
     return statusMeta(currentStatus.value).label;
 });
 
@@ -305,7 +305,7 @@ const handleBatchDelete = () => {
                             <DropdownMenuItem
                                 @click="setStatusFilter('blocking')"
                             >
-                                Solo activas (bloquean slot)
+                                Solo activas (bloquean horario)
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem

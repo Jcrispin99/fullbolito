@@ -64,7 +64,7 @@ const toggleModule = (id: number, checked: boolean) => {
 const moduleListLabel = computed(() =>
     form.value.includes_all_modules
         ? "Este plan incluye automáticamente todos los módulos activos."
-        : `Selección manual (${form.value.module_ids.length} módulo(s))`,
+        : `Selección manual (${form.value.module_ids.length} ${form.value.module_ids.length === 1 ? "módulo" : "módulos"})`,
 );
 
 const submit = () => {
@@ -90,7 +90,7 @@ defineExpose({ submit });
                         <Input
                             id="name"
                             v-model="form.name"
-                            placeholder="ej. Plan Básico"
+                            placeholder="p. ej., Plan Básico"
                             required
                         />
                         <p v-if="errors?.name" class="text-sm text-destructive">
@@ -103,7 +103,7 @@ defineExpose({ submit });
                         <Input
                             id="slug"
                             v-model="form.slug"
-                            placeholder="ej. basico-mensual"
+                            placeholder="p. ej., basico-mensual"
                             required
                         />
                         <p v-if="errors?.slug" class="text-sm text-destructive">
@@ -168,8 +168,8 @@ defineExpose({ submit });
                                 Incluir todos los módulos activos
                             </Label>
                             <p class="text-xs text-muted-foreground">
-                                Los planes &laquo;wildcard&raquo; otorgan
-                                acceso a todo módulo activo automáticamente,
+                                Los planes con acceso total incluyen
+                                automáticamente todos los módulos activos,
                                 incluso a módulos creados en el futuro.
                             </p>
                         </div>

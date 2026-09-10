@@ -47,7 +47,7 @@ async function handleLogin() {
       <div class="flex flex-col gap-1.5 text-left">
         <h2 class="text-2xl font-bold tracking-tight">Bienvenido de vuelta</h2>
         <p class="text-muted-foreground text-sm">
-          Ingresá tus credenciales para continuar.
+          Ingresa tus credenciales para continuar.
         </p>
       </div>
 
@@ -60,12 +60,12 @@ async function handleLogin() {
       </div>
 
       <Field>
-        <FieldLabel for="email">Email</FieldLabel>
+        <FieldLabel for="email">Correo electrónico</FieldLabel>
         <Input
           id="email"
           v-model="email"
           type="email"
-          placeholder="admin@saas-restop.com"
+          placeholder="admin@fullbolito.com"
           autocomplete="email"
           required
         />
@@ -99,7 +99,7 @@ async function handleLogin() {
       </Field>
 
       <FieldDescription class="text-center">
-        ¿No tenés cuenta?
+        ¿No tienes cuenta?
         <RouterLink :to="{ name: 'Register' }" class="font-medium text-foreground underline-offset-4 hover:underline">
           Crear cuenta
         </RouterLink>

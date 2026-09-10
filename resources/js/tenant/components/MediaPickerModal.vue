@@ -170,7 +170,7 @@ function formatSize(bytes: number): string {
               <svg class="w-12 h-12 mx-auto mb-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
               </svg>
-              <p class="text-sm font-medium mb-1">{{ mediaStore.isUploading ? 'Subiendo...' : 'Click para subir' }}</p>
+              <p class="text-sm font-medium mb-1">{{ mediaStore.isUploading ? 'Subiendo...' : 'Haz clic para subir' }}</p>
               <p class="text-xs text-muted-foreground">JPG, PNG, WebP, GIF, SVG, MP4 (max 10MB)</p>
             </div>
             <input ref="fileInput" type="file" class="hidden" accept="image/*,video/*" multiple @change="handleUpload" />

@@ -48,7 +48,7 @@ const confirmDialog = ref<InstanceType<typeof ConfirmDialog> | null>(null);
 
 const canManageCustomer = computed(() => mode.value === "edit" && !!customerId.value);
 const archiveLabel = computed(() =>
-    (currentCustomer.value as any)?.status === 'inactive' ? "Activate" : "Deactivate",
+    (currentCustomer.value as any)?.status === 'inactive' ? "Activar" : "Desactivar",
 );
 const isArchived = computed(
     () =>
@@ -86,13 +86,13 @@ const handleSubmit = async (formData: any) => {
     try {
         if (mode.value === "edit" && customerId.value) {
             await apiClient.patch(`/v1/customers/${customerId.value}`, formData);
-            toast.success("Customer updated", {
-                description: "The customer was successfully updated.",
+            toast.success("Cliente actualizado", {
+                description: "El cliente se actualizó correctamente.",
             });
         } else {
             const { data } = await apiClient.post<any>("/v1/customers", formData);
-            toast.success("Customer created", {
-                description: "The customer was successfully created.",
+            toast.success("Cliente creado", {
+                description: "El cliente se creó correctamente.",
             });
             // Optionally redirect to edit or customers list
             router.push(`/admin/customers/${data.data.id}/edit`);
@@ -106,10 +106,10 @@ const handleSubmit = async (formData: any) => {
                 flat[k] = Array.isArray(v) ? v[0] : String(v);
             });
             errors.value = flat;
-            toast.error("Please correctly fill in the required fields");
+            toast.error("Completa correctamente los campos obligatorios");
         } else {
             console.error("Error saving customer:", err);
-            toast.error("An error occurred while saving the customer");
+            toast.error("Ocurrió un error al guardar el cliente");
         }
     } finally {
         isLoading.value = false;
@@ -121,7 +121,7 @@ const handleCancel = () => {
 };
 
 const pageTitle = computed(() =>
-    mode.value === "edit" ? "Edit Customer" : "Create Customer",
+    mode.value === "edit" ? "Editar cliente" : "Crear cliente",
 );
 
 const handleSave = () => {
@@ -132,8 +132,8 @@ const handleArchive = () => {
     if (!customerId.value) return;
     const id = customerId.value;
     confirmDialog.value?.show(
-        `${archiveLabel.value} customer`,
-        `Are you sure you want to ${archiveLabel.value.toLowerCase()} this customer?`,
+        `${archiveLabel.value} cliente`,
+        `¿Confirmas que deseas ${archiveLabel.value.toLowerCase()} este cliente?`,
         async () => {
             isLoading.value = true;
             try {
@@ -150,8 +150,8 @@ const handleDelete = () => {
     if (!customerId.value) return;
     const id = customerId.value;
     confirmDialog.value?.show(
-        "Delete customer",
-        "Are you sure you want to delete this customer? This action cannot be undone.",
+        "Eliminar cliente",
+        "¿Confirmas que deseas eliminar este cliente? Esta acción no se puede deshacer.",
         async () => {
             isLoading.value = true;
             try {
@@ -166,8 +166,8 @@ const handleDelete = () => {
 
 // Breadcrumbs
 const breadcrumbs = computed(() => [
-    { label: "Customers", href: "/admin/customers" },
-    { label: mode.value === "edit" ? "Edit Customer" : "Create Customer" },
+    { label: "Clientes", href: "/admin/customers" },
+    { label: mode.value === "edit" ? "Editar cliente" : "Crear cliente" },
 ]);
 </script>
 
@@ -179,7 +179,7 @@ const breadcrumbs = computed(() => [
                     variant="outline"
                     size="icon"
                     class="h-9 w-9"
-                    aria-label="Back"
+                    aria-label="Volver"
                     @click="handleCancel"
                 >
                     <ArrowLeft class="h-4 w-4" />
@@ -196,10 +196,10 @@ const breadcrumbs = computed(() => [
                     <Save class="mr-2 h-4 w-4" />
                     {{
                         isLoading
-                            ? "Saving..."
+                            ? "Guardando..."
                             : mode === "edit"
-                              ? "Update Customer"
-                              : "Create Customer"
+                              ? "Actualizar cliente"
+                              : "Crear cliente"
                     }}
                 </Button>
                 <DropdownMenu v-if="canManageCustomer">
@@ -208,13 +208,13 @@ const breadcrumbs = computed(() => [
                             variant="outline"
                             size="icon"
                             class="h-9 w-9"
-                            aria-label="Customer settings"
+                            aria-label="Opciones del cliente"
                         >
                             <Settings2 class="h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" class="w-[200px]">
-                        <DropdownMenuLabel>Customer Options</DropdownMenuLabel>
+                        <DropdownMenuLabel>Opciones del cliente</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem @click="handleArchive">
                             <Archive
@@ -228,7 +228,7 @@ const breadcrumbs = computed(() => [
                             @click="handleDelete"
                         >
                             <Trash2 class="mr-2 h-4 w-4" />
-                            Delete
+                            Eliminar
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

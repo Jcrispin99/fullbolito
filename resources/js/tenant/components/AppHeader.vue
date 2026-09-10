@@ -86,7 +86,7 @@ const isDirectActive = (url: string) => matchesUrl(url);
 
             <div class="flex items-center gap-2 cursor-pointer shrink-0" @click="activeApp ? router.push(activeApp.defaultRoute) : null">
                 <component v-if="activeApp?.icon" :is="activeApp.icon" class="w-6 h-6 text-gray-700" />
-                <span class="text-[15px] font-semibold text-foreground">{{ activeApp?.title || 'Odoo' }}</span>
+                <span class="text-[15px] font-semibold text-foreground">{{ activeApp?.title || 'Fullbolito' }}</span>
             </div>
 
             <!-- Dynamic Submenus (inline, left-aligned) -->
@@ -141,7 +141,7 @@ const isDirectActive = (url: string) => matchesUrl(url);
                         <Avatar shape="square" class="h-7 w-7 cursor-pointer shadow-sm">
                             <AvatarImage
                                 :src="(user as any)?.avatar_url ?? ''"
-                                :alt="user?.name ?? 'User'"
+                                :alt="user?.name ?? 'Usuario'"
                             />
                             <AvatarFallback class="rounded bg-secondary text-secondary-foreground text-xs font-medium">
                                 {{ user?.name?.charAt(0)?.toUpperCase() || 'U' }}
@@ -156,11 +156,11 @@ const isDirectActive = (url: string) => matchesUrl(url);
                             </div>
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem @click="router.push('/profile')">Profile</DropdownMenuItem>
-                        <DropdownMenuItem @click="router.push('/admin/apps')">Apps &amp; Plan</DropdownMenuItem>
-                        <DropdownMenuItem @click="router.push('/admin/billing')">Billing</DropdownMenuItem>
+                        <DropdownMenuItem @click="router.push('/profile')">Perfil</DropdownMenuItem>
+                        <DropdownMenuItem @click="router.push('/admin/apps')">Aplicaciones y plan</DropdownMenuItem>
+                        <DropdownMenuItem @click="router.push('/admin/billing')">Facturación</DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem @click="handleLogout" class="text-destructive">Log out</DropdownMenuItem>
+                        <DropdownMenuItem @click="handleLogout" class="text-destructive">Cerrar sesión</DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>

@@ -35,7 +35,7 @@ export const useBlockCatalogStore = defineStore('tenant-block-catalog', () => {
     { key: 'headers', label: 'Headers' },
     { key: 'content', label: 'Contenido' },
     { key: 'media', label: 'Media' },
-    { key: 'grids', label: 'Grillas' },
+    { key: 'grids', label: 'Cuadrículas' },
     { key: 'interactive', label: 'Interactivo' },
     { key: 'commerce', label: 'Comercio' },
   ]

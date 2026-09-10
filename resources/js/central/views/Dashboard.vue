@@ -96,7 +96,7 @@ onMounted(load)
 <template>
   <DashboardLayout
     :title="`${greeting}, ${userFirstName}`"
-    :description="isSuperAdmin ? 'Vista global de la plataforma.' : 'Resumen de tus workspaces.'"
+    :description="isSuperAdmin ? 'Vista global de la plataforma.' : 'Resumen de tus espacios de trabajo.'"
   >
     <template #actions>
       <Button v-if="isSuperAdmin" variant="outline" @click="router.push({ name: 'Plans' })">
@@ -104,7 +104,7 @@ onMounted(load)
       </Button>
       <Button @click="router.push({ name: 'TenantsCreate' })">
         <Plus class="size-4" />
-        Crear tenant
+        Crear negocio
       </Button>
     </template>
 
@@ -118,7 +118,7 @@ onMounted(load)
           <div class="pointer-events-none absolute -top-10 -right-10 size-32 rounded-full bg-primary/10 blur-2xl"></div>
           <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle class="text-sm font-medium text-muted-foreground">
-              {{ isSuperAdmin ? 'Tenants totales' : 'Mis tenants' }}
+              {{ isSuperAdmin ? 'Negocios totales' : 'Mis negocios' }}
             </CardTitle>
             <div class="grid size-8 place-items-center rounded-md bg-primary/10 text-primary">
               <Building2 class="size-4" />
@@ -127,7 +127,7 @@ onMounted(load)
           <CardContent>
             <div class="text-3xl font-bold tracking-tight">{{ totalTenants }}</div>
             <CardDescription class="mt-1">
-              {{ isSuperAdmin ? 'Workspaces provisionados' : 'Workspaces que controlás' }}
+              {{ isSuperAdmin ? 'Espacios de trabajo creados' : 'Espacios de trabajo que administras' }}
             </CardDescription>
           </CardContent>
         </Card>
@@ -142,14 +142,14 @@ onMounted(load)
           </CardHeader>
           <CardContent>
             <div class="text-3xl font-bold tracking-tight">{{ summary?.active_count ?? 0 }}</div>
-            <CardDescription class="mt-1">Suscripciones pagas</CardDescription>
+            <CardDescription class="mt-1">Suscripciones de pago</CardDescription>
           </CardContent>
         </Card>
 
         <Card v-if="isSuperAdmin" class="relative overflow-hidden">
           <div class="pointer-events-none absolute -top-10 -right-10 size-32 rounded-full bg-blue-500/10 blur-2xl"></div>
           <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle class="text-sm font-medium text-muted-foreground">En trial</CardTitle>
+            <CardTitle class="text-sm font-medium text-muted-foreground">En prueba</CardTitle>
             <div class="grid size-8 place-items-center rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400">
               <Clock class="size-4" />
             </div>
@@ -180,8 +180,8 @@ onMounted(load)
       <Card class="overflow-hidden">
         <CardHeader class="flex flex-row items-center justify-between space-y-0">
           <div>
-            <CardTitle>{{ isSuperAdmin ? 'Tenants recientes' : 'Mis tenants' }}</CardTitle>
-            <CardDescription>Los últimos {{ tenants.length }} workspaces.</CardDescription>
+            <CardTitle>{{ isSuperAdmin ? 'Negocios recientes' : 'Mis negocios' }}</CardTitle>
+            <CardDescription>Los últimos {{ tenants.length }} espacios de trabajo.</CardDescription>
           </div>
           <Button variant="ghost" size="sm" @click="router.push({ name: 'TenantList' })">
             Ver todos
@@ -190,13 +190,13 @@ onMounted(load)
         </CardHeader>
         <CardContent class="p-0">
           <div v-if="!tenants.length" class="px-6 py-12 text-center text-sm text-muted-foreground">
-            Todavía no tenés tenants. Creá el primero para empezar.
+            Aún no tienes espacios de trabajo. Crea el primero para empezar.
           </div>
           <table v-else class="w-full text-sm">
             <thead>
               <tr class="border-y border-border/60 bg-muted/40 text-left text-xs uppercase tracking-wide text-muted-foreground">
                 <th class="px-6 py-2.5 font-medium">Negocio</th>
-                <th class="px-6 py-2.5 font-medium">Email</th>
+                <th class="px-6 py-2.5 font-medium">Correo electrónico</th>
                 <th class="px-6 py-2.5 font-medium">Creado</th>
                 <th class="px-6 py-2.5 font-medium">ID</th>
               </tr>

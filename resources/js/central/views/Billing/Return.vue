@@ -20,7 +20,7 @@ const tenantId = computed(() => (route.query.tenant as string | undefined) ?? ""
             <template v-else>
                 <h1 class="text-2xl font-semibold text-amber-600">Pago cancelado</h1>
                 <p class="mt-3 text-sm text-muted-foreground">
-                    No se procesó ningún cargo. Podés intentarlo de nuevo cuando
+                    No se procesó ningún cargo. Puedes intentarlo de nuevo cuando
                     quieras.
                 </p>
             </template>

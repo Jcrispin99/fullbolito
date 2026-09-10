@@ -111,11 +111,11 @@ defineExpose({ submit });
             <form @submit.prevent="submit" class="space-y-6">
                 <div class="grid gap-4 md:grid-cols-2">
                     <div class="space-y-2">
-                        <Label htmlFor="id">Tenant ID</Label>
+                        <Label htmlFor="id">ID del negocio</Label>
                         <Input
                             id="id"
                             v-model="form.id"
-                            placeholder="e.g. acme"
+                            placeholder="p. ej., los-andes"
                             :disabled="mode === 'edit' || isLoading"
                             :required="mode === 'create'"
                         />
@@ -126,13 +126,13 @@ defineExpose({ submit });
 
                     <div class="space-y-2">
                         <Label htmlFor="user_id"
-                            >Owner User ID (Optional)</Label
+                            >ID del usuario propietario (opcional)</Label
                         >
                         <Input
                             id="user_id"
                             v-model="userIdModel"
                             type="number"
-                            placeholder="e.g. 1"
+                            placeholder="p. ej., 1"
                             :disabled="isLoading"
                         />
                         <p
@@ -146,11 +146,11 @@ defineExpose({ submit });
 
                 <div class="grid gap-4 md:grid-cols-2">
                     <div class="space-y-2">
-                        <Label htmlFor="business_name">Business Name</Label>
+                        <Label htmlFor="business_name">Nombre del negocio</Label>
                         <Input
                             id="business_name"
                             v-model="form.business_name"
-                            placeholder="e.g. Acme Inc"
+                            placeholder="p. ej., Complejo Deportivo Los Andes"
                             :disabled="isLoading"
                             required
                         />
@@ -163,12 +163,12 @@ defineExpose({ submit });
                     </div>
 
                     <div class="space-y-2">
-                        <Label htmlFor="owner_email">Owner Email</Label>
+                        <Label htmlFor="owner_email">Correo electrónico del propietario</Label>
                         <Input
                             id="owner_email"
                             v-model="form.owner_email"
                             type="email"
-                            placeholder="e.g. owner@acme.com"
+                            placeholder="p. ej., propietario@ejemplo.com"
                             :disabled="isLoading"
                             required
                         />
@@ -184,12 +184,12 @@ defineExpose({ submit });
                 <div class="grid gap-4 md:grid-cols-2">
                     <div class="space-y-2">
                         <Label htmlFor="owner_phone"
-                            >Owner Phone (Optional)</Label
+                            >Teléfono del propietario (opcional)</Label
                         >
                         <Input
                             id="owner_phone"
                             v-model="form.owner_phone"
-                            placeholder="e.g. +1234567890"
+                            placeholder="p. ej., +51 999 999 999"
                             :disabled="isLoading"
                         />
                         <p
@@ -201,11 +201,11 @@ defineExpose({ submit });
                     </div>
 
                     <div class="space-y-2">
-                        <Label htmlFor="domains">Domains</Label>
+                        <Label htmlFor="domains">Dominios</Label>
                         <Textarea
                             id="domains"
                             v-model="form.domainsText"
-                            placeholder="one per line (or comma-separated)"
+                            placeholder="Uno por línea o separados por comas"
                             :disabled="isLoading"
                             required
                         />

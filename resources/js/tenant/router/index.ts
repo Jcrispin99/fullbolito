@@ -2,7 +2,7 @@ import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import { useAuthStore } from '@tenant/stores/auth'
 import { useActiveAppStore } from '@tenant/stores/activeApp'
 import { useFeatures } from '@tenant/composables/useFeatures'
-import { installNavigationProgress } from '@/lib/navigationProgress'
+import { installNavigationLoading } from '@/lib/navigationLoading'
 
 const routes: RouteRecordRaw[] = [
   // ─── Auth ─────────────────────────────────────────────────
@@ -584,7 +584,7 @@ const router = createRouter({
   routes,
 })
 
-installNavigationProgress(router)
+installNavigationLoading(router)
 
 router.beforeEach(async (to) => {
   const authStore = useAuthStore()

@@ -5,7 +5,7 @@ import {
 } from "vue-router";
 import { useAuthStore } from "@central/stores/auth";
 import type { User } from "@/types/models";
-import { installNavigationProgress } from "@/lib/navigationProgress";
+import { installNavigationLoading } from "@/lib/navigationLoading";
 
 const routes: RouteRecordRaw[] = [
     {
@@ -142,7 +142,7 @@ const router = createRouter({
     routes,
 });
 
-installNavigationProgress(router);
+installNavigationLoading(router);
 
 router.beforeEach(async (to) => {
     const authStore = useAuthStore();

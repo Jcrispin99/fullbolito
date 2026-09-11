@@ -14,9 +14,6 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --bprogress-color: var(--primary);
-  --bprogress-height: 3px;
-  --bprogress-box-shadow: 0 0 12px color-mix(in oklch, var(--primary) 75%, transparent), 0 0 5px var(--primary);
   --background: oklch(1.0000 0 0);
   --foreground: oklch(0.1452 0.0021 286.1313);
   --card: oklch(0.9842 0.0034 247.8575);
@@ -69,31 +66,6 @@
   --shadow-2xl: 0px 4px 15px 0px hsl(0 0% 0% / 0.13);
   --tracking-normal: -0.01em;
   --spacing: 0.25rem;
-}
-
-/* Global route-change indicator shared by the central and tenant SPAs. */
-.bprogress .bar {
-  background: linear-gradient(90deg, var(--primary), var(--secondary), var(--primary));
-  background-size: 200% 100%;
-  animation: route-progress-shimmer 1.2s linear infinite;
-}
-
-.bprogress .peg {
-  width: 140px;
-  box-shadow: var(--bprogress-box-shadow);
-}
-
-@keyframes route-progress-shimmer {
-  to {
-    background-position: -200% 0;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .bprogress .bar {
-    animation: none;
-    transition-duration: 1ms !important;
-  }
 }
 
 .dark {

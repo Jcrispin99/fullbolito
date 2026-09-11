@@ -17,6 +17,30 @@ use Illuminate\Http\Request;
 
 final class PublicSiteController extends ApiController
 {
+    public function bootstrap(): JsonResponse
+    {
+        $site = Site::query()->with(['activeTheme', 'navs.rootItems.children'])->first();
+
+        if (! $site) {
+            return $this->notFound('Sitio no encontrado.');
+        }
+
+        $homepage = $site->pages()
+            ->published()
+            ->homepage()
+            ->with('sections')
+            ->first();
+
+        if (! $homepage) {
+            return $this->notFound('Página de inicio no encontrada.');
+        }
+
+        return $this->success([
+            'site' => $this->siteData($site),
+            'page' => new SitePageResource($homepage),
+        ]);
+    }
+
     public function site(): JsonResponse
     {
         $site = Site::query()->with(['activeTheme', 'navs.rootItems.children'])->first();
@@ -25,12 +49,7 @@ final class PublicSiteController extends ApiController
             return $this->notFound('Sitio no encontrado.');
         }
 
-        return $this->success([
-            'name' => $site->name,
-            'status' => $site->status,
-            'theme' => $site->activeTheme ? new SiteThemeResource($site->activeTheme) : null,
-            'navs' => SiteNavResource::collection($site->navs),
-        ]);
+        return $this->success($this->siteData($site));
     }
 
     public function pages(): JsonResponse
@@ -110,5 +129,16 @@ final class PublicSiteController extends ApiController
         ]);
 
         return $this->created(['id' => $submission->id]);
+    }
+
+    /** @return array<string, mixed> */
+    private function siteData(Site $site): array
+    {
+        return [
+            'name' => $site->name,
+            'status' => $site->status,
+            'theme' => $site->activeTheme ? new SiteThemeResource($site->activeTheme) : null,
+            'navs' => SiteNavResource::collection($site->navs),
+        ];
     }
 }

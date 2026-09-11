@@ -3,15 +3,48 @@ import { ref } from 'vue'
 import { apiClient } from '@tenant/lib/api'
 import type { PublicSiteData, SitePage } from '@/types/builder'
 
+interface PublicSiteBootstrap {
+  site: PublicSiteData
+  page: SitePage
+}
+
 export const usePublicSiteStore = defineStore('tenant-public-site', () => {
   const siteData = ref<PublicSiteData | null>(null)
   const currentPage = ref<SitePage | null>(null)
   const publishedPages = ref<{ id: number; title: string; slug: string; is_homepage: boolean }[]>([])
   const isLoading = ref(false)
   const error = ref<string | null>(null)
+  let pendingRequests = 0
+
+  function startLoading() {
+    pendingRequests += 1
+    isLoading.value = true
+  }
+
+  function finishLoading() {
+    pendingRequests = Math.max(0, pendingRequests - 1)
+    isLoading.value = pendingRequests > 0
+  }
+
+  async function fetchHomepage() {
+    startLoading()
+    error.value = null
+    currentPage.value = null
+    try {
+      const { data } = await apiClient.get<PublicSiteBootstrap>('/v1/public/bootstrap')
+      siteData.value = data.data.site
+      currentPage.value = data.data.page
+      return data.data
+    } catch (err: any) {
+      error.value = err.response?.data?.message || 'Error loading homepage'
+      return null
+    } finally {
+      finishLoading()
+    }
+  }
 
   async function fetchSite() {
-    isLoading.value = true
+    startLoading()
     error.value = null
     try {
       const { data } = await apiClient.get<any>('/v1/public/site')
@@ -19,7 +52,7 @@ export const usePublicSiteStore = defineStore('tenant-public-site', () => {
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Error loading site'
     } finally {
-      isLoading.value = false
+      finishLoading()
     }
   }
 
@@ -33,7 +66,7 @@ export const usePublicSiteStore = defineStore('tenant-public-site', () => {
   }
 
   async function fetchPageBySlug(slug: string) {
-    isLoading.value = true
+    startLoading()
     error.value = null
     currentPage.value = null
     try {
@@ -44,7 +77,7 @@ export const usePublicSiteStore = defineStore('tenant-public-site', () => {
       error.value = err.response?.data?.message || 'Page not found'
       return null
     } finally {
-      isLoading.value = false
+      finishLoading()
     }
   }
 
@@ -54,6 +87,7 @@ export const usePublicSiteStore = defineStore('tenant-public-site', () => {
     publishedPages,
     isLoading,
     error,
+    fetchHomepage,
     fetchSite,
     fetchPublishedPages,
     fetchPageBySlug,

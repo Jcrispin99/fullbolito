@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { onMounted, computed } from 'vue'
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@tenant/stores/auth'
 import { usePublicSiteStore } from '@tenant/stores/publicSite'
 import { useBuilderPageStore } from '@tenant/stores/builderPage'
-import { useBlockCatalogStore } from '@tenant/stores/blockCatalog'
 import { useEditorModeStore } from '@tenant/stores/editorMode'
 import AdminToolbar from '@tenant/components/AdminToolbar.vue'
 
@@ -16,7 +15,6 @@ const router = useRouter()
 const authStore = useAuthStore()
 const publicSite = usePublicSiteStore()
 const pageStore = useBuilderPageStore()
-const catalogStore = useBlockCatalogStore()
 const editorMode = useEditorModeStore()
 
 const isAuth = computed(() => authStore.isAuthenticated)
@@ -26,18 +24,6 @@ const headerNav = computed(() => {
 })
 
 const siteName = computed(() => publicSite.siteData?.name || '')
-
-onMounted(async () => {
-  if (!publicSite.siteData) {
-    await publicSite.fetchSite()
-  }
-  if (isAuth.value) {
-    await Promise.all([
-      pageStore.fetchPages(1, 50),
-      catalogStore.fetchBlockTypes(),
-    ])
-  }
-})
 
 function navigateTo(item: { type: string; target: string; open_new_tab: boolean }) {
   if (item.open_new_tab) {

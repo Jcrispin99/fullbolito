@@ -43,12 +43,16 @@ const sections = computed(() => {
 })
 
 onMounted(async () => {
-  await publicSite.fetchSite()
   if (isAuth.value) {
-    await Promise.all([pageStore.fetchPages(1, 50), siteConfig.fetchSite(), catalogStore.fetchBlockTypes()])
+    await Promise.all([
+      publicSite.fetchSite(),
+      pageStore.fetchPages(1, 50),
+      siteConfig.fetchSite(),
+      catalogStore.fetchBlockTypes(),
+    ])
     if (homepage.value) await sectionStore.fetchSections(homepage.value.id)
   } else {
-    await publicSite.fetchPageBySlug('home')
+    await publicSite.fetchHomepage()
   }
 })
 

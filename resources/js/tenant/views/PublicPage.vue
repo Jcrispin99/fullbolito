@@ -57,9 +57,19 @@ async function loadPage() {
 }
 
 onMounted(async () => {
-  if (!publicSite.siteData) await publicSite.fetchSite()
-  if (isAuth.value) await Promise.all([siteConfig.fetchSite(), catalogStore.fetchBlockTypes()])
-  await loadPage()
+  if (isAuth.value) {
+    await Promise.all([
+      publicSite.siteData ? Promise.resolve() : publicSite.fetchSite(),
+      siteConfig.fetchSite(),
+      catalogStore.fetchBlockTypes(),
+    ])
+    await loadPage()
+  } else {
+    await Promise.all([
+      publicSite.siteData ? Promise.resolve() : publicSite.fetchSite(),
+      publicSite.fetchPageBySlug(slug.value),
+    ])
+  }
 })
 
 watch(slug, () => { sectionStore.clearSections(); loadPage() })

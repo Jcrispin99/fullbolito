@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::prefix('v1/public')->group(function () {
+    Route::get('bootstrap', [PublicSiteController::class, 'bootstrap'])
+        ->name('tenant.public.bootstrap');
     Route::get('site', [PublicSiteController::class, 'site'])
         ->name('tenant.public.site');
     Route::get('pages', [PublicSiteController::class, 'pages'])

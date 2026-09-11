@@ -19,16 +19,26 @@ const routes: RouteRecordRaw[] = [
         component: () => import("@central/views/Marketplace/index.vue"),
     },
     {
-        path: "/login",
-        name: "Login",
-        component: () => import("@central/views/Login/index.vue"),
-        meta: { requiresGuest: true },
-    },
-    {
-        path: "/register",
-        name: "Register",
-        component: () => import("@central/views/Register/index.vue"),
-        meta: { requiresGuest: true },
+        path: "/auth",
+        component: () => import("@central/layouts/AuthLayout.vue"),
+        children: [
+            {
+                path: "",
+                redirect: { name: "Login" },
+            },
+            {
+                path: "/login",
+                name: "Login",
+                component: () => import("@central/views/Login/index.vue"),
+                meta: { requiresGuest: true, authScreen: true },
+            },
+            {
+                path: "/register",
+                name: "Register",
+                component: () => import("@central/views/Register/index.vue"),
+                meta: { requiresGuest: true, authScreen: true },
+            },
+        ],
     },
     {
         path: "/dashboard",

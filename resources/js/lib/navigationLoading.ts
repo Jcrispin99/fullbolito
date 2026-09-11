@@ -10,7 +10,9 @@ export const isNavigating = readonly(isNavigatingState)
  */
 export function installNavigationLoading(router: Router): void {
   router.beforeEach((to, from) => {
-    if (to.fullPath !== from.fullPath) {
+    const isAuthSwitch = to.meta.authScreen && from.meta.authScreen
+
+    if (to.fullPath !== from.fullPath && !isAuthSwitch) {
       isNavigatingState.value = true
     }
   })

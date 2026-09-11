@@ -4,8 +4,10 @@ import { RouterLink } from "vue-router"
 import { apiClient } from "@central/lib/api"
 import { useAuthStore } from "@central/stores/auth"
 import { Button } from "@/components/ui/button"
+import PublicFooter from "@central/components/PublicFooter.vue"
+import PublicHeader from "@central/components/PublicHeader.vue"
+import authSportsBackground from "../../../../images/auth-sports-complex.webp"
 import {
-  GalleryVerticalEnd,
   CalendarCheck,
   LayoutGrid,
   Wallet,
@@ -184,90 +186,53 @@ const mockGrid: number[][] = [
 </script>
 
 <template>
-  <div class="relative min-h-svh overflow-x-hidden bg-background text-foreground antialiased">
-    <header class="sticky top-0 z-40 border-b border-border/50 bg-background/80 backdrop-blur-md">
-      <div class="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-        <RouterLink :to="{ name: 'Home' }" class="flex items-center gap-2 font-semibold">
-          <div class="bg-primary text-primary-foreground flex size-8 items-center justify-center rounded-lg shadow-md shadow-primary/20">
-            <GalleryVerticalEnd class="size-4" />
-          </div>
-          <span>Fullbolito</span>
-        </RouterLink>
+  <div class="relative min-h-svh overflow-x-hidden bg-[#f4f7f5] text-foreground antialiased">
+    <PublicHeader active="home" />
 
-        <nav class="hidden items-center gap-7 text-sm text-muted-foreground md:flex">
-          <RouterLink :to="{ name: 'Marketplace' }" class="transition hover:text-foreground">Reservar cancha</RouterLink>
-          <a href="#features" class="transition hover:text-foreground">Producto</a>
-          <a href="#how" class="transition hover:text-foreground">Cómo funciona</a>
-          <a href="#pricing" class="transition hover:text-foreground">Planes</a>
-        </nav>
-
-        <div class="flex items-center gap-2">
-          <template v-if="isAuthenticated">
-            <Button as-child variant="ghost" size="sm">
-              <RouterLink :to="{ name: 'Dashboard' }">Ir al panel</RouterLink>
-            </Button>
-          </template>
-          <template v-else>
-            <Button as-child variant="ghost" size="sm">
-              <RouterLink :to="{ name: 'Login' }">Iniciar sesión</RouterLink>
-            </Button>
-            <Button as-child size="sm">
-              <RouterLink :to="{ name: 'Register' }">Empezar gratis</RouterLink>
-            </Button>
-          </template>
-        </div>
-      </div>
-    </header>
-
-    <section class="relative">
-      <div class="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        <div class="absolute -top-32 left-1/2 h-[520px] w-[820px] -translate-x-1/2 rounded-full bg-primary/15 blur-3xl"></div>
-        <div class="absolute top-40 -right-40 h-[480px] w-[480px] rounded-full bg-secondary/20 blur-3xl"></div>
-        <div
-          class="absolute inset-0 opacity-[0.05]"
-          style="background-image: radial-gradient(var(--foreground) 1px, transparent 1px); background-size: 28px 28px;"
-        ></div>
+    <section class="relative isolate overflow-hidden bg-[#04110c] text-white">
+      <div class="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden="true">
+        <img :src="authSportsBackground" alt="" class="size-full object-cover object-[center_58%] opacity-35" />
+        <div class="absolute inset-0 bg-gradient-to-b from-[#04110c]/65 via-[#04110c]/78 to-[#04110c]" />
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(45,212,191,0.13),transparent_42%)]" />
       </div>
 
-      <div class="mx-auto max-w-6xl px-6 pb-20 pt-20 text-center sm:pt-28">
-        <div class="mx-auto inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-medium text-primary">
-          <Sparkles class="size-3" />
-          Nuevo · Reservas en línea 24/7 sin llamadas ni mensajes de WhatsApp
+      <div class="mx-auto max-w-6xl px-5 pb-20 pt-16 text-center sm:px-6 sm:pb-24 sm:pt-24">
+        <div class="mx-auto inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.07] px-3 py-1.5 text-xs font-medium text-white/70 backdrop-blur-xl">
+          <Sparkles class="size-3.5 text-secondary" />
+          Gestión y reservas deportivas en un solo lugar
         </div>
 
-        <h1 class="mx-auto mt-6 max-w-3xl text-balance text-5xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
-          El sistema operativo<br>
-          <span class="bg-gradient-to-r from-primary via-primary to-secondary bg-clip-text text-transparent">
-            de tu complejo deportivo.
-          </span>
+        <h1 class="mx-auto mt-6 max-w-4xl text-balance text-5xl font-bold leading-[1.02] tracking-tight sm:text-6xl lg:text-7xl">
+          Tu complejo lleno.<br>
+          <span class="text-primary">Tu operación bajo control.</span>
         </h1>
 
-        <p class="mx-auto mt-6 max-w-2xl text-balance text-base text-muted-foreground sm:text-lg">
-          Administra canchas, horarios, reservas y pagos desde un solo lugar. Tus clientes reservan en línea y tú recibes los pagos sin hacer seguimientos manuales.
+        <p class="mx-auto mt-6 max-w-2xl text-pretty text-base leading-7 text-white/60 sm:text-lg">
+          Administra canchas, horarios, reservas y pagos desde un solo panel. Tus clientes encuentran dónde jugar y reservan sin llamadas ni seguimientos manuales.
         </p>
 
         <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
-          <Button v-if="!isAuthenticated" as-child size="lg" class="gap-2">
+          <Button v-if="!isAuthenticated" as-child size="lg" class="h-12 rounded-xl px-6 shadow-xl shadow-primary/25">
             <RouterLink :to="{ name: 'Register' }">
-              Empieza gratis
+              Gestionar mi complejo
               <ArrowRight class="size-4" />
             </RouterLink>
           </Button>
-          <Button v-else as-child size="lg" class="gap-2">
+          <Button v-else as-child size="lg" class="h-12 rounded-xl px-6 shadow-xl shadow-primary/25">
             <RouterLink :to="{ name: 'Dashboard' }">
               Ir al panel
               <ArrowRight class="size-4" />
             </RouterLink>
           </Button>
-          <Button as-child variant="outline" size="lg">
-            <a href="#features">Ver demo</a>
+          <Button as-child variant="outline" size="lg" class="h-12 rounded-xl border-white/20 bg-white/[0.07] text-white hover:bg-white/15 hover:text-white">
+            <RouterLink :to="{ name: 'Marketplace' }">Buscar una cancha</RouterLink>
           </Button>
         </div>
 
-        <div class="mx-auto mt-16 max-w-5xl">
+        <div class="mx-auto mt-16 max-w-5xl sm:mt-20">
           <div class="relative">
-            <div class="absolute -inset-6 rounded-[2rem] bg-gradient-to-br from-primary/20 via-transparent to-secondary/20 blur-3xl"></div>
-            <div class="relative overflow-hidden rounded-2xl border border-border bg-card shadow-2xl">
+            <div class="absolute -inset-8 rounded-[2.5rem] bg-gradient-to-br from-primary/20 via-transparent to-secondary/20 blur-3xl" />
+            <div class="home-dashboard-preview relative overflow-hidden rounded-3xl border border-white/15 bg-[#081a13]/90 text-left shadow-2xl shadow-black/40 backdrop-blur-2xl">
               <div class="flex items-center gap-2 border-b border-border bg-muted/40 px-4 py-3">
                 <span class="size-3 rounded-full bg-red-400/70"></span>
                 <span class="size-3 rounded-full bg-amber-400/70"></span>
@@ -285,7 +250,7 @@ const mockGrid: number[][] = [
                   <div class="mt-4 h-7 rounded-md bg-muted"></div>
                   <div class="h-7 rounded-md bg-muted"></div>
                 </aside>
-                <div class="md:col-span-9 space-y-4">
+                <div class="min-w-0 space-y-4 md:col-span-9">
                   <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
                     <div class="rounded-xl border border-border bg-background/60 p-3">
                       <div class="text-[10px] uppercase tracking-wider text-muted-foreground">Reservas hoy</div>
@@ -320,20 +285,20 @@ const mockGrid: number[][] = [
                     </div>
                   </div>
                   <div class="space-y-2">
-                    <div class="flex items-center gap-3 rounded-lg border border-border bg-background/60 p-3 text-sm">
+                    <div class="flex min-w-0 items-center gap-3 rounded-lg border border-border bg-background/60 p-3 text-sm">
                       <div class="size-2 rounded-full bg-emerald-500"></div>
-                      <div class="flex-1 truncate">Cancha 1 · 19:00–20:00 — Juan Pérez · Pagado</div>
-                      <div class="font-medium">S/ 80.00</div>
+                      <div class="min-w-0 flex-1 truncate">Cancha 1 · 19:00–20:00 — Juan Pérez · Pagado</div>
+                      <div class="shrink-0 font-medium">S/ 80.00</div>
                     </div>
-                    <div class="flex items-center gap-3 rounded-lg border border-border bg-background/60 p-3 text-sm">
+                    <div class="flex min-w-0 items-center gap-3 rounded-lg border border-border bg-background/60 p-3 text-sm">
                       <div class="size-2 rounded-full bg-emerald-500"></div>
-                      <div class="flex-1 truncate">Cancha 3 · 20:00–21:00 — Los Halcones FC · Adelanto</div>
-                      <div class="font-medium">S/ 120.00</div>
+                      <div class="min-w-0 flex-1 truncate">Cancha 3 · 20:00–21:00 — Los Halcones FC · Adelanto</div>
+                      <div class="shrink-0 font-medium">S/ 120.00</div>
                     </div>
-                    <div class="flex items-center gap-3 rounded-lg border border-border bg-background/60 p-3 text-sm">
+                    <div class="flex min-w-0 items-center gap-3 rounded-lg border border-border bg-background/60 p-3 text-sm">
                       <div class="size-2 rounded-full bg-amber-500"></div>
-                      <div class="flex-1 truncate">Cancha 2 · 21:00–22:00 — Pendiente confirmación</div>
-                      <div class="font-medium">S/ 50.00</div>
+                      <div class="min-w-0 flex-1 truncate">Cancha 2 · 21:00–22:00 — Pendiente confirmación</div>
+                      <div class="shrink-0 font-medium">S/ 50.00</div>
                     </div>
                   </div>
                 </div>
@@ -344,12 +309,12 @@ const mockGrid: number[][] = [
       </div>
     </section>
 
-    <section id="features" class="relative border-t border-border/50">
-      <div class="mx-auto max-w-6xl px-6 py-20 sm:py-28">
+    <section id="features" class="relative scroll-mt-16 bg-[#f4f7f5]">
+      <div class="mx-auto max-w-6xl px-5 py-20 sm:px-6 sm:py-28">
         <div class="mx-auto max-w-2xl text-center">
-          <span class="text-sm font-medium text-primary">Todo en un solo lugar</span>
+          <span class="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Todo en un solo lugar</span>
           <h2 class="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
-            Todo lo que necesitas para mantener tus canchas ocupadas.
+            Más tiempo en cancha.<br class="hidden sm:block"> Menos tiempo coordinando.
           </h2>
           <p class="mt-4 text-muted-foreground">
             Reemplaza la agenda de papel, las hojas de cálculo y los mensajes sueltos por una sola plataforma.
@@ -360,57 +325,63 @@ const mockGrid: number[][] = [
           <div
             v-for="f in features"
             :key="f.title"
-            class="group relative overflow-hidden rounded-2xl border border-border bg-card p-6 transition hover:-translate-y-0.5 hover:shadow-lg"
+            class="group relative overflow-hidden rounded-3xl border border-border/70 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-primary/20 hover:shadow-xl hover:shadow-[#143425]/10"
           >
+            <div class="absolute -top-16 -right-16 size-36 rounded-full bg-secondary/0 blur-3xl transition group-hover:bg-secondary/15" />
             <div
-              class="grid size-11 place-items-center rounded-xl ring-1"
+              class="relative grid size-11 place-items-center rounded-xl ring-1"
               :class="f.tone === 'primary'
                 ? 'bg-primary/10 text-primary ring-primary/20'
                 : 'bg-secondary/15 text-secondary-foreground ring-secondary/30'"
             >
               <component :is="f.icon" class="size-5" />
             </div>
-            <h3 class="mt-5 text-lg font-semibold">{{ f.title }}</h3>
-            <p class="mt-1 text-sm text-muted-foreground">{{ f.body }}</p>
+            <h3 class="relative mt-5 text-lg font-semibold">{{ f.title }}</h3>
+            <p class="relative mt-1 text-sm leading-6 text-muted-foreground">{{ f.body }}</p>
           </div>
         </div>
       </div>
     </section>
 
-    <section id="how" class="relative border-t border-border/50 bg-muted/30">
-      <div class="mx-auto max-w-6xl px-6 py-20 sm:py-28">
+    <section id="how" class="relative scroll-mt-16 overflow-hidden border-y border-white/10 bg-[#06170f] text-white">
+      <div class="pointer-events-none absolute -top-40 left-1/2 size-[34rem] -translate-x-1/2 rounded-full bg-secondary/10 blur-3xl" />
+      <div class="relative mx-auto max-w-6xl px-5 py-20 sm:px-6 sm:py-28">
         <div class="mx-auto max-w-2xl text-center">
-          <span class="text-sm font-medium text-primary">Cómo funciona</span>
+          <span class="text-xs font-semibold uppercase tracking-[0.16em] text-secondary">Cómo funciona</span>
           <h2 class="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
             De cero a recibir reservas en menos de 10 minutos.
           </h2>
+          <p class="mx-auto mt-4 max-w-xl text-sm leading-6 text-white/55 sm:text-base">
+            Configura lo esencial una sola vez y deja que Fullbolito se encargue del flujo diario.
+          </p>
         </div>
 
         <div class="mt-14 grid gap-6 md:grid-cols-3">
           <div
             v-for="(s, i) in steps"
             :key="s.n"
-            class="relative rounded-2xl border border-border bg-card p-6"
+            class="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.055] p-6 backdrop-blur-xl transition hover:-translate-y-1 hover:bg-white/[0.08]"
           >
+            <div class="absolute -right-12 -bottom-12 size-32 rounded-full bg-primary/0 blur-2xl transition group-hover:bg-primary/15" />
             <div class="flex items-center justify-between">
               <span
                 class="bg-gradient-to-br from-primary to-secondary bg-clip-text text-3xl font-bold text-transparent"
               >
                 {{ s.n }}
               </span>
-              <ArrowRight v-if="i < steps.length - 1" class="size-5 text-muted-foreground" />
+              <ArrowRight v-if="i < steps.length - 1" class="size-5 text-white/25" />
             </div>
-            <h3 class="mt-4 text-lg font-semibold">{{ s.title }}</h3>
-            <p class="mt-1 text-sm text-muted-foreground">{{ s.body }}</p>
+            <h3 class="relative mt-4 text-lg font-semibold">{{ s.title }}</h3>
+            <p class="relative mt-1 text-sm leading-6 text-white/55">{{ s.body }}</p>
           </div>
         </div>
       </div>
     </section>
 
-    <section id="pricing" class="relative border-t border-border/50">
-      <div class="mx-auto max-w-6xl px-6 py-20 sm:py-28">
+    <section id="pricing" class="relative scroll-mt-16 bg-[#f4f7f5]">
+      <div class="mx-auto max-w-6xl px-5 py-20 sm:px-6 sm:py-28">
         <div class="mx-auto max-w-2xl text-center">
-          <span class="text-sm font-medium text-primary">Planes</span>
+          <span class="text-xs font-semibold uppercase tracking-[0.16em] text-primary">Planes</span>
           <h2 class="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
             Paga solo por lo que usas. Cancela cuando quieras.
           </h2>
@@ -423,40 +394,41 @@ const mockGrid: number[][] = [
           <div
             v-for="p in plans"
             :key="p.slug"
-            class="relative flex flex-col rounded-2xl border bg-card p-6"
+            class="relative flex flex-col overflow-hidden rounded-3xl border p-6 transition duration-300 hover:-translate-y-1"
             :class="p.highlight
-              ? 'border-primary/50 shadow-lg shadow-primary/10 ring-1 ring-primary/20'
-              : 'border-border'"
+              ? 'home-plan-highlight border-white/10 bg-[#071a13] text-white shadow-2xl shadow-[#143425]/20 ring-1 ring-secondary/20'
+              : 'border-border/70 bg-white shadow-sm hover:border-primary/20 hover:shadow-xl hover:shadow-[#143425]/10'"
           >
+            <div v-if="p.highlight" class="absolute -top-20 -right-16 size-52 rounded-full bg-secondary/15 blur-3xl" />
             <span
               v-if="p.highlight"
-              class="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-1 text-[11px] font-medium text-primary-foreground shadow-sm"
+              class="relative mb-4 w-fit rounded-full bg-primary px-3 py-1 text-[11px] font-medium text-primary-foreground shadow-sm"
             >
               Más elegido
             </span>
 
-            <div>
+            <div class="relative">
               <h3 class="text-lg font-semibold">{{ p.name }}</h3>
               <p v-if="p.description" class="mt-1 text-sm text-muted-foreground">{{ p.description }}</p>
             </div>
 
-            <div class="mt-5 flex items-baseline gap-1">
+            <div class="relative mt-5 flex items-baseline gap-1">
               <span class="text-3xl font-bold tracking-tight">{{ formatPrice(p) }}</span>
               <span class="text-xs text-muted-foreground">{{ intervalLabel(p) }}</span>
             </div>
 
-            <ul class="mt-5 space-y-2 text-sm">
+            <ul class="relative mt-5 space-y-2 text-sm">
               <li v-for="(f, i) in p.features" :key="i" class="flex items-start gap-2">
                 <Check class="mt-0.5 size-4 shrink-0 text-primary" />
                 <span class="text-muted-foreground">{{ f }}</span>
               </li>
             </ul>
 
-            <div class="mt-6 pt-1">
+            <div class="relative mt-auto pt-7">
               <Button
                 as-child
                 :variant="p.highlight ? 'default' : 'outline'"
-                class="w-full"
+                class="h-11 w-full rounded-xl"
               >
                 <RouterLink :to="{ name: 'Register' }">
                   {{ p.price === 0 ? 'Probar gratis' : 'Elegir plan' }}
@@ -468,32 +440,32 @@ const mockGrid: number[][] = [
       </div>
     </section>
 
-    <section class="relative border-t border-border/50">
-      <div class="mx-auto max-w-6xl px-6 py-20">
-        <div class="relative overflow-hidden rounded-3xl border border-border bg-card p-10 sm:p-14">
-          <div class="absolute -top-20 -right-20 size-72 rounded-full bg-primary/15 blur-3xl"></div>
-          <div class="absolute -bottom-20 -left-20 size-72 rounded-full bg-secondary/20 blur-3xl"></div>
+    <section class="relative bg-[#f4f7f5]">
+      <div class="mx-auto max-w-6xl px-5 pb-20 sm:px-6 sm:pb-24">
+        <div class="relative isolate overflow-hidden rounded-[2rem] border border-white/10 bg-[#06170f] p-8 text-white shadow-2xl shadow-[#143425]/15 sm:p-14">
+          <img :src="authSportsBackground" alt="" class="absolute inset-0 -z-20 size-full object-cover object-center opacity-20" />
+          <div class="absolute inset-0 -z-10 bg-gradient-to-r from-[#06170f] via-[#06170f]/90 to-[#06170f]/55" />
+          <div class="absolute -top-20 -right-20 -z-10 size-72 rounded-full bg-primary/20 blur-3xl" />
+          <div class="absolute -bottom-20 -left-20 -z-10 size-72 rounded-full bg-secondary/15 blur-3xl" />
           <div class="relative grid gap-6 md:grid-cols-[1.5fr_1fr] md:items-center">
             <div>
               <h2 class="text-3xl font-bold tracking-tight sm:text-4xl">
-                Empieza hoy.<br>
-                <span class="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                  Sin tarjeta, sin instalar nada.
-                </span>
+                El siguiente gran partido<br>
+                <span class="text-primary">empieza con una mejor gestión.</span>
               </h2>
-              <p class="mt-4 max-w-md text-muted-foreground">
+              <p class="mt-4 max-w-md text-white/55">
                 Disfruta 14 días gratis del plan completo. Si no te convence, no pagas nada.
               </p>
             </div>
             <div class="flex flex-wrap gap-3 md:justify-end">
-              <Button v-if="!isAuthenticated" as-child size="lg">
+              <Button v-if="!isAuthenticated" as-child size="lg" class="h-12 rounded-xl shadow-xl shadow-primary/25">
                 <RouterLink :to="{ name: 'Register' }">Crear cuenta</RouterLink>
               </Button>
-              <Button v-else as-child size="lg">
+              <Button v-else as-child size="lg" class="h-12 rounded-xl shadow-xl shadow-primary/25">
                 <RouterLink :to="{ name: 'Dashboard' }">Ir al panel</RouterLink>
               </Button>
-              <Button as-child variant="outline" size="lg">
-                <a href="#features">Ver demo</a>
+              <Button as-child variant="outline" size="lg" class="h-12 rounded-xl border-white/20 bg-white/[0.07] text-white hover:bg-white/15 hover:text-white">
+                <RouterLink :to="{ name: 'Marketplace' }">Explorar canchas</RouterLink>
               </Button>
             </div>
           </div>
@@ -501,20 +473,22 @@ const mockGrid: number[][] = [
       </div>
     </section>
 
-    <footer class="border-t border-border/50">
-      <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-6 py-8 text-sm text-muted-foreground sm:flex-row">
-        <div class="flex items-center gap-2">
-          <div class="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
-            <GalleryVerticalEnd class="size-3" />
-          </div>
-          <span>© {{ new Date().getFullYear() }} Fullbolito. Todos los derechos reservados.</span>
-        </div>
-        <div class="flex items-center gap-5">
-          <a href="#features" class="transition hover:text-foreground">Producto</a>
-          <a href="#pricing" class="transition hover:text-foreground">Planes</a>
-          <RouterLink :to="{ name: 'Login' }" class="transition hover:text-foreground">Iniciar sesión</RouterLink>
-        </div>
-      </div>
-    </footer>
+    <PublicFooter />
   </div>
 </template>
+
+<style>
+.home-dashboard-preview,
+.home-plan-highlight {
+  --background: rgb(255 255 255 / 0.07);
+  --foreground: rgb(248 252 250);
+  --card: rgb(8 26 19 / 0.92);
+  --card-foreground: rgb(248 252 250);
+  --muted: rgb(255 255 255 / 0.1);
+  --muted-foreground: rgb(178 199 189);
+  --border: rgb(255 255 255 / 0.12);
+  --input: rgb(255 255 255 / 0.16);
+  --accent: rgb(255 255 255 / 0.1);
+  --accent-foreground: rgb(255 255 255);
+}
+</style>

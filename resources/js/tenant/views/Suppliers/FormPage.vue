@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, watch, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 import { useSupplierStore } from "@tenant/stores/supplier";
 import { storeToRefs } from "pinia";
@@ -24,6 +25,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { apiClient } from "@tenant/lib/api";
 
+const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const supplierStore = useSupplierStore();
@@ -48,7 +50,9 @@ const confirmDialog = ref<InstanceType<typeof ConfirmDialog> | null>(null);
 
 const canManageSupplier = computed(() => mode.value === "edit" && !!supplierId.value);
 const archiveLabel = computed(() =>
-    (currentSupplier.value as any)?.status === 'inactive' ? "Activate" : "Deactivate",
+    (currentSupplier.value as any)?.status === 'inactive'
+        ? t('common.actions.activate')
+        : t('common.actions.deactivate'),
 );
 const isArchived = computed(
     () =>
@@ -88,13 +92,13 @@ const handleSubmit = async (formData: any) => {
     try {
         if (mode.value === "edit" && supplierId.value) {
             await apiClient.patch(`/v1/suppliers/${supplierId.value}`, formData);
-            toast.success("Supplier updated", {
-                description: "The supplier was successfully updated.",
+            toast.success(t('suppliers.page.updatedToastTitle'), {
+                description: t('suppliers.page.updatedToastDesc'),
             });
         } else {
             const { data } = await apiClient.post<any>("/v1/suppliers", formData);
-            toast.success("Supplier created", {
-                description: "The supplier was successfully created.",
+            toast.success(t('suppliers.page.createdToastTitle'), {
+                description: t('suppliers.page.createdToastDesc'),
             });
             // Optionally redirect to edit or suppliers list
             router.push(`/admin/suppliers/${data.data.id}/edit`);
@@ -108,10 +112,10 @@ const handleSubmit = async (formData: any) => {
                 flat[k] = Array.isArray(v) ? v[0] : String(v);
             });
             errors.value = flat;
-            toast.error("Please correctly fill in the required fields");
+            toast.error(t('suppliers.page.validationErrorFallback'));
         } else {
             console.error("Error saving supplier:", err);
-            toast.error("An error occurred while saving the supplier");
+            toast.error(t('suppliers.page.savingErrorToastTitle'));
         }
     } finally {
         isLoading.value = false;
@@ -123,7 +127,7 @@ const handleCancel = () => {
 };
 
 const pageTitle = computed(() =>
-    mode.value === "edit" ? "Edit Supplier" : "Create Supplier",
+    mode.value === "edit" ? t('suppliers.page.editTitle') : t('suppliers.page.createTitle'),
 );
 
 const handleSave = () => {
@@ -134,8 +138,8 @@ const handleArchive = () => {
     if (!supplierId.value) return;
     const id = supplierId.value;
     confirmDialog.value?.show(
-        `${archiveLabel.value} supplier`,
-        `Are you sure you want to ${archiveLabel.value.toLowerCase()} this supplier?`,
+        t('suppliers.page.archiveConfirmTitle', { action: archiveLabel.value }),
+        t('suppliers.page.archiveConfirmMessage', { action: archiveLabel.value.toLowerCase() }),
         async () => {
             isLoading.value = true;
             try {
@@ -152,8 +156,8 @@ const handleDelete = () => {
     if (!supplierId.value) return;
     const id = supplierId.value;
     confirmDialog.value?.show(
-        "Delete supplier",
-        "Are you sure you want to delete this supplier? This action cannot be undone.",
+        t('suppliers.page.deleteConfirmTitle'),
+        t('suppliers.page.deleteConfirmMessage'),
         async () => {
             isLoading.value = true;
             try {
@@ -168,8 +172,8 @@ const handleDelete = () => {
 
 // Breadcrumbs
 const breadcrumbs = computed(() => [
-    { label: "Suppliers", href: "/admin/suppliers" },
-    { label: mode.value === "edit" ? "Edit Supplier" : "Create Supplier" },
+    { label: t('suppliers.page.breadcrumbList'), href: "/admin/suppliers" },
+    { label: pageTitle.value },
 ]);
 </script>
 
@@ -181,7 +185,7 @@ const breadcrumbs = computed(() => [
                     variant="outline"
                     size="icon"
                     class="h-9 w-9"
-                    aria-label="Back"
+                    :aria-label="t('common.actions.back')"
                     @click="handleCancel"
                 >
                     <ArrowLeft class="h-4 w-4" />
@@ -198,10 +202,10 @@ const breadcrumbs = computed(() => [
                     <Save class="mr-2 h-4 w-4" />
                     {{
                         isLoading
-                            ? "Saving..."
+                            ? t('common.saving')
                             : mode === "edit"
-                              ? "Update Supplier"
-                              : "Create Supplier"
+                              ? t('suppliers.page.updateButton')
+                              : t('suppliers.page.createTitle')
                     }}
                 </Button>
                 <DropdownMenu v-if="canManageSupplier">
@@ -210,13 +214,13 @@ const breadcrumbs = computed(() => [
                             variant="outline"
                             size="icon"
                             class="h-9 w-9"
-                            aria-label="Supplier settings"
+                            :aria-label="t('suppliers.page.settingsAriaLabel')"
                         >
                             <Settings2 class="h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" class="w-[200px]">
-                        <DropdownMenuLabel>Supplier Options</DropdownMenuLabel>
+                        <DropdownMenuLabel>{{ t('suppliers.page.optionsLabel') }}</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem @click="handleArchive">
                             <Archive
@@ -230,7 +234,7 @@ const breadcrumbs = computed(() => [
                             @click="handleDelete"
                         >
                             <Trash2 class="mr-2 h-4 w-4" />
-                            Delete
+                            {{ t('common.actions.delete') }}
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

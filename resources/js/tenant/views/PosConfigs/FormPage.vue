@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, computed } from "vue";
+import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { usePosConfigStore } from "@tenant/stores/posConfig";
@@ -29,6 +30,7 @@ import {
     Play,
 } from "lucide-vue-next";
 
+const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const posConfigStore = usePosConfigStore();
@@ -58,7 +60,9 @@ const canManagePosConfig = computed(
     () => isEditing.value && !!posConfigId.value,
 );
 const archiveLabel = computed(() =>
-    currentPosConfig.value?.is_active === false ? "Activate" : "Deactivate",
+    currentPosConfig.value?.is_active === false
+        ? t('common.actions.activate')
+        : t('common.actions.deactivate'),
 );
 const isArchived = computed(
     () => isEditing.value && currentPosConfig.value?.is_active === false,
@@ -102,14 +106,14 @@ const handleSubmit = async (payload: any) => {
     try {
         if (isEditing.value) {
             await posConfigStore.updatePosConfig(posConfigId.value, payload);
-            toast.success("PosConfig updated", {
-                description: "The posConfig was successfully updated.",
+            toast.success(t('posConfigs.page.updatedToastTitle'), {
+                description: t('posConfigs.page.updatedToastDesc'),
             });
             activityLogRef.value?.load();
         } else {
             const newCat = await posConfigStore.createPosConfig(payload);
-            toast.success("PosConfig created", {
-                description: "The posConfig was successfully created.",
+            toast.success(t('posConfigs.page.createdToastTitle'), {
+                description: t('posConfigs.page.createdToastDesc'),
             });
             router.push(`/admin/pos-configs/${newCat.id}/edit`);
             return;
@@ -122,15 +126,15 @@ const handleSubmit = async (payload: any) => {
                 flat[k] = Array.isArray(v) ? v[0] : String(v);
             });
             errors.value = flat;
-            toast.error("Validation error", {
-                description: "Please check the form fields for errors.",
+            toast.error(t('common.validationErrorTitle'), {
+                description: t('common.validationErrorDesc'),
             });
         } else {
             console.error("Error saving posConfig:", err);
-            toast.error("Error saving posConfig", {
+            toast.error(t('posConfigs.page.savingErrorToastTitle'), {
                 description:
                     err?.response?.data?.message ||
-                    "An unexpected error occurred.",
+                    t('common.unexpectedError'),
             });
         }
     } finally {
@@ -156,8 +160,8 @@ const handleArchive = async () => {
     const id = posConfigId.value;
 
     confirmDialog.value?.show(
-        `${archiveLabel.value} posConfig`,
-        `Are you sure you want to ${archiveLabel.value.toLowerCase()} this posConfig?`,
+        t('posConfigs.page.archiveConfirmTitle', { action: archiveLabel.value }),
+        t('posConfigs.page.archiveConfirmMessage', { action: archiveLabel.value.toLowerCase() }),
         async () => {
             isLoading.value = true;
             try {
@@ -177,8 +181,8 @@ const handleDelete = async () => {
     const id = posConfigId.value;
 
     confirmDialog.value?.show(
-        "Delete posConfig",
-        "Are you sure you want to delete this posConfig? This action cannot be undone.",
+        t('posConfigs.page.deleteConfirmTitle'),
+        t('posConfigs.page.deleteConfirmMessage'),
         async () => {
             isLoading.value = true;
             try {
@@ -194,12 +198,12 @@ const handleDelete = async () => {
 };
 
 const pageTitle = computed(() =>
-    isEditing.value ? "Edit PosConfig" : "Create PosConfig",
+    isEditing.value ? t('posConfigs.page.editTitle') : t('posConfigs.page.createTitle'),
 );
 
 const breadcrumbs = computed(() => [
-    { label: "POS Configs", href: "/admin/pos-configs" },
-    { label: isEditing.value ? "Edit PosConfig" : "Create PosConfig" },
+    { label: t('posConfigs.page.breadcrumbList'), href: "/admin/pos-configs" },
+    { label: pageTitle.value },
 ]);
 </script>
 
@@ -211,7 +215,7 @@ const breadcrumbs = computed(() => [
                     variant="outline"
                     size="icon"
                     class="h-9 w-9"
-                    aria-label="Back"
+                    :aria-label="t('common.actions.back')"
                     @click="handleCancel"
                 >
                     <ArrowLeft class="h-4 w-4" />
@@ -230,7 +234,7 @@ const breadcrumbs = computed(() => [
                     @click="handleOpenCashier"
                 >
                     <Play class="mr-2 h-4 w-4" />
-                    Abrir caja
+                    {{ t('posConfigs.page.openCashier') }}
                 </Button>
                 <Button
                     size="sm"
@@ -241,10 +245,10 @@ const breadcrumbs = computed(() => [
                     <Save class="mr-2 h-4 w-4" />
                     {{
                         isLoading
-                            ? "Saving..."
+                            ? t('common.saving')
                             : isEditing
-                              ? "Update PosConfig"
-                              : "Create PosConfig"
+                              ? t('posConfigs.page.updateButton')
+                              : t('posConfigs.page.createTitle')
                     }}
                 </Button>
                 <DropdownMenu v-if="canManagePosConfig">
@@ -253,13 +257,13 @@ const breadcrumbs = computed(() => [
                             variant="outline"
                             size="icon"
                             class="h-9 w-9"
-                            aria-label="PosConfig settings"
+                            :aria-label="t('posConfigs.page.settingsAriaLabel')"
                         >
                             <Settings2 class="h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" class="w-[200px]">
-                        <DropdownMenuLabel>PosConfig Options</DropdownMenuLabel>
+                        <DropdownMenuLabel>{{ t('posConfigs.page.optionsLabel') }}</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem @click="handleArchive">
                             <Archive
@@ -273,7 +277,7 @@ const breadcrumbs = computed(() => [
                             @click="handleDelete"
                         >
                             <Trash2 class="mr-2 h-4 w-4" />
-                            Delete
+                            {{ t('common.actions.delete') }}
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

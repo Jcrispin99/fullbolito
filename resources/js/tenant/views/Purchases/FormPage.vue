@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, watch, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { usePurchaseStore } from "@tenant/stores/purchase";
@@ -33,6 +34,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const purchaseStore = usePurchaseStore();
@@ -84,7 +86,7 @@ const loadFormData = async () => {
         }
     } catch (error) {
         console.error("Error fetching purchase data:", error);
-        toast.error("Error loading form data");
+        toast.error(t('purchases.page.errorLoadingFormData'));
     } finally {
         isLoading.value = false;
     }
@@ -101,14 +103,14 @@ const handleSubmit = async (formData: any) => {
     try {
         if (mode.value === "edit" && purchaseId.value) {
             await purchaseStore.updatePurchase(purchaseId.value, formData);
-            toast.success("Purchase updated", {
-                description: "The purchase was successfully updated.",
+            toast.success(t('purchases.page.updatedToastTitle'), {
+                description: t('purchases.page.updatedToastDesc'),
             });
             activityLogRef.value?.load();
         } else {
             const created = await purchaseStore.createPurchase(formData);
-            toast.success("Purchase created", {
-                description: "The purchase was successfully created.",
+            toast.success(t('purchases.page.createdToastTitle'), {
+                description: t('purchases.page.createdToastDesc'),
             });
             router.push(`/admin/purchases/${created.id}/edit`);
             return;
@@ -121,13 +123,13 @@ const handleSubmit = async (formData: any) => {
                 flat[k] = Array.isArray(v) ? v[0] : String(v);
             });
             errors.value = flat;
-            toast.error("Validation error", {
-                description: "Please check the form fields for errors.",
+            toast.error(t('common.validationErrorTitle'), {
+                description: t('common.validationErrorDesc'),
             });
         } else {
             console.error("Error saving purchase:", err);
-            toast.error("Error saving purchase", {
-                description: e?.message || "An unexpected error occurred.",
+            toast.error(t('purchases.page.savingErrorToastTitle'), {
+                description: e?.message || t('common.unexpectedError'),
             });
         }
     } finally {
@@ -152,16 +154,16 @@ const handleDelete = () => {
     if (!purchaseId.value) return;
     const id = Number(purchaseId.value);
     confirmDialog.value?.show(
-        "Delete purchase",
-        "Are you sure you want to delete this purchase? This action cannot be undone.",
+        t('purchases.page.deleteConfirmTitle'),
+        t('purchases.page.deleteConfirmMessage'),
         async () => {
             isLoading.value = true;
             try {
                 await purchaseStore.deletePurchase(id);
                 router.push("/admin/purchases");
             } catch (err: any) {
-                toast.error("Error", {
-                    description: err.message || "Failed to delete",
+                toast.error(t('purchases.page.errorToastTitle'), {
+                    description: err.message || t('purchases.page.deleteErrorFallback'),
                 });
             } finally {
                 isLoading.value = false;
@@ -174,18 +176,18 @@ const handlePost = () => {
     if (!purchaseId.value) return;
     const id = Number(purchaseId.value);
     confirmDialog.value?.show(
-        "Post purchase",
-        "Are you sure you want to post this purchase? This action cannot be undone.",
+        t('purchases.page.postConfirmTitle'),
+        t('purchases.page.postConfirmMessage'),
         async () => {
             isLoading.value = true;
             try {
                 const data = await purchaseStore.postPurchase(id);
-                toast.success("Purchase posted successfully");
+                toast.success(t('purchases.page.postSuccessToast'));
                 if (data) currentPurchase.value = data;
                 activityLogRef.value?.load();
             } catch (err: any) {
-                toast.error("Error", {
-                    description: err?.message || "Failed to post",
+                toast.error(t('purchases.page.errorToastTitle'), {
+                    description: err?.message || t('purchases.page.postErrorFallback'),
                 });
             } finally {
                 isLoading.value = false;
@@ -198,18 +200,18 @@ const handleCancelPurchase = () => {
     if (!purchaseId.value) return;
     const id = Number(purchaseId.value);
     confirmDialog.value?.show(
-        "Cancel purchase",
-        "Are you sure you want to cancel this purchase? This action cannot be undone.",
+        t('purchases.page.cancelConfirmTitle'),
+        t('purchases.page.cancelConfirmMessage'),
         async () => {
             isLoading.value = true;
             try {
                 const data = await purchaseStore.cancelPurchase(id);
-                toast.success("Purchase cancelled successfully");
+                toast.success(t('purchases.page.cancelSuccessToast'));
                 if (data) currentPurchase.value = data;
                 activityLogRef.value?.load();
             } catch (err: any) {
-                toast.error("Error", {
-                    description: err?.message || "Failed to cancel",
+                toast.error(t('purchases.page.errorToastTitle'), {
+                    description: err?.message || t('purchases.page.cancelErrorFallback'),
                 });
             } finally {
                 isLoading.value = false;
@@ -222,18 +224,18 @@ const handlePayPurchase = () => {
     if (!purchaseId.value) return;
     const id = Number(purchaseId.value);
     confirmDialog.value?.show(
-        "Pay purchase",
-        "Are you sure you want to mark this purchase as paid?",
+        t('purchases.page.payConfirmTitle'),
+        t('purchases.page.payConfirmMessage'),
         async () => {
             isLoading.value = true;
             try {
                 const data = await purchaseStore.payPurchase(id);
-                toast.success("Purchase paid successfully");
+                toast.success(t('purchases.page.paySuccessToast'));
                 if (data) currentPurchase.value = data;
                 activityLogRef.value?.load();
             } catch (err: any) {
-                toast.error("Error", {
-                    description: err?.message || "Failed to mark as paid",
+                toast.error(t('purchases.page.errorToastTitle'), {
+                    description: err?.message || t('purchases.page.payErrorFallback'),
                 });
             } finally {
                 isLoading.value = false;
@@ -246,18 +248,18 @@ const handleDraftPurchase = () => {
     if (!purchaseId.value) return;
     const id = Number(purchaseId.value);
     confirmDialog.value?.show(
-        "Restore to draft",
-        "Are you sure you want to restore this purchase to draft?",
+        t('purchases.page.draftConfirmTitle'),
+        t('purchases.page.draftConfirmMessage'),
         async () => {
             isLoading.value = true;
             try {
                 const data = await purchaseStore.draftPurchase(id);
-                toast.success("Purchase restored to draft");
+                toast.success(t('purchases.page.draftSuccessToast'));
                 if (data) currentPurchase.value = data;
                 activityLogRef.value?.load();
             } catch (err: any) {
-                toast.error("Error", {
-                    description: err?.message || "Failed to restore",
+                toast.error(t('purchases.page.errorToastTitle'), {
+                    description: err?.message || t('purchases.page.draftErrorFallback'),
                 });
             } finally {
                 isLoading.value = false;
@@ -267,7 +269,7 @@ const handleDraftPurchase = () => {
 };
 
 const purchaseDisplayName = computed(() => {
-    if (mode.value === "create") return "New";
+    if (mode.value === "create") return t('purchases.form.newName');
 
     const serie = currentPurchase.value?.serie
         ? `${currentPurchase.value.serie}-`
@@ -277,12 +279,20 @@ const purchaseDisplayName = computed(() => {
 });
 
 const pageTitle = computed(() =>
-    mode.value === "edit" ? "Edit Purchase" : "Create Purchase",
+    mode.value === "edit" ? t('purchases.page.editTitle') : t('purchases.page.createTitle'),
 );
 
+const statusLabel = computed(() => {
+    const status = currentPurchase.value?.status;
+    if (status === 'draft') return t('purchases.page.statusDraft');
+    if (status === 'posted') return t('purchases.page.statusPosted');
+    if (status === 'cancelled') return t('purchases.page.statusCancelled');
+    return status;
+});
+
 const breadcrumbs = computed(() => [
-    { label: "Purchases", href: "/admin/purchases" },
-    { label: mode.value === "edit" ? "Edit Purchase" : "Create Purchase" },
+    { label: t('purchases.page.breadcrumbList'), href: "/admin/purchases" },
+    { label: pageTitle.value },
 ]);
 </script>
 
@@ -294,7 +304,7 @@ const breadcrumbs = computed(() => [
                     variant="outline"
                     size="icon"
                     class="h-9 w-9"
-                    aria-label="Back"
+                    :aria-label="t('common.actions.back')"
                     @click="handleCancel"
                 >
                     <ArrowLeft class="h-4 w-4" />
@@ -314,7 +324,7 @@ const breadcrumbs = computed(() => [
                                   : '',
                         ]"
                     >
-                        {{ currentPurchase.status }}
+                        {{ statusLabel }}
                     </span>
 
                     <Button
@@ -330,10 +340,10 @@ const breadcrumbs = computed(() => [
                         <Save class="mr-2 h-4 w-4" />
                         {{
                             isLoading
-                                ? "Saving..."
+                                ? t('common.saving')
                                 : mode === "edit"
-                                  ? "Update Purchase"
-                                  : "Create Purchase"
+                                  ? t('purchases.page.updateButton')
+                                  : t('purchases.page.createTitle')
                         }}
                     </Button>
                     <DropdownMenu v-if="mode === 'edit'">
@@ -344,12 +354,12 @@ const breadcrumbs = computed(() => [
                                 class="h-9 gap-1.5"
                                 :disabled="isLoading"
                             >
-                                Acciones
+                                {{ t('purchases.page.actionsLabel') }}
                                 <ChevronDown class="h-4 w-4" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" class="w-[220px]">
-                            <DropdownMenuLabel>Purchase Options</DropdownMenuLabel>
+                            <DropdownMenuLabel>{{ t('purchases.page.optionsLabel') }}</DropdownMenuLabel>
                             <DropdownMenuSeparator />
 
                             <!-- DRAFT -->
@@ -358,7 +368,7 @@ const breadcrumbs = computed(() => [
                                 @click="handlePost"
                             >
                                 <Upload class="mr-2 h-4 w-4" />
-                                Publicar
+                                {{ t('purchases.page.actionPublish') }}
                             </DropdownMenuItem>
 
                             <!-- POSTED -->
@@ -370,7 +380,7 @@ const breadcrumbs = computed(() => [
                                 @click="handlePayPurchase"
                             >
                                 <CheckCircle2 class="mr-2 h-4 w-4" />
-                                Marcar pagada
+                                {{ t('purchases.page.actionMarkPaid') }}
                             </DropdownMenuItem>
 
                             <!-- CANCELLED -->
@@ -379,7 +389,7 @@ const breadcrumbs = computed(() => [
                                 @click="handleDraftPurchase"
                             >
                                 <RotateCcw class="mr-2 h-4 w-4" />
-                                Volver a borrador
+                                {{ t('purchases.page.actionRestoreDraft') }}
                             </DropdownMenuItem>
 
                             <!-- LOTS (any non-empty status) -->
@@ -392,7 +402,7 @@ const breadcrumbs = computed(() => [
                                 @click="handleOpenLots"
                             >
                                 <Boxes class="mr-2 h-4 w-4" />
-                                Lotes
+                                {{ t('purchases.page.actionLots') }}
                             </DropdownMenuItem>
 
                             <!-- DESTRUCTIVAS -->
@@ -409,7 +419,7 @@ const breadcrumbs = computed(() => [
                                     @click="handleCancelPurchase"
                                 >
                                     <XCircle class="mr-2 h-4 w-4" />
-                                    Anular compra
+                                    {{ t('purchases.page.actionCancelPurchase') }}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                     v-if="canManagePurchase"
@@ -417,7 +427,7 @@ const breadcrumbs = computed(() => [
                                     @click="handleDelete"
                                 >
                                     <Trash2 class="mr-2 h-4 w-4" />
-                                    Eliminar
+                                    {{ t('common.actions.delete') }}
                                 </DropdownMenuItem>
                             </template>
                         </DropdownMenuContent>

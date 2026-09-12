@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, watch, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { useSaleStore } from "@tenant/stores/sale";
@@ -37,6 +38,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const saleStore = useSaleStore();
@@ -171,7 +173,7 @@ const submitRefund = async () => {
             notes: refundNotes.value.trim() || null,
         });
 
-        toast.success("Nota de crédito generada");
+        toast.success(t('sales.page.creditNoteGeneratedToast'));
         const refreshed = await saleStore.fetchSale(saleId.value);
         if (refreshed) currentSale.value = refreshed;
         viewMode.value = "edit";
@@ -181,7 +183,7 @@ const submitRefund = async () => {
     } catch (err: any) {
         const e = err?.response?.data || err;
         toast.error(
-            e?.message || "No se pudo generar la nota de crédito",
+            e?.message || t('sales.page.creditNoteErrorFallback'),
         );
     } finally {
         isRefunding.value = false;
@@ -209,7 +211,7 @@ const loadFormData = async () => {
         }
     } catch (error) {
         console.error("Error fetching sale data:", error);
-        toast.error("Error loading form data");
+        toast.error(t('sales.page.errorLoadingFormData'));
     } finally {
         isLoading.value = false;
     }
@@ -231,14 +233,14 @@ const handleSubmit = async (formData: any) => {
     try {
         if (mode.value === "edit" && saleId.value) {
             await saleStore.updateSale(saleId.value, formData);
-            toast.success("Sale updated", {
-                description: "The sale was successfully updated.",
+            toast.success(t('sales.page.updatedToastTitle'), {
+                description: t('sales.page.updatedToastDesc'),
             });
             activityLogRef.value?.load();
         } else {
             const created = await saleStore.createSale(formData);
-            toast.success("Sale created", {
-                description: "The sale was successfully created.",
+            toast.success(t('sales.page.createdToastTitle'), {
+                description: t('sales.page.createdToastDesc'),
             });
             router.push(`/admin/sales/${created.id}/edit`);
             return;
@@ -251,13 +253,13 @@ const handleSubmit = async (formData: any) => {
                 flat[k] = Array.isArray(v) ? v[0] : String(v);
             });
             errors.value = flat;
-            toast.error("Validation error", {
-                description: "Please check the form fields for errors.",
+            toast.error(t('common.validationErrorTitle'), {
+                description: t('common.validationErrorDesc'),
             });
         } else {
             console.error("Error saving sale:", err);
-            toast.error("Error saving sale", {
-                description: e?.message || "An unexpected error occurred.",
+            toast.error(t('sales.page.savingErrorToastTitle'), {
+                description: e?.message || t('common.unexpectedError'),
             });
         }
     } finally {
@@ -277,16 +279,16 @@ const handleDelete = () => {
     if (!saleId.value) return;
     const id = Number(saleId.value);
     confirmDialog.value?.show(
-        "Delete sale",
-        "Are you sure you want to delete this sale? This action cannot be undone.",
+        t('sales.page.deleteConfirmTitle'),
+        t('sales.page.deleteConfirmMessage'),
         async () => {
             isLoading.value = true;
             try {
                 await saleStore.deleteSale(id);
                 router.push("/admin/sales");
             } catch (err: any) {
-                toast.error("Error", {
-                    description: err.message || "Failed to delete",
+                toast.error(t('sales.page.errorToastTitle'), {
+                    description: err.message || t('sales.page.deleteErrorFallback'),
                 });
             } finally {
                 isLoading.value = false;
@@ -299,13 +301,13 @@ const handlePost = () => {
     if (!saleId.value) return;
     const id = Number(saleId.value);
     confirmDialog.value?.show(
-        "Post sale",
-        "Are you sure you want to post this sale? This action cannot be undone.",
+        t('sales.page.postConfirmTitle'),
+        t('sales.page.postConfirmMessage'),
         async () => {
             isLoading.value = true;
             try {
                 const response = await saleStore.postSale(id);
-                toast.success("Sale posted successfully");
+                toast.success(t('sales.page.postSuccessToast'));
                 if (response) {
                     currentSale.value = response;
                     // Capturar puntos de lealtad
@@ -317,8 +319,8 @@ const handlePost = () => {
                 }
                 activityLogRef.value?.load();
             } catch (err: any) {
-                toast.error("Error", {
-                    description: err?.message || "Failed to post",
+                toast.error(t('sales.page.errorToastTitle'), {
+                    description: err?.message || t('sales.page.postErrorFallback'),
                 });
             } finally {
                 isLoading.value = false;
@@ -331,18 +333,18 @@ const handleCancelSale = () => {
     if (!saleId.value) return;
     const id = Number(saleId.value);
     confirmDialog.value?.show(
-        "Cancel sale",
-        "Are you sure you want to cancel this sale? This action cannot be undone.",
+        t('sales.page.cancelConfirmTitle'),
+        t('sales.page.cancelConfirmMessage'),
         async () => {
             isLoading.value = true;
             try {
                 const data = await saleStore.cancelSale(id);
-                toast.success("Sale cancelled successfully");
+                toast.success(t('sales.page.cancelSuccessToast'));
                 if (data) currentSale.value = data;
                 activityLogRef.value?.load();
             } catch (err: any) {
-                toast.error("Error", {
-                    description: err?.message || "Failed to cancel",
+                toast.error(t('sales.page.errorToastTitle'), {
+                    description: err?.message || t('sales.page.cancelErrorFallback'),
                 });
             } finally {
                 isLoading.value = false;
@@ -355,18 +357,18 @@ const handlePaySale = () => {
     if (!saleId.value) return;
     const id = Number(saleId.value);
     confirmDialog.value?.show(
-        "Pay sale",
-        "Are you sure you want to mark this sale as paid?",
+        t('sales.page.payConfirmTitle'),
+        t('sales.page.payConfirmMessage'),
         async () => {
             isLoading.value = true;
             try {
                 const data = await saleStore.paySale(id);
-                toast.success("Sale paid successfully");
+                toast.success(t('sales.page.paySuccessToast'));
                 if (data) currentSale.value = data;
                 activityLogRef.value?.load();
             } catch (err: any) {
-                toast.error("Error", {
-                    description: err?.message || "Failed to mark as paid",
+                toast.error(t('sales.page.errorToastTitle'), {
+                    description: err?.message || t('sales.page.payErrorFallback'),
                 });
             } finally {
                 isLoading.value = false;
@@ -379,8 +381,8 @@ const handleSendToSunat = () => {
     if (!saleId.value) return;
     const id = Number(saleId.value);
     confirmDialog.value?.show(
-        "Reenviar a SUNAT",
-        "¿Reenviar este comprobante a SUNAT? Si ya fue aceptado, no se hará nada.",
+        t('sales.page.sendToSunatConfirmTitle'),
+        t('sales.page.sendToSunatConfirmMessage'),
         async () => {
             isLoading.value = true;
             try {
@@ -388,22 +390,22 @@ const handleSendToSunat = () => {
                 if (data) currentSale.value = data;
                 const status = data?.sunat_status;
                 if (status === "accepted") {
-                    toast.success("Aceptado por SUNAT");
+                    toast.success(t('sales.page.sunatAcceptedToast'));
                 } else if (status === "sent") {
-                    toast.success("Enviado a SUNAT");
+                    toast.success(t('sales.page.sunatSentToast'));
                 } else if (status === "skipped") {
-                    toast.info("Documento no fiscal — no se envía a SUNAT");
+                    toast.info(t('sales.page.sunatSkippedToast'));
                 } else {
-                    toast.warning("SUNAT respondió con error", {
+                    toast.warning(t('sales.page.sunatErrorToastTitle'), {
                         description:
                             data?.sunat_response?.error ||
-                            "Revisa la respuesta detallada en la venta.",
+                            t('sales.page.sunatErrorToastDescFallback'),
                     });
                 }
                 activityLogRef.value?.load();
             } catch (err: any) {
-                toast.error("Error al reenviar", {
-                    description: err?.message || "No se pudo reenviar a SUNAT",
+                toast.error(t('sales.page.resendErrorToastTitle'), {
+                    description: err?.message || t('sales.page.resendErrorFallback'),
                 });
             } finally {
                 isLoading.value = false;
@@ -417,18 +419,18 @@ const sunatBadge = computed(() => {
     const status = currentSale.value?.sunat_status;
     if (!status) return null;
     const map: Record<string, { label: string; class: string }> = {
-        pending: { label: "SUNAT pendiente", class: "bg-gray-100 text-gray-700" },
-        processing: { label: "SUNAT procesando", class: "bg-amber-100 text-amber-800" },
-        sent: { label: "SUNAT enviado", class: "bg-blue-100 text-blue-800" },
-        accepted: { label: "SUNAT aceptado", class: "bg-green-100 text-green-800" },
-        error: { label: "SUNAT error", class: "bg-red-100 text-red-800" },
-        skipped: { label: "SUNAT N/A", class: "bg-gray-100 text-gray-500" },
+        pending: { label: t('sales.page.sunatPending'), class: "bg-gray-100 text-gray-700" },
+        processing: { label: t('sales.page.sunatProcessing'), class: "bg-amber-100 text-amber-800" },
+        sent: { label: t('sales.page.sunatSentBadge'), class: "bg-blue-100 text-blue-800" },
+        accepted: { label: t('sales.page.sunatAcceptedBadge'), class: "bg-green-100 text-green-800" },
+        error: { label: t('sales.page.sunatErrorBadge'), class: "bg-red-100 text-red-800" },
+        skipped: { label: t('sales.page.sunatNA'), class: "bg-gray-100 text-gray-500" },
     };
-    return map[status] || { label: `SUNAT ${status}`, class: "bg-gray-100 text-gray-800" };
+    return map[status] || { label: t('sales.page.sunatFallback', { status }), class: "bg-gray-100 text-gray-800" };
 });
 
 const saleDisplayName = computed(() => {
-    if (mode.value === "create") return "New";
+    if (mode.value === "create") return t('sales.form.newName');
 
     const serie = currentSale.value?.serie ? `${currentSale.value.serie}-` : "";
     const correlative = currentSale.value?.correlative || "";
@@ -436,12 +438,20 @@ const saleDisplayName = computed(() => {
 });
 
 const pageTitle = computed(() =>
-    mode.value === "edit" ? "Edit Sale" : "Create Sale",
+    mode.value === "edit" ? t('sales.page.editTitle') : t('sales.page.createTitle'),
 );
 
+const statusLabel = computed(() => {
+    const status = currentSale.value?.status;
+    if (status === 'draft') return t('sales.page.statusDraft');
+    if (status === 'posted') return t('sales.page.statusPosted');
+    if (status === 'cancelled') return t('sales.page.statusCancelled');
+    return status;
+});
+
 const breadcrumbs = computed(() => [
-    { label: "Sales", href: "/admin/sales" },
-    { label: mode.value === "edit" ? "Edit Sale" : "Create Sale" },
+    { label: t('sales.page.breadcrumbList'), href: "/admin/sales" },
+    { label: pageTitle.value },
 ]);
 
 // Si hay un envío SUNAT con error/pendiente, badgear la pestaña SUNAT
@@ -469,7 +479,7 @@ watch(
                     variant="outline"
                     size="icon"
                     class="h-9 w-9"
-                    aria-label="Back"
+                    :aria-label="t('common.actions.back')"
                     @click="handleCancel"
                 >
                     <ArrowLeft class="h-4 w-4" />
@@ -489,7 +499,7 @@ watch(
                                   : '',
                         ]"
                     >
-                        {{ currentSale.status }}
+                        {{ statusLabel }}
                     </span>
 
                     <span
@@ -511,10 +521,10 @@ watch(
                         <Save class="mr-2 h-4 w-4" />
                         {{
                             isLoading
-                                ? "Saving..."
+                                ? t('common.saving')
                                 : mode === "edit"
-                                  ? "Update Sale"
-                                  : "Create Sale"
+                                  ? t('sales.page.updateButton')
+                                  : t('sales.page.createTitle')
                         }}
                     </Button>
                     <DropdownMenu v-if="mode === 'edit' && viewMode === 'edit'">
@@ -525,12 +535,12 @@ watch(
                                 class="h-9 gap-1.5"
                                 :disabled="isLoading"
                             >
-                                Acciones
+                                {{ t('sales.page.actionsLabel') }}
                                 <ChevronDown class="h-4 w-4" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" class="w-[220px]">
-                            <DropdownMenuLabel>Sale Options</DropdownMenuLabel>
+                            <DropdownMenuLabel>{{ t('sales.page.optionsLabel') }}</DropdownMenuLabel>
                             <DropdownMenuSeparator />
 
                             <!-- DRAFT -->
@@ -539,7 +549,7 @@ watch(
                                 @click="handlePost"
                             >
                                 <Upload class="mr-2 h-4 w-4" />
-                                Publicar
+                                {{ t('sales.page.actionPublish') }}
                             </DropdownMenuItem>
 
                             <!-- POSTED -->
@@ -559,8 +569,8 @@ watch(
                                 <Send v-else class="mr-2 h-4 w-4" />
                                 {{
                                     currentSale.sunat_status === "error"
-                                        ? "Reintentar SUNAT"
-                                        : "Enviar a SUNAT"
+                                        ? t('sales.page.actionRetrySunat')
+                                        : t('sales.page.actionSendSunat')
                                 }}
                             </DropdownMenuItem>
 
@@ -569,7 +579,7 @@ watch(
                                 @click="startRefund"
                             >
                                 <Undo2 class="mr-2 h-4 w-4" />
-                                Nota de crédito
+                                {{ t('sales.page.actionRefund') }}
                             </DropdownMenuItem>
 
                             <DropdownMenuItem
@@ -580,7 +590,7 @@ watch(
                                 @click="handlePaySale"
                             >
                                 <CheckCircle2 class="mr-2 h-4 w-4" />
-                                Marcar pagada
+                                {{ t('sales.page.actionMarkPaid') }}
                             </DropdownMenuItem>
 
                             <!-- LEALTAD (cualquier estado con partner) -->
@@ -593,7 +603,7 @@ watch(
                                 @click="loyaltyOpen = true"
                             >
                                 <Heart class="mr-2 h-4 w-4 text-pink-500" />
-                                Lealtad
+                                {{ t('sales.page.actionLoyalty') }}
                             </DropdownMenuItem>
 
                             <!-- DESTRUCTIVAS -->
@@ -610,7 +620,7 @@ watch(
                                     @click="handleCancelSale"
                                 >
                                     <XCircle class="mr-2 h-4 w-4" />
-                                    Anular venta
+                                    {{ t('sales.page.actionCancelSale') }}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                     v-if="canManageSale"
@@ -618,7 +628,7 @@ watch(
                                     @click="handleDelete"
                                 >
                                     <Trash2 class="mr-2 h-4 w-4" />
-                                    Eliminar
+                                    {{ t('common.actions.delete') }}
                                 </DropdownMenuItem>
                             </template>
                         </DropdownMenuContent>
@@ -678,7 +688,7 @@ watch(
                                 class="h-8 text-xs"
                                 @click="sideTab = 'logs'"
                             >
-                                Logs
+                                {{ t('sales.page.logsTab') }}
                             </Button>
                             <Button
                                 :variant="sideTab === 'sunat' ? 'secondary' : 'ghost'"
@@ -729,18 +739,18 @@ watch(
                             @click="cancelRefund"
                         >
                             <ArrowLeft class="h-4 w-4" />
-                            Volver al detalle
+                            {{ t('sales.page.backToDetail') }}
                         </Button>
                     </div>
                 </div>
 
-                <h2 class="text-xl font-bold mb-1">Devolución</h2>
+                <h2 class="text-xl font-bold mb-1">{{ t('sales.page.refundTitle') }}</h2>
                 <p class="text-sm text-muted-foreground mb-6">
-                    Sobre
+                    {{ t('sales.page.refundSubjectPrefix') }}
                     <span class="font-mono">
                         {{ currentSale.serie }}-{{ currentSale.correlative }}
                     </span>
-                    — {{ currentSale.partner?.name || "Sin cliente" }}
+                    — {{ currentSale.partner?.name || t('sales.page.noCustomer') }}
                 </p>
 
                 <div
@@ -752,19 +762,19 @@ watch(
                         >
                             <tr>
                                 <th class="text-left px-4 py-2 font-medium">
-                                    Producto
+                                    {{ t('sales.page.tableProduct') }}
                                 </th>
                                 <th class="text-right px-4 py-2 font-medium w-20">
-                                    Vendido
+                                    {{ t('sales.page.tableSold') }}
                                 </th>
                                 <th class="text-right px-4 py-2 font-medium w-20">
-                                    Devuelto
+                                    {{ t('sales.page.tableReturned') }}
                                 </th>
                                 <th class="text-right px-4 py-2 font-medium w-20">
-                                    Disponible
+                                    {{ t('sales.page.tableAvailable') }}
                                 </th>
                                 <th class="text-right px-4 py-2 font-medium w-28">
-                                    A devolver
+                                    {{ t('sales.page.tableToReturn') }}
                                 </th>
                             </tr>
                         </thead>
@@ -782,7 +792,7 @@ watch(
                                                         p.product_product_id ===
                                                         line.product_product_id,
                                                 )?.product?.name ||
-                                                `Producto #${line.product_product_id}`
+                                                t('sales.page.productFallback', { id: line.product_product_id })
                                             }}
                                         </p>
                                     </td>
@@ -855,7 +865,7 @@ watch(
                                                         : 'text-muted-foreground',
                                                 ]"
                                             >
-                                                Máx:
+                                                {{ t('sales.page.maxLabel') }}
                                                 {{
                                                     Number(
                                                         line.available_quantity,
@@ -876,7 +886,7 @@ watch(
                                             <p
                                                 class="text-[10px] uppercase tracking-wider text-muted-foreground font-medium"
                                             >
-                                                Lotes
+                                                {{ t('sales.page.actionLots') }}
                                             </p>
                                             <div
                                                 v-for="lot in line.lots"
@@ -893,18 +903,18 @@ watch(
                                                     v-if="lot.expires_at"
                                                     class="text-muted-foreground"
                                                 >
-                                                    vence {{ lot.expires_at }}
+                                                    {{ t('sales.page.expiresLabel') }} {{ lot.expires_at }}
                                                 </span>
                                                 <span
                                                     class="ml-auto tabular-nums text-muted-foreground"
                                                 >
-                                                    vendido
+                                                    {{ t('sales.page.soldLabel') }}
                                                     {{
                                                         Number(
                                                             lot.sold_quantity,
                                                         ).toFixed(2)
                                                     }}
-                                                    · devuelto
+                                                    · {{ t('sales.page.returnedLabel') }}
                                                     {{
                                                         Number(
                                                             lot.refunded_quantity,
@@ -920,7 +930,7 @@ watch(
                                                                 : ''
                                                         "
                                                     >
-                                                        disponible
+                                                        {{ t('sales.page.availableLabel') }}
                                                         {{
                                                             Number(
                                                                 lot.available_quantity,
@@ -932,9 +942,7 @@ watch(
                                             <p
                                                 class="text-[10px] text-muted-foreground italic pt-1"
                                             >
-                                                La devolución se reparte
-                                                automáticamente entre los lotes
-                                                en orden FEFO inverso.
+                                                {{ t('sales.page.fefoNote') }}
                                             </p>
                                         </div>
                                     </td>
@@ -948,12 +956,12 @@ watch(
                     <label
                         class="block text-xs text-muted-foreground uppercase tracking-wide mb-1"
                     >
-                        Notas (opcional)
+                        {{ t('sales.page.notesOptional') }}
                     </label>
                     <textarea
                         v-model="refundNotes"
                         rows="2"
-                        placeholder="Motivo de la devolución…"
+                        :placeholder="t('sales.page.refundNotesPlaceholder')"
                         class="w-full px-3 py-2 bg-background border border-input rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                     ></textarea>
                 </div>
@@ -965,7 +973,7 @@ watch(
                         <p
                             class="text-xs text-muted-foreground uppercase tracking-wide"
                         >
-                            Total a devolver
+                            {{ t('sales.page.totalToReturn') }}
                         </p>
                         <p
                             :class="[
@@ -979,7 +987,7 @@ watch(
                             v-if="hasAnyOverflow"
                             class="text-xs text-destructive mt-1"
                         >
-                            Una o más líneas exceden la cantidad disponible.
+                            {{ t('sales.page.overflowWarning') }}
                         </p>
                     </div>
                     <div class="flex items-center gap-2">
@@ -988,7 +996,7 @@ watch(
                             :disabled="isRefunding"
                             @click="cancelRefund"
                         >
-                            Cancelar
+                            {{ t('common.actions.cancel') }}
                         </Button>
                         <Button
                             :disabled="!canSubmitRefund || isRefunding"
@@ -997,8 +1005,8 @@ watch(
                             <Undo2 class="h-4 w-4 mr-1.5" />
                             {{
                                 isRefunding
-                                    ? "Generando…"
-                                    : "Generar Nota de Crédito"
+                                    ? t('sales.page.generating')
+                                    : t('sales.page.generateCreditNote')
                             }}
                         </Button>
                     </div>

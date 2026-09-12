@@ -24,10 +24,18 @@ const props = withDefaults(
         selectedItems?: any[];
         viewMode?: string;
         viewModes?: ViewModeOption[];
+        newLabel?: string;
+        searchPlaceholder?: string;
+        prevLabel?: string;
+        nextLabel?: string;
     }>(),
     {
         selectedItems: () => [],
         canSearch: true,
+        newLabel: "Nuevo",
+        searchPlaceholder: "Buscar...",
+        prevLabel: "Anterior",
+        nextLabel: "Siguiente",
     },
 );
 
@@ -114,7 +122,7 @@ const handleRangeInput = (event: Event) => {
                 class="h-9"
             >
                 <Plus class="mr-2 h-4 w-4" />
-                Nuevo
+                {{ newLabel }}
             </Button>
         </template>
 
@@ -134,7 +142,7 @@ const handleRangeInput = (event: Event) => {
                         :value="localSearch"
                         @input="handleSearchInput"
                         type="text"
-                        placeholder="Buscar..."
+                        :placeholder="searchPlaceholder"
                         class="h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                     />
                 </div>
@@ -166,7 +174,7 @@ const handleRangeInput = (event: Event) => {
                         :disabled="currentPage <= 1 || loading"
                         @click="$emit('pageChange', currentPage - 1)"
                     >
-                        <span class="sr-only">Anterior</span>
+                        <span class="sr-only">{{ prevLabel }}</span>
                         <ChevronLeft class="h-4 w-4" />
                     </Button>
                     <Button
@@ -176,7 +184,7 @@ const handleRangeInput = (event: Event) => {
                         :disabled="isLastPage || loading"
                         @click="$emit('pageChange', currentPage + 1)"
                     >
-                        <span class="sr-only">Siguiente</span>
+                        <span class="sr-only">{{ nextLabel }}</span>
                         <ChevronRight class="h-4 w-4" />
                     </Button>
                 </div>

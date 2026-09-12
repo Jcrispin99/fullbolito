@@ -1,4 +1,5 @@
 import { ref, computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { apiClient } from '@tenant/lib/api'
 import { toast } from 'vue-sonner'
 
@@ -7,11 +8,12 @@ export interface CreateDialogOptions {
   endpoint: string
   /** API endpoint for form options (e.g. '/v1/categories/form-options'), optional */
   formOptionsEndpoint?: string
-  /** Label for toast messages (e.g. 'Category') */
-  label?: string
+  /** i18n key under common.entities for toast/title messages (e.g. 'category') */
+  labelKey?: string
 }
 
 export function useCreateDialog(options: CreateDialogOptions) {
+  const { t } = useI18n()
   const isOpen = ref(false)
   const isLoading = ref(false)
   const errors = ref<Record<string, string>>({})
@@ -24,10 +26,17 @@ export function useCreateDialog(options: CreateDialogOptions) {
 
   const isEditing = computed(() => mode.value === 'edit')
 
-  const title = computed(() => {
-    const l = options.label ?? 'Record'
-    return mode.value === 'edit' ? `Edit ${l}` : `Create ${l}`
-  })
+  const entityLabel = computed(() =>
+    options.labelKey
+      ? t(`common.entities.${options.labelKey}`)
+      : t('common.entities.record'),
+  )
+
+  const title = computed(() =>
+    mode.value === 'edit'
+      ? t('common.dialog.edit', { entity: entityLabel.value })
+      : t('common.dialog.create', { entity: entityLabel.value }),
+  )
 
   async function loadFormOptions() {
     if (options.formOptionsEndpoint && !formOptions.value) {
@@ -64,7 +73,7 @@ export function useCreateDialog(options: CreateDialogOptions) {
       initialData.value = data.data
       isOpen.value = true
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || 'Error loading record')
+      toast.error(err?.response?.data?.message || t('common.dialog.errorLoading'))
     } finally {
       isLoading.value = false
     }
@@ -86,11 +95,11 @@ export function useCreateDialog(options: CreateDialogOptions) {
       if (mode.value === 'edit' && recordId.value) {
         const { data } = await apiClient.put<any>(`${options.endpoint}/${recordId.value}`, payload)
         result = data.data
-        toast.success(`${options.label ?? 'Record'} updated`)
+        toast.success(t('common.dialog.updated', { entity: entityLabel.value }))
       } else {
         const { data } = await apiClient.post<any>(options.endpoint, payload)
         result = data.data
-        toast.success(`${options.label ?? 'Record'} created`)
+        toast.success(t('common.dialog.created', { entity: entityLabel.value }))
       }
       close()
       return result
@@ -103,7 +112,7 @@ export function useCreateDialog(options: CreateDialogOptions) {
         })
         errors.value = flat
       } else {
-        toast.error(e?.message || 'Error saving record')
+        toast.error(e?.message || t('common.dialog.errorSaving'))
       }
       throw err
     } finally {

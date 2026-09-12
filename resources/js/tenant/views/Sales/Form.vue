@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, computed } from "vue";
+import { useI18n } from "vue-i18n";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import FolderTabs from "@/components/ui/tabs/FolderTabs.vue";
@@ -23,6 +24,8 @@ const props = defineProps<{
 const emit = defineEmits<{
     (e: "submit", data: any): void;
 }>();
+
+const { t } = useI18n();
 
 const form = ref({
     partner_id: undefined as number | undefined,
@@ -90,7 +93,7 @@ const isDraft = computed(
 
 const saleName = computed(() => {
     if (props.displayName !== undefined) return props.displayName;
-    if (props.mode === "create") return "New";
+    if (props.mode === "create") return t('sales.form.newName');
     const serie = props.initialData?.serie ? `${props.initialData.serie}-` : "";
     const correlative = props.initialData?.correlative || "";
     return `${serie}${correlative}`;
@@ -129,7 +132,7 @@ const sellerOptions = computed(() =>
 // ─── Create Dialog: Customer ─────────────────────────────────────────────────
 const customerDialog = useCreateDialog({
     endpoint: '/v1/customers',
-    label: 'Customer',
+    labelKey: 'customer',
 });
 const customerFormRef = ref<InstanceType<typeof CustomerForm> | null>(null);
 const localCustomers = ref<{ id: number; name: string }[]>([]);
@@ -163,7 +166,7 @@ async function onCustomerSubmit(payload: any) {
 const warehouseDialog = useCreateDialog({
     endpoint: '/v1/warehouses',
     formOptionsEndpoint: '/v1/warehouses/form-options',
-    label: 'Warehouse',
+    labelKey: 'warehouse',
 });
 const warehouseFormRef = ref<InstanceType<typeof WarehouseForm> | null>(null);
 const localWarehouses = ref<{ id: number; name: string }[]>([]);
@@ -210,7 +213,7 @@ defineExpose({ submit });
             <CardContent class="pt-6">
                 <form @submit.prevent="submit" class="space-y-6">
                     <div class="space-y-2">
-                        <Label htmlFor="sale_name">Name</Label>
+                        <Label htmlFor="sale_name">{{ t('sales.form.name') }}</Label>
                         <UnderlineInput
                             id="sale_name"
                             :model-value="saleName"
@@ -222,13 +225,13 @@ defineExpose({ submit });
 
                     <div class="grid gap-4 md:grid-cols-2">
                         <div class="space-y-2">
-                            <Label htmlFor="partner_id">Customer</Label>
+                            <Label htmlFor="partner_id">{{ t('sales.form.customer') }}</Label>
                             <SearchSelect
                                 id="partner_id"
                                 v-model="form.partner_id"
                                 :disabled="!isDraft"
                                 :options="allCustomerOptions"
-                                placeholder="Buscar cliente..."
+                                :placeholder="t('sales.form.searchCustomer')"
                                 :show-create="isDraft"
                                 :show-edit="true"
                                 @create="customerDialog.open($event)"
@@ -241,7 +244,7 @@ defineExpose({ submit });
 
                         <div class="space-y-2">
                             <Label htmlFor="warehouse_id">
-                                Warehouse
+                                {{ t('sales.form.warehouse') }}
                                 <span class="text-destructive">*</span>
                             </Label>
                             <SearchSelect
@@ -250,7 +253,7 @@ defineExpose({ submit });
                                 required
                                 :disabled="!isDraft"
                                 :options="allWarehouseOptions"
-                                placeholder="Buscar almacén..."
+                                :placeholder="t('sales.form.searchWarehouse')"
                                 :show-create="isDraft"
                                 :show-edit="true"
                                 @create="warehouseDialog.open($event)"
@@ -289,13 +292,13 @@ defineExpose({ submit });
                                     htmlFor="notes"
                                     class="text-xs text-muted-foreground"
                                 >
-                                    Notes
+                                    {{ t('sales.form.notes') }}
                                 </Label>
                                 <UnderlineTextarea
                                     id="notes"
                                     v-model="form.notes"
                                     rows="3"
-                                    placeholder="Additional details..."
+                                    :placeholder="t('sales.form.notesPlaceholder')"
                                     :disabled="!isDraft"
                                 />
                                 <p
@@ -317,7 +320,7 @@ defineExpose({ submit });
                 <div class="grid gap-4 md:grid-cols-2">
                     <div class="space-y-2">
                         <Label htmlFor="company_id">
-                            Company
+                            {{ t('sales.form.company') }}
                             <span class="text-destructive">*</span>
                         </Label>
                         <SearchSelect
@@ -326,7 +329,7 @@ defineExpose({ submit });
                             required
                             :disabled="!isDraft"
                             :options="companyOptions"
-                            placeholder="Buscar compañía..."
+                            :placeholder="t('sales.form.searchCompany')"
                         />
                         <p
                             v-if="errors?.company_id"
@@ -337,13 +340,13 @@ defineExpose({ submit });
                     </div>
 
                     <div class="space-y-2">
-                        <Label htmlFor="seller_id">Seller</Label>
+                        <Label htmlFor="seller_id">{{ t('sales.form.seller') }}</Label>
                         <SearchSelect
                             id="seller_id"
                             v-model="form.seller_id"
                             :disabled="!isDraft"
                             :options="sellerOptions"
-                            placeholder="Buscar vendedor..."
+                            :placeholder="t('sales.form.searchSeller')"
                         />
                         <p
                             v-if="errors?.seller_id"
@@ -352,7 +355,7 @@ defineExpose({ submit });
                             {{ errors.seller_id }}
                         </p>
                         <p class="text-xs text-muted-foreground">
-                            Select the user responsible for this sale.
+                            {{ t('sales.form.sellerHelp') }}
                         </p>
                     </div>
                 </div>

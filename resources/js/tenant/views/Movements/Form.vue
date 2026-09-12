@@ -98,7 +98,7 @@ const movementName = computed(() => {
 const warehouseDialog = useCreateDialog({
     endpoint: "/v1/warehouses",
     formOptionsEndpoint: "/v1/warehouses/form-options",
-    label: "Warehouse",
+    labelKey: "warehouse",
 });
 const warehouseFormRef = ref<InstanceType<typeof WarehouseForm> | null>(null);
 const localWarehouses = ref<{ id: number; name: string }[]>([]);
@@ -332,7 +332,7 @@ const onLotSelected = (selection: {
 const productDialog = useCreateDialog({
     endpoint: "/v1/product-templates",
     formOptionsEndpoint: "/v1/product-templates/form-options",
-    label: "Product",
+    labelKey: "product",
 });
 const productFormRef = ref<InstanceType<typeof ProductForm> | null>(null);
 const createContext = ref<SearchKey>("ghost");

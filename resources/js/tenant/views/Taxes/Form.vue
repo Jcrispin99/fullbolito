@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { UnderlineInput } from "@/components/ui/underline-input";
@@ -18,6 +19,8 @@ const props = defineProps<{
 const emit = defineEmits<{
     (e: "submit", payload: any): void;
 }>();
+
+const { t } = useI18n();
 
 const TAX_TYPES = [
     { value: "IGV", label: "IGV — Impuesto General a las Ventas" },
@@ -84,7 +87,7 @@ defineExpose({ submit: handleSubmit });
     <form @submit.prevent="handleSubmit">
         <div class="grid gap-6">
             <Card class="relative overflow-hidden">
-                <CornerRibbon v-if="archived" label="Inactive" tone="danger" />
+                <CornerRibbon v-if="archived" :label="t('taxes.form.inactive')" tone="danger" />
 
                 <CardContent class="pt-6">
                     <div class="grid gap-6">
@@ -92,7 +95,7 @@ defineExpose({ submit: handleSubmit });
                         <div class="grid grid-cols-1 gap-4">
                             <div class="grid gap-3">
                                 <Label for="name"
-                                    >Name
+                                    >{{ t('taxes.form.name') }}
                                     <span class="text-destructive"
                                         >*</span
                                     ></Label
@@ -101,7 +104,7 @@ defineExpose({ submit: handleSubmit });
                                     id="name"
                                     v-model="formData.name"
                                     type="text"
-                                    placeholder="e.g. IGV 18%"
+                                    :placeholder="t('taxes.form.namePlaceholder')"
                                     required
                                 />
                                 <p
@@ -112,12 +115,12 @@ defineExpose({ submit: handleSubmit });
                                 </p>
                             </div>
                             <div class="grid gap-3">
-                                <Label for="invoice_label">Invoice Label</Label>
+                                <Label for="invoice_label">{{ t('taxes.form.invoiceLabel') }}</Label>
                                 <UnderlineInput
                                     id="invoice_label"
                                     v-model="formData.invoice_label"
                                     type="text"
-                                    placeholder="e.g. IGV"
+                                    :placeholder="t('taxes.form.invoiceLabelPlaceholder')"
                                 />
                                 <p
                                     v-if="errors?.invoice_label"
@@ -132,7 +135,7 @@ defineExpose({ submit: handleSubmit });
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="grid gap-3">
                                 <Label for="tax_type"
-                                    >Tax Type
+                                    >{{ t('taxes.form.taxType') }}
                                     <span class="text-destructive"
                                         >*</span
                                     ></Label
@@ -142,7 +145,7 @@ defineExpose({ submit: handleSubmit });
                                     v-model="formData.tax_type"
                                     required
                                 >
-                                    <option value="">— Select type —</option>
+                                    <option value="">{{ t('taxes.form.selectType') }}</option>
                                     <option
                                         v-for="opt in TAX_TYPES"
                                         :key="opt.value"
@@ -160,13 +163,13 @@ defineExpose({ submit: handleSubmit });
                             </div>
                             <div class="grid gap-3">
                                 <Label for="affectation_type_code"
-                                    >Affectation Code</Label
+                                    >{{ t('taxes.form.affectationCode') }}</Label
                                 >
                                 <UnderlineInput
                                     id="affectation_type_code"
                                     v-model="formData.affectation_type_code"
                                     type="text"
-                                    placeholder="e.g. 10"
+                                    :placeholder="t('taxes.form.affectationCodePlaceholder')"
                                     maxlength="10"
                                 />
                                 <p
@@ -181,7 +184,7 @@ defineExpose({ submit: handleSubmit });
                         <!-- Rate % -->
                         <div class="grid gap-3">
                             <Label for="rate_percent"
-                                >Rate %
+                                >{{ t('taxes.form.ratePercent') }}
                                 <span class="text-destructive">*</span></Label
                             >
                             <UnderlineInput
@@ -191,7 +194,7 @@ defineExpose({ submit: handleSubmit });
                                 step="0.01"
                                 min="0"
                                 max="100"
-                                placeholder="e.g. 18"
+                                :placeholder="t('taxes.form.ratePercentPlaceholder')"
                                 required
                             />
                             <p
@@ -204,11 +207,11 @@ defineExpose({ submit: handleSubmit });
 
                         <!-- Description -->
                         <div class="grid gap-3">
-                            <Label for="description">Description</Label>
+                            <Label for="description">{{ t('taxes.form.description') }}</Label>
                             <UnderlineTextarea
                                 id="description"
                                 v-model="formData.description"
-                                placeholder="Additional details about this tax"
+                                :placeholder="t('taxes.form.descriptionPlaceholder')"
                                 rows="3"
                             />
                             <p
@@ -235,13 +238,12 @@ defineExpose({ submit: handleSubmit });
                                         for="is_price_inclusive"
                                         class="cursor-pointer"
                                     >
-                                        Price Inclusive
+                                        {{ t('taxes.form.priceInclusive') }}
                                     </Label>
                                     <p
                                         class="text-xs text-muted-foreground mt-0.5"
                                     >
-                                        Tax is already included in the listed
-                                        price.
+                                        {{ t('taxes.form.priceInclusiveHelp') }}
                                     </p>
                                 </div>
                             </div>
@@ -259,13 +261,12 @@ defineExpose({ submit: handleSubmit });
                                         for="is_default"
                                         class="cursor-pointer"
                                     >
-                                        Default Tax
+                                        {{ t('taxes.form.defaultTax') }}
                                     </Label>
                                     <p
                                         class="text-xs text-muted-foreground mt-0.5"
                                     >
-                                        Use as the default tax for this type.
-                                        Unchecks other defaults.
+                                        {{ t('taxes.form.defaultTaxHelp') }}
                                     </p>
                                 </div>
                             </div>

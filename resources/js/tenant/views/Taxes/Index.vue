@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 import { useTaxStore } from "@tenant/stores/tax";
@@ -35,6 +36,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import ConfirmDialog from "@/components/ConfirmDialog.vue";
 import TableColumnSettingsHead from "@/components/TableColumnSettingsHead.vue";
 
+const { t } = useI18n();
 const router = useRouter();
 const taxStore = useTaxStore();
 const { taxes, meta, isLoading } = storeToRefs(taxStore);
@@ -49,15 +51,15 @@ type ColumnKey = "name" | "tax_type" | "rate_percent" | "is_price_inclusive" | "
 
 const COLUMN_STORAGE_KEY = "taxes_table_columns";
 
-const columnOptions: { key: ColumnKey; label: string }[] = [
-    { key: "name", label: "Name" },
-    { key: "tax_type", label: "Type" },
-    { key: "rate_percent", label: "Rate %" },
-    { key: "is_price_inclusive", label: "Inclusive" },
-    { key: "is_default", label: "Default" },
-    { key: "is_active", label: "Active" },
-    { key: "created", label: "Created" },
-];
+const columnOptions = computed<{ key: ColumnKey; label: string }[]>(() => [
+    { key: "name", label: t('taxes.index.colName') },
+    { key: "tax_type", label: t('taxes.index.colType') },
+    { key: "rate_percent", label: t('taxes.index.colRate') },
+    { key: "is_price_inclusive", label: t('taxes.index.colInclusive') },
+    { key: "is_default", label: t('taxes.index.colDefault') },
+    { key: "is_active", label: t('taxes.index.colActive') },
+    { key: "created", label: t('taxes.index.colCreated') },
+]);
 
 const defaultColumnVisibility: Record<ColumnKey, boolean> = {
     name: true,
@@ -105,10 +107,10 @@ const currentStatus = ref("active");
 
 const filterLabel = computed(() => {
     switch (currentStatus.value) {
-        case "active": return "Active Taxes";
-        case "inactive": return "Inactive Taxes";
-        case "all": return "All Taxes";
-        default: return "Filter";
+        case "active": return t('taxes.index.filterActive');
+        case "inactive": return t('taxes.index.filterInactive');
+        case "all": return t('taxes.index.filterAll');
+        default: return t('taxes.index.filterShort');
     }
 });
 
@@ -161,15 +163,15 @@ const handleBatchDelete = async () => {
     if (selectedTaxes.value.length === 0) return;
 
     confirmDialog.value?.show(
-        "Delete Taxes",
-        `Are you sure you want to delete ${selectedTaxes.value.length} tax(es)?`,
+        t('taxes.index.batchDeleteConfirmTitle'),
+        t('taxes.index.batchDeleteConfirmMessage', { n: selectedTaxes.value.length }),
         async () => {
             try {
                 await taxStore.deleteTaxes(selectedTaxes.value);
                 loadTaxes(meta.value.current_page);
                 selectedTaxes.value = [];
             } catch (err: any) {
-                const msg = err?.response?.data?.message || "Some taxes could not be deleted.";
+                const msg = err?.response?.data?.message || t('taxes.index.batchDeleteErrorFallback');
                 alert(msg);
             }
         },
@@ -180,8 +182,8 @@ const handleBatchToggleActive = () => {
     if (selectedTaxes.value.length === 0) return;
 
     confirmDialog.value?.show(
-        "Toggle Active",
-        `Are you sure you want to toggle active for ${selectedTaxes.value.length} tax(es)?`,
+        t('common.toggleActive'),
+        t('taxes.index.batchToggleConfirmMessage', { n: selectedTaxes.value.length }),
         async () => {
             await Promise.all(
                 selectedTaxes.value.map((id) => taxStore.toggleActive(id)),
@@ -194,10 +196,12 @@ const handleBatchToggleActive = () => {
 </script>
 
 <template>
-    <DashboardLayout :breadcrumbs="[{ label: 'Taxes' }]">
+    <DashboardLayout :breadcrumbs="[{ label: t('taxes.index.pageTitle') }]">
         <div class="space-y-6">
             <ModuleHeader
-                title="Taxes"
+                :title="t('taxes.index.pageTitle')"
+                :new-label="t('common.actions.new')"
+                :search-placeholder="t('common.search')"
                 :items-count="taxes.length"
                 :total-items="meta.total"
                 :per-page="meta.per_page"
@@ -217,14 +221,14 @@ const handleBatchToggleActive = () => {
                             <Button variant="outline" class="h-9 gap-1 whitespace-nowrap">
                                 <Filter class="h-3.5 w-3.5 mr-1 text-muted-foreground" />
                                 <span class="hidden sm:inline">{{ filterLabel }}</span>
-                                <span class="sm:hidden">Filter</span>
+                                <span class="sm:hidden">{{ t('taxes.index.filterShort') }}</span>
                                 <ChevronDown class="h-4 w-4 opacity-50 ml-1" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuItem @click="setFilter('active')">Active Taxes</DropdownMenuItem>
-                            <DropdownMenuItem @click="setFilter('inactive')">Inactive Taxes</DropdownMenuItem>
-                            <DropdownMenuItem @click="setFilter('all')">All Taxes</DropdownMenuItem>
+                            <DropdownMenuItem @click="setFilter('active')">{{ t('taxes.index.filterActive') }}</DropdownMenuItem>
+                            <DropdownMenuItem @click="setFilter('inactive')">{{ t('taxes.index.filterInactive') }}</DropdownMenuItem>
+                            <DropdownMenuItem @click="setFilter('all')">{{ t('taxes.index.filterAll') }}</DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </template>
@@ -233,32 +237,32 @@ const handleBatchToggleActive = () => {
                     <DropdownMenu>
                         <DropdownMenuTrigger as-child>
                             <Button variant="outline" size="sm" class="h-9 gap-1">
-                                Actions
+                                {{ t('common.actionsMenu') }}
                                 <ChevronDown class="h-4 w-4 opacity-50" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" class="w-[180px]">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuLabel>{{ t('common.actionsMenu') }}</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem @click="handleBatchToggleActive">
                                 <Power class="mr-2 h-4 w-4 text-muted-foreground" />
-                                Toggle Active
+                                {{ t('common.toggleActive') }}
                             </DropdownMenuItem>
                             <DropdownMenuItem @click="ieToolbar?.openExport()">
                                 <Download class="mr-2 h-4 w-4 text-muted-foreground" />
-                                Exportar
+                                {{ t('common.actions.export') }}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 v-if="ieToolbar?.supportsImport"
                                 @click="ieToolbar?.openImport()"
                             >
                                 <Upload class="mr-2 h-4 w-4 text-muted-foreground" />
-                                Importar
+                                {{ t('common.actions.import') }}
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem @click="handleBatchDelete" class="text-destructive">
                                 <Trash2 class="mr-2 h-4 w-4" />
-                                Delete
+                                {{ t('common.actions.delete') }}
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
@@ -272,13 +276,13 @@ const handleBatchToggleActive = () => {
                             <TableHead class="w-[50px]">
                                 <Checkbox :checked="allSelected" @update:checked="toggleSelectAll" />
                             </TableHead>
-                            <TableHead v-if="columnVisibility.name">Name</TableHead>
-                            <TableHead v-if="columnVisibility.tax_type">Type</TableHead>
-                            <TableHead v-if="columnVisibility.rate_percent">Rate %</TableHead>
-                            <TableHead v-if="columnVisibility.is_price_inclusive">Inclusive</TableHead>
-                            <TableHead v-if="columnVisibility.is_default">Default</TableHead>
-                            <TableHead v-if="columnVisibility.is_active">Active</TableHead>
-                            <TableHead v-if="columnVisibility.created">Created</TableHead>
+                            <TableHead v-if="columnVisibility.name">{{ t('taxes.index.colName') }}</TableHead>
+                            <TableHead v-if="columnVisibility.tax_type">{{ t('taxes.index.colType') }}</TableHead>
+                            <TableHead v-if="columnVisibility.rate_percent">{{ t('taxes.index.colRate') }}</TableHead>
+                            <TableHead v-if="columnVisibility.is_price_inclusive">{{ t('taxes.index.colInclusive') }}</TableHead>
+                            <TableHead v-if="columnVisibility.is_default">{{ t('taxes.index.colDefault') }}</TableHead>
+                            <TableHead v-if="columnVisibility.is_active">{{ t('taxes.index.colActive') }}</TableHead>
+                            <TableHead v-if="columnVisibility.created">{{ t('taxes.index.colCreated') }}</TableHead>
                             <TableColumnSettingsHead
                                 v-model="columnVisibility"
                                 :columns="columnOptions"
@@ -289,12 +293,12 @@ const handleBatchToggleActive = () => {
                     <TableBody>
                         <TableRow v-if="isLoading">
                             <TableCell :colspan="tableColspan" class="text-center py-8">
-                                Loading...
+                                {{ t('common.loading') }}
                             </TableCell>
                         </TableRow>
                         <TableRow v-else-if="taxes.length === 0">
                             <TableCell :colspan="tableColspan" class="text-center py-8 text-muted-foreground">
-                                No taxes found.
+                                {{ t('taxes.index.noRecordsFound') }}
                             </TableCell>
                         </TableRow>
                         <TableRow
@@ -332,7 +336,7 @@ const handleBatchToggleActive = () => {
                                             : 'bg-gray-400',
                                     ]"
                                 >
-                                    {{ t.is_price_inclusive ? "Inclusive" : "Exclusive" }}
+                                    {{ t.is_price_inclusive ? $t('taxes.index.colInclusive') : $t('taxes.index.badgeExclusive') }}
                                 </span>
                             </TableCell>
                             <TableCell v-if="columnVisibility.is_default">
@@ -340,7 +344,7 @@ const handleBatchToggleActive = () => {
                                     v-if="t.is_default"
                                     class="px-2 py-1 rounded text-xs bg-amber-500 text-white font-medium"
                                 >
-                                    Default
+                                    {{ $t('taxes.index.colDefault') }}
                                 </span>
                                 <span v-else class="text-muted-foreground text-xs">—</span>
                             </TableCell>
@@ -353,7 +357,7 @@ const handleBatchToggleActive = () => {
                                             : 'bg-gray-400',
                                     ]"
                                 >
-                                    {{ t.is_active ? "Active" : "Inactive" }}
+                                    {{ t.is_active ? $t('taxes.index.colActive') : $t('taxes.form.inactive') }}
                                 </span>
                             </TableCell>
                             <TableCell v-if="columnVisibility.created">
@@ -379,7 +383,7 @@ const handleBatchToggleActive = () => {
                 'is_price_inclusive',
                 'is_active',
             ]"
-            export-title="Exportar Impuestos"
+            :export-title="t('taxes.index.exportTitle')"
         />
     </DashboardLayout>
 </template>

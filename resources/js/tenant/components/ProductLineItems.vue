@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, computed } from "vue";
+import { useI18n } from "vue-i18n";
 import { Button } from "@/components/ui/button";
 import { Trash2, Boxes } from "lucide-vue-next";
 import { useProductProductStore } from "@tenant/stores/productProduct";
@@ -25,6 +26,7 @@ const emit = defineEmits<{
     (e: "update:modelValue", data: any[]): void;
 }>();
 
+const { t } = useI18n();
 const productStore = useProductProductStore();
 
 // ─── Lot modals (purchase: create/edit; sale: select) ────────────────────────
@@ -302,7 +304,7 @@ const getProductOptions = (key: SearchKey, current?: any) => {
             label:
                 current?.product_name ||
                 map.get(currentId)?.label ||
-                `Producto #${currentId}`,
+                t('productLineItems.productFallback', { id: currentId }),
         });
     }
 
@@ -442,7 +444,7 @@ const tableNativeSelectClass =
 const productDialog = useCreateDialog({
     endpoint: '/v1/product-templates',
     formOptionsEndpoint: '/v1/product-templates/form-options',
-    label: 'Product',
+    labelKey: 'product',
 });
 const productFormRef = ref<InstanceType<typeof ProductForm> | null>(null);
 
@@ -570,18 +572,18 @@ async function onProductSubmit(payload: any) {
                     <th
                         class="pt-2 pb-3 px-2 font-medium min-w-[250px] w-[35%]"
                     >
-                        Product
+                        {{ t('productLineItems.colProduct') }}
                     </th>
                     <th class="pt-2 pb-3 px-2 font-medium w-24 text-right">
-                        Quantity
+                        {{ t('productLineItems.colQuantity') }}
                     </th>
-                    <th class="pt-2 pb-3 px-2 font-medium w-32">UoM</th>
+                    <th class="pt-2 pb-3 px-2 font-medium w-32">{{ t('productLineItems.colUom') }}</th>
                     <th class="pt-2 pb-3 px-2 font-medium w-32 text-right">
-                        Unit Price
+                        {{ t('productLineItems.colUnitPrice') }}
                     </th>
-                    <th class="pt-2 pb-3 px-2 font-medium w-44">Tax</th>
+                    <th class="pt-2 pb-3 px-2 font-medium w-44">{{ t('productLineItems.colTax') }}</th>
                     <th class="pt-2 pb-3 px-2 font-medium w-32 text-right">
-                        Subtotal
+                        {{ t('productLineItems.colSubtotal') }}
                     </th>
                     <th class="pt-2 pb-3 px-2 font-medium w-10"></th>
                 </tr>
@@ -609,7 +611,7 @@ async function onProductSubmit(payload: any) {
                                             isDraft && !!product.product_product_id
                                         "
                                         clear-on-empty
-                                        placeholder="Buscar producto..."
+                                        :placeholder="t('productLineItems.searchProductPlaceholder')"
                                         :input-class="tableSearchInputClass"
                                         @search="
                                             (q: string) => searchProducts(index, q)
@@ -627,8 +629,8 @@ async function onProductSubmit(payload: any) {
                                 <span
                                     v-if="product.is_tracked_by_lot"
                                     class="shrink-0 inline-flex items-center justify-center h-7 w-7 rounded border border-muted-foreground/30 text-muted-foreground"
-                                    title="Producto con trazabilidad por lote"
-                                    aria-label="Producto con trazabilidad por lote"
+                                    :title="t('productLineItems.lotTrackedTitle')"
+                                    :aria-label="t('productLineItems.lotTrackedTitle')"
                                 >
                                     <Boxes class="h-3.5 w-3.5" />
                                 </span>
@@ -642,7 +644,7 @@ async function onProductSubmit(payload: any) {
                                 <span
                                     class="text-[10px] uppercase tracking-wider text-muted-foreground shrink-0"
                                 >
-                                    Lote
+                                    {{ t('productLineItems.lotLabel') }}
                                 </span>
 
                                 <!-- Existing allocations as read-only badges -->
@@ -652,7 +654,7 @@ async function onProductSubmit(payload: any) {
                                         :key="alloc.productable_id ?? alloc.lot_id ?? alloc.lot_number"
                                         class="inline-flex items-center gap-1 px-2 h-6 rounded border border-input bg-background text-[11px] font-medium"
                                     >
-                                        <span>{{ alloc.lot_number ?? `Lote #${alloc.lot_id ?? '?'}` }}</span>
+                                        <span>{{ alloc.lot_number ?? t('productLineItems.lotFallback', { id: alloc.lot_id ?? '?' }) }}</span>
                                         <span class="text-muted-foreground">× {{ alloc.quantity }}</span>
                                     </span>
                                 </template>
@@ -660,12 +662,12 @@ async function onProductSubmit(payload: any) {
                                     <span
                                         class="inline-flex items-center gap-1 px-2 h-6 rounded border border-input bg-background text-[11px] font-medium"
                                     >
-                                        <span>{{ product.lot_number ?? `Lote #${product.lot_id}` }}</span>
+                                        <span>{{ product.lot_number ?? t('productLineItems.lotFallback', { id: product.lot_id }) }}</span>
                                         <span
                                             v-if="product.lot_expires_at"
                                             class="text-muted-foreground"
                                         >
-                                            vence {{ product.lot_expires_at }}
+                                            {{ t('productLineItems.expiresLabel') }} {{ product.lot_expires_at }}
                                         </span>
                                     </span>
                                 </template>
@@ -673,8 +675,8 @@ async function onProductSubmit(payload: any) {
                                     <span class="text-[11px] text-muted-foreground italic">
                                         {{
                                             context === "sale"
-                                                ? "Auto (FEFO)"
-                                                : "Sin lotes asignados"
+                                                ? t('productLineItems.autoFefo')
+                                                : t('productLineItems.noLotsAssigned')
                                         }}
                                     </span>
                                 </template>
@@ -690,18 +692,18 @@ async function onProductSubmit(payload: any) {
                                     class="h-6 px-2 text-[11px] text-primary hover:text-primary"
                                     :title="
                                         context === 'sale'
-                                            ? 'Seleccionar lote'
-                                            : 'Gestionar lotes'
+                                            ? t('productLineItems.selectLotTitle')
+                                            : t('productLineItems.manageLotsTitle')
                                     "
                                     @click="openLotModal(index)"
                                 >
                                     <Boxes class="h-3 w-3 mr-1" />
                                     {{
                                         context === "sale"
-                                            ? "Elegir lote"
+                                            ? t('productLineItems.chooseLot')
                                             : isDraft
-                                              ? "Gestionar lotes"
-                                              : "Ver lotes"
+                                              ? t('productLineItems.manageLotsTitle')
+                                              : t('productLineItems.viewLots')
                                     }}
                                 </Button>
                             </div>
@@ -754,7 +756,7 @@ async function onProductSubmit(payload: any) {
                             :class="tableNativeSelectClass"
                             :disabled="!isDraft"
                         >
-                            <option :value="undefined">Base</option>
+                            <option :value="undefined">{{ t('productLineItems.baseUom') }}</option>
                             <option v-for="u in uoms" :key="u.id" :value="u.id">
                                 {{ u.name }}
                             </option>
@@ -782,7 +784,7 @@ async function onProductSubmit(payload: any) {
                             :class="tableNativeSelectClass"
                             :disabled="!isDraft"
                         >
-                            <option :value="undefined">No Tax</option>
+                            <option :value="undefined">{{ t('productLineItems.noTaxOption') }}</option>
                             <option
                                 v-for="t in taxes"
                                 :key="t.id"
@@ -811,7 +813,7 @@ async function onProductSubmit(payload: any) {
                             type="button"
                             class="h-8 w-8 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
                             @click="removeLine(index)"
-                            aria-label="Remove line"
+                            :aria-label="t('productLineItems.removeLineAria')"
                         >
                             <Trash2 class="h-4 w-4" />
                         </Button>
@@ -829,7 +831,7 @@ async function onProductSubmit(payload: any) {
                     <td colspan="7" class="py-3 px-2">
                         <span
                             class="text-primary hover:underline text-sm font-medium"
-                            >Agregar un producto</span
+                            >{{ t('productLineItems.addProduct') }}</span
                         >
                     </td>
                 </tr>
@@ -849,7 +851,7 @@ async function onProductSubmit(payload: any) {
                                 :options="getProductOptions('ghost')"
                                 :show-create="true"
                                 clear-on-empty
-                                placeholder="Busca un producto..."
+                                :placeholder="t('productLineItems.searchProductGhostPlaceholder')"
                                 :input-class="
                                     tableSearchInputClass +
                                     ' !border-primary placeholder:text-muted-foreground/50'
@@ -882,7 +884,7 @@ async function onProductSubmit(payload: any) {
                                 'opacity-50 focus:opacity-100',
                             ]"
                         >
-                            <option :value="undefined">Base</option>
+                            <option :value="undefined">{{ t('productLineItems.baseUom') }}</option>
                             <option v-for="u in uoms" :key="u.id" :value="u.id">
                                 {{ u.name }}
                             </option>
@@ -908,7 +910,7 @@ async function onProductSubmit(payload: any) {
                                 'opacity-50 focus:opacity-100',
                             ]"
                         >
-                            <option :value="undefined">No Tax</option>
+                            <option :value="undefined">{{ t('productLineItems.noTaxOption') }}</option>
                             <option
                                 v-for="t in taxes"
                                 :key="t.id"
@@ -937,7 +939,7 @@ async function onProductSubmit(payload: any) {
                             type="button"
                             class="h-8 w-8 text-muted-foreground hover:text-destructive transition-opacity"
                             @click="cancelAdding"
-                            aria-label="Cancel"
+                            :aria-label="t('common.actions.cancel')"
                         >
                             <Trash2 class="h-4 w-4" />
                         </Button>
@@ -956,17 +958,17 @@ async function onProductSubmit(payload: any) {
             <!-- Totals (right) -->
             <div class="text-sm space-y-1.5 min-w-[230px] shrink-0">
                 <div class="flex justify-between gap-8">
-                    <span class="text-muted-foreground">Subtotal</span>
+                    <span class="text-muted-foreground">{{ t('productLineItems.subtotalLabel') }}</span>
                     <span>{{ formatCurrency(footerTotals.subtotal) }}</span>
                 </div>
                 <div v-if="hasTax" class="flex justify-between gap-8">
-                    <span class="text-muted-foreground">Impuesto</span>
+                    <span class="text-muted-foreground">{{ t('productLineItems.taxLabel') }}</span>
                     <span>{{ formatCurrency(footerTotals.taxAmount) }}</span>
                 </div>
                 <div
                     class="flex justify-between gap-8 font-semibold text-base border-t border-border pt-2 mt-1"
                 >
-                    <span>Total</span>
+                    <span>{{ t('productLineItems.totalLabel') }}</span>
                     <span>{{ formatCurrency(footerTotals.total) }}</span>
                 </div>
             </div>

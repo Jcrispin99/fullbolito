@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, watch, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 import { useWarehouseStore } from "@tenant/stores/warehouse";
 import { storeToRefs } from "pinia";
@@ -23,6 +24,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const warehouseStore = useWarehouseStore();
@@ -48,7 +50,9 @@ const confirmDialog = ref<InstanceType<typeof ConfirmDialog> | null>(null);
 
 const canManageWarehouse = computed(() => mode.value === "edit" && !!warehouseId.value);
 const archiveLabel = computed(() =>
-    (currentWarehouse.value as any)?.is_active === false ? "Activate" : "Deactivate",
+    (currentWarehouse.value as any)?.is_active === false
+        ? t('common.actions.activate')
+        : t('common.actions.deactivate'),
 );
 const isArchived = computed(
     () =>
@@ -89,14 +93,14 @@ const handleSubmit = async (formData: any) => {
     try {
         if (mode.value === "edit" && warehouseId.value) {
             await warehouseStore.updateWarehouse(warehouseId.value, formData);
-            toast.success("Warehouse updated", {
-                description: "The warehouse was successfully updated.",
+            toast.success(t('warehouses.page.updatedToastTitle'), {
+                description: t('warehouses.page.updatedToastDesc'),
             });
             activityLogRef.value?.load();
         } else {
             const created = await warehouseStore.createWarehouse(formData);
-            toast.success("Warehouse created", {
-                description: "The warehouse was successfully created.",
+            toast.success(t('warehouses.page.createdToastTitle'), {
+                description: t('warehouses.page.createdToastDesc'),
             });
             router.push(`/admin/warehouses/${created.id}/edit`);
             return;
@@ -109,13 +113,13 @@ const handleSubmit = async (formData: any) => {
                 flat[k] = Array.isArray(v) ? v[0] : String(v);
             });
             errors.value = flat;
-            toast.error("Validation error", {
-                description: "Please check the form fields for errors.",
+            toast.error(t('common.validationErrorTitle'), {
+                description: t('common.validationErrorDesc'),
             });
         } else {
             console.error("Error saving warehouse:", err);
-            toast.error("Error saving warehouse", {
-                description: err?.response?.data?.message || "An unexpected error occurred.",
+            toast.error(t('warehouses.page.savingErrorToastTitle'), {
+                description: err?.response?.data?.message || t('common.unexpectedError'),
             });
         }
     } finally {
@@ -128,7 +132,7 @@ const handleCancel = () => {
 };
 
 const pageTitle = computed(() =>
-    mode.value === "edit" ? "Edit Warehouse" : "Create Warehouse",
+    mode.value === "edit" ? t('warehouses.page.editTitle') : t('warehouses.page.createTitle'),
 );
 
 const handleSave = () => {
@@ -139,8 +143,8 @@ const handleArchive = () => {
     if (!warehouseId.value) return;
     const id = warehouseId.value;
     confirmDialog.value?.show(
-        `${archiveLabel.value} warehouse`,
-        `Are you sure you want to ${archiveLabel.value.toLowerCase()} this warehouse?`,
+        t('warehouses.page.archiveConfirmTitle', { action: archiveLabel.value }),
+        t('warehouses.page.archiveConfirmMessage', { action: archiveLabel.value.toLowerCase() }),
         async () => {
             isLoading.value = true;
             try {
@@ -157,8 +161,8 @@ const handleDelete = () => {
     if (!warehouseId.value) return;
     const id = warehouseId.value;
     confirmDialog.value?.show(
-        "Delete warehouse",
-        "Are you sure you want to delete this warehouse? This action cannot be undone.",
+        t('warehouses.page.deleteConfirmTitle'),
+        t('warehouses.page.deleteConfirmMessage'),
         async () => {
             isLoading.value = true;
             try {
@@ -172,8 +176,8 @@ const handleDelete = () => {
 };
 
 const breadcrumbs = computed(() => [
-    { label: "Warehouses", href: "/admin/warehouses" },
-    { label: mode.value === "edit" ? "Edit Warehouse" : "Create Warehouse" },
+    { label: t('warehouses.page.breadcrumbList'), href: "/admin/warehouses" },
+    { label: pageTitle.value },
 ]);
 </script>
 
@@ -185,7 +189,7 @@ const breadcrumbs = computed(() => [
                     variant="outline"
                     size="icon"
                     class="h-9 w-9"
-                    aria-label="Back"
+                    :aria-label="t('common.actions.back')"
                     @click="handleCancel"
                 >
                     <ArrowLeft class="h-4 w-4" />
@@ -202,10 +206,10 @@ const breadcrumbs = computed(() => [
                     <Save class="mr-2 h-4 w-4" />
                     {{
                         isLoading
-                            ? "Saving..."
+                            ? t('common.saving')
                             : mode === "edit"
-                              ? "Update Warehouse"
-                              : "Create Warehouse"
+                              ? t('warehouses.page.updateButton')
+                              : t('warehouses.page.createTitle')
                     }}
                 </Button>
                 <DropdownMenu v-if="canManageWarehouse">
@@ -214,13 +218,13 @@ const breadcrumbs = computed(() => [
                             variant="outline"
                             size="icon"
                             class="h-9 w-9"
-                            aria-label="Warehouse settings"
+                            :aria-label="t('warehouses.page.settingsAriaLabel')"
                         >
                             <Settings2 class="h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" class="w-[200px]">
-                        <DropdownMenuLabel>Warehouse Options</DropdownMenuLabel>
+                        <DropdownMenuLabel>{{ t('warehouses.page.optionsLabel') }}</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem @click="handleArchive">
                             <Archive
@@ -234,7 +238,7 @@ const breadcrumbs = computed(() => [
                             @click="handleDelete"
                         >
                             <Trash2 class="mr-2 h-4 w-4" />
-                            Delete
+                            {{ t('common.actions.delete') }}
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

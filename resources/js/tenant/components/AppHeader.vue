@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
+import { useI18n } from "vue-i18n";
 import { useRouter, useRoute } from "vue-router";
 import { useAuthStore } from "@tenant/stores/auth";
 import {
@@ -24,11 +25,18 @@ import AppLauncher from "./AppLauncher.vue";
 import CompanySelector from "./CompanySelector.vue";
 import LotAlertsBell from "./LotAlertsBell.vue";
 import { useActiveAppStore } from "@tenant/stores/activeApp";
+import { setLocale, type SupportedLocale } from "@tenant/i18n";
 
 const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
 const activeAppStore = useActiveAppStore();
+const { t, locale } = useI18n();
+
+const availableLocales: { code: SupportedLocale; label: string }[] = [
+    { code: "es", label: "ES" },
+    { code: "en", label: "EN" },
+];
 
 const user = computed(() => authStore.user);
 
@@ -156,11 +164,31 @@ const isDirectActive = (url: string) => matchesUrl(url);
                             </div>
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem @click="router.push('/profile')">Perfil</DropdownMenuItem>
-                        <DropdownMenuItem @click="router.push('/admin/apps')">Aplicaciones y plan</DropdownMenuItem>
-                        <DropdownMenuItem @click="router.push('/admin/billing')">Facturación</DropdownMenuItem>
+                        <DropdownMenuItem @click="router.push('/profile')">{{ t('header.profile') }}</DropdownMenuItem>
+                        <DropdownMenuItem @click="router.push('/admin/apps')">{{ t('header.appsAndPlan') }}</DropdownMenuItem>
+                        <DropdownMenuItem @click="router.push('/admin/billing')">{{ t('header.billing') }}</DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem @click="handleLogout" class="text-destructive">Cerrar sesión</DropdownMenuItem>
+                        <div class="flex items-center justify-between gap-2 px-2 py-1.5">
+                            <span class="text-xs text-muted-foreground">{{ t('header.language') }}</span>
+                            <div class="flex gap-1">
+                                <button
+                                    v-for="opt in availableLocales"
+                                    :key="opt.code"
+                                    type="button"
+                                    class="rounded px-2 py-0.5 text-xs font-medium"
+                                    :class="
+                                        locale === opt.code
+                                            ? 'bg-primary text-primary-foreground'
+                                            : 'text-muted-foreground hover:bg-accent'
+                                    "
+                                    @click="setLocale(opt.code)"
+                                >
+                                    {{ opt.label }}
+                                </button>
+                            </div>
+                        </div>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem @click="handleLogout" class="text-destructive">{{ t('header.logout') }}</DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>

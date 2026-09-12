@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref, watch, computed } from "vue";
+import { useI18n } from "vue-i18n";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { UnderlineInput } from "@/components/ui/underline-input";
@@ -19,6 +20,8 @@ const emit = defineEmits<{
     (e: "submit", data: any): void;
 }>();
 
+const { t } = useI18n();
+
 const form = ref({
     name: "",
     document_type: "",
@@ -35,12 +38,12 @@ const form = ref({
     is_customer: false,
 });
 
-const documentTypeOptions = [
+const documentTypeOptions = computed(() => [
     { value: "DNI", label: "DNI" },
     { value: "RUC", label: "RUC" },
     { value: "CE", label: "CE" },
-    { value: "PASSPORT", label: "Passport" },
-];
+    { value: "PASSPORT", label: t('suppliers.form.passport') },
+]);
 
 watch(
     () => props.initialData,
@@ -81,20 +84,20 @@ defineExpose({ submit });
 
 <template>
     <Card class="w-full relative overflow-hidden">
-        <CornerRibbon v-if="archived" label="Inactive" tone="danger" />
+        <CornerRibbon v-if="archived" :label="t('suppliers.form.inactive')" tone="danger" />
         <CardContent class="pt-6">
             <form @submit.prevent="submit" class="space-y-6">
                 <!-- Row 1 -->
                 <div class="grid gap-4 md:grid-cols-2">
                     <div class="space-y-2">
                         <Label htmlFor="name"
-                            >Supplier Name
+                            >{{ t('suppliers.form.name') }}
                             <span class="text-destructive">*</span></Label
                         >
                         <UnderlineInput
                             id="name"
                             v-model="form.name"
-                            placeholder="e.g. Acme Corp"
+                            :placeholder="t('suppliers.form.namePlaceholder')"
                             required
                         />
                         <p v-if="errors?.name" class="text-sm text-destructive">
@@ -103,11 +106,11 @@ defineExpose({ submit });
                     </div>
 
                     <div class="space-y-2">
-                        <Label htmlFor="provider_category">Category</Label>
+                        <Label htmlFor="provider_category">{{ t('suppliers.form.category') }}</Label>
                         <UnderlineInput
                             id="provider_category"
                             v-model="form.provider_category"
-                            placeholder="e.g. Electronics, Services"
+                            :placeholder="t('suppliers.form.categoryPlaceholder')"
                         />
                         <p
                             v-if="errors?.provider_category"
@@ -121,13 +124,13 @@ defineExpose({ submit });
                 <!-- Row 2 -->
                 <div class="grid gap-4 md:grid-cols-2">
                     <div class="space-y-2">
-                        <Label htmlFor="document_type">Document Type</Label>
+                        <Label htmlFor="document_type">{{ t('suppliers.form.documentType') }}</Label>
                         <SearchSelect
                             id="document_type"
                             v-model="form.document_type"
                             :options="documentTypeOptions"
                             :show-create="false"
-                            placeholder="Buscar..."
+                            :placeholder="t('common.search')"
                         >
                         </SearchSelect>
                         <p
@@ -139,11 +142,11 @@ defineExpose({ submit });
                     </div>
 
                     <div class="space-y-2">
-                        <Label htmlFor="document_number">Document Number</Label>
+                        <Label htmlFor="document_number">{{ t('suppliers.form.documentNumber') }}</Label>
                         <UnderlineInput
                             id="document_number"
                             v-model="form.document_number"
-                            placeholder="e.g. 12345678"
+                            :placeholder="t('suppliers.form.documentNumberPlaceholder')"
                         />
                         <p
                             v-if="errors?.document_number"
@@ -157,12 +160,12 @@ defineExpose({ submit });
                 <!-- Row 3 -->
                 <div class="grid gap-4 md:grid-cols-2">
                     <div class="space-y-2">
-                        <Label htmlFor="email">Email</Label>
+                        <Label htmlFor="email">{{ t('suppliers.form.email') }}</Label>
                         <UnderlineInput
                             id="email"
                             type="email"
                             v-model="form.email"
-                            placeholder="e.g. contact@supplier.com"
+                            :placeholder="t('suppliers.form.emailPlaceholder')"
                         />
                         <p
                             v-if="errors?.email"
@@ -173,11 +176,11 @@ defineExpose({ submit });
                     </div>
 
                     <div class="space-y-2">
-                        <Label htmlFor="phone">Phone</Label>
+                        <Label htmlFor="phone">{{ t('suppliers.form.phone') }}</Label>
                         <UnderlineInput
                             id="phone"
                             v-model="form.phone"
-                            placeholder="e.g. +51 987654321"
+                            :placeholder="t('suppliers.form.phonePlaceholder')"
                         />
                         <p
                             v-if="errors?.phone"
@@ -191,11 +194,11 @@ defineExpose({ submit });
                 <!-- Row 4 -->
                 <div class="grid gap-4 md:grid-cols-2">
                     <div class="space-y-2">
-                        <Label htmlFor="address">Address</Label>
+                        <Label htmlFor="address">{{ t('suppliers.form.address') }}</Label>
                         <UnderlineInput
                             id="address"
                             v-model="form.address"
-                            placeholder="e.g. Av. Build 123"
+                            :placeholder="t('suppliers.form.addressPlaceholder')"
                         />
                         <p
                             v-if="errors?.address"
@@ -206,11 +209,11 @@ defineExpose({ submit });
                     </div>
 
                     <div class="space-y-2">
-                        <Label htmlFor="ubigeo">Ubigeo</Label>
+                        <Label htmlFor="ubigeo">{{ t('suppliers.form.ubigeo') }}</Label>
                         <UnderlineInput
                             id="ubigeo"
                             v-model="form.ubigeo"
-                            placeholder="e.g. 150101"
+                            :placeholder="t('suppliers.form.ubigeoPlaceholder')"
                         />
                         <p
                             v-if="errors?.ubigeo"
@@ -224,11 +227,11 @@ defineExpose({ submit });
                 <!-- Row 5 -->
                 <div class="grid gap-4 md:grid-cols-2">
                     <div class="space-y-2">
-                        <Label htmlFor="payment_terms">Payment Terms</Label>
+                        <Label htmlFor="payment_terms">{{ t('suppliers.form.paymentTerms') }}</Label>
                         <UnderlineInput
                             id="payment_terms"
                             v-model="form.payment_terms"
-                            placeholder="e.g. Net 30, COD"
+                            :placeholder="t('suppliers.form.paymentTermsPlaceholder')"
                         />
                         <p
                             v-if="errors?.payment_terms"
@@ -241,12 +244,12 @@ defineExpose({ submit });
 
                 <!-- Row 6 -->
                 <div class="space-y-2">
-                    <Label htmlFor="notes">Notes</Label>
+                    <Label htmlFor="notes">{{ t('suppliers.form.notes') }}</Label>
                     <UnderlineTextarea
                         id="notes"
                         v-model="form.notes"
                         rows="3"
-                        placeholder="Additional notes..."
+                        :placeholder="t('suppliers.form.notesPlaceholder')"
                     />
                     <p v-if="errors?.notes" class="text-sm text-destructive">
                         {{ errors.notes }}

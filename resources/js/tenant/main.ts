@@ -4,6 +4,7 @@ import router from './router'
 import App from './App.vue'
 import { setUnauthorizedHandler } from './lib/api'
 import { useAuthStore } from './stores/auth'
+import i18n from './i18n'
 import '../../css/app.css'
 import 'vue-sonner/style.css'
 
@@ -12,6 +13,7 @@ const pinia = createPinia()
 
 app.use(pinia)
 app.use(router)
+app.use(i18n)
 
 // Handle 401 responses: only clear user state, router guard handles redirect
 const authStore = useAuthStore()

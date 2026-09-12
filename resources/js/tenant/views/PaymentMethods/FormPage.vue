@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, computed } from "vue";
+import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { usePaymentMethodStore } from "@tenant/stores/paymentMethod";
@@ -22,6 +23,7 @@ import {
 import { toast } from "vue-sonner";
 import { ArrowLeft, Save, Archive, Settings2, Trash2 } from "lucide-vue-next";
 
+const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const paymentMethodStore = usePaymentMethodStore();
@@ -41,7 +43,9 @@ const errors = ref<Record<string, string>>({});
 
 const canManagePaymentMethod = computed(() => isEditing.value && !!paymentMethodId.value);
 const archiveLabel = computed(() =>
-    currentPaymentMethod.value?.is_active === false ? "Activate" : "Deactivate",
+    currentPaymentMethod.value?.is_active === false
+        ? t('common.actions.activate')
+        : t('common.actions.deactivate'),
 );
 const isArchived = computed(
     () => isEditing.value && currentPaymentMethod.value?.is_active === false,
@@ -80,14 +84,14 @@ const handleSubmit = async (payload: any) => {
     try {
         if (isEditing.value) {
             await paymentMethodStore.updatePaymentMethod(paymentMethodId.value, payload);
-            toast.success("PaymentMethod updated", {
-                description: "The paymentMethod was successfully updated.",
+            toast.success(t('paymentMethods.page.updatedToastTitle'), {
+                description: t('paymentMethods.page.updatedToastDesc'),
             });
             activityLogRef.value?.load();
         } else {
             const newCat = await paymentMethodStore.createPaymentMethod(payload);
-            toast.success("PaymentMethod created", {
-                description: "The paymentMethod was successfully created.",
+            toast.success(t('paymentMethods.page.createdToastTitle'), {
+                description: t('paymentMethods.page.createdToastDesc'),
             });
             router.push(`/admin/payment-methods/${newCat.id}/edit`);
             return;
@@ -100,15 +104,15 @@ const handleSubmit = async (payload: any) => {
                 flat[k] = Array.isArray(v) ? v[0] : String(v);
             });
             errors.value = flat;
-            toast.error("Validation error", {
-                description: "Please check the form fields for errors.",
+            toast.error(t('common.validationErrorTitle'), {
+                description: t('common.validationErrorDesc'),
             });
         } else {
             console.error("Error saving paymentMethod:", err);
-            toast.error("Error saving paymentMethod", {
+            toast.error(t('paymentMethods.page.savingErrorToastTitle'), {
                 description:
                     err?.response?.data?.message ||
-                    "An unexpected error occurred.",
+                    t('common.unexpectedError'),
             });
         }
     } finally {
@@ -125,8 +129,8 @@ const handleArchive = async () => {
     const id = paymentMethodId.value;
 
     confirmDialog.value?.show(
-        `${archiveLabel.value} paymentMethod`,
-        `Are you sure you want to ${archiveLabel.value.toLowerCase()} this paymentMethod?`,
+        t('paymentMethods.page.archiveConfirmTitle', { action: archiveLabel.value }),
+        t('paymentMethods.page.archiveConfirmMessage', { action: archiveLabel.value.toLowerCase() }),
         async () => {
             isLoading.value = true;
             try {
@@ -146,8 +150,8 @@ const handleDelete = async () => {
     const id = paymentMethodId.value;
 
     confirmDialog.value?.show(
-        "Delete paymentMethod",
-        "Are you sure you want to delete this paymentMethod? This action cannot be undone.",
+        t('paymentMethods.page.deleteConfirmTitle'),
+        t('paymentMethods.page.deleteConfirmMessage'),
         async () => {
             isLoading.value = true;
             try {
@@ -163,12 +167,12 @@ const handleDelete = async () => {
 };
 
 const pageTitle = computed(() =>
-    isEditing.value ? "Edit PaymentMethod" : "Create PaymentMethod",
+    isEditing.value ? t('paymentMethods.page.editTitle') : t('paymentMethods.page.createTitle'),
 );
 
 const breadcrumbs = computed(() => [
-    { label: "Payment Methods", href: "/admin/payment-methods" },
-    { label: isEditing.value ? "Edit PaymentMethod" : "Create PaymentMethod" },
+    { label: t('paymentMethods.page.breadcrumbList'), href: "/admin/payment-methods" },
+    { label: pageTitle.value },
 ]);
 </script>
 
@@ -180,7 +184,7 @@ const breadcrumbs = computed(() => [
                     variant="outline"
                     size="icon"
                     class="h-9 w-9"
-                    aria-label="Back"
+                    :aria-label="t('common.actions.back')"
                     @click="handleCancel"
                 >
                     <ArrowLeft class="h-4 w-4" />
@@ -197,10 +201,10 @@ const breadcrumbs = computed(() => [
                     <Save class="mr-2 h-4 w-4" />
                     {{
                         isLoading
-                            ? "Saving..."
+                            ? t('common.saving')
                             : isEditing
-                              ? "Update PaymentMethod"
-                              : "Create PaymentMethod"
+                              ? t('paymentMethods.page.updateButton')
+                              : t('paymentMethods.page.createTitle')
                     }}
                 </Button>
                 <DropdownMenu v-if="canManagePaymentMethod">
@@ -209,13 +213,13 @@ const breadcrumbs = computed(() => [
                             variant="outline"
                             size="icon"
                             class="h-9 w-9"
-                            aria-label="PaymentMethod settings"
+                            :aria-label="t('paymentMethods.page.settingsAriaLabel')"
                         >
                             <Settings2 class="h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" class="w-[200px]">
-                        <DropdownMenuLabel>PaymentMethod Options</DropdownMenuLabel>
+                        <DropdownMenuLabel>{{ t('paymentMethods.page.optionsLabel') }}</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem @click="handleArchive">
                             <Archive
@@ -229,7 +233,7 @@ const breadcrumbs = computed(() => [
                             @click="handleDelete"
                         >
                             <Trash2 class="mr-2 h-4 w-4" />
-                            Delete
+                            {{ t('common.actions.delete') }}
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

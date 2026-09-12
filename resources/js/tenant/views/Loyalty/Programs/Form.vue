@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, computed, onMounted } from "vue";
+import { useI18n } from "vue-i18n";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { UnderlineInput } from "@/components/ui/underline-input";
@@ -26,6 +27,8 @@ const props = defineProps<{
 const emit = defineEmits<{
     (e: "submit", payload: any): void;
 }>();
+
+const { t } = useI18n();
 
 interface RuleForm {
     reward_point_amount: number | string;
@@ -371,21 +374,21 @@ defineExpose({ submit: handleSubmit });
         <div class="grid gap-6">
             <!-- Card 1 - General Info -->
             <Card class="relative overflow-hidden">
-                <CornerRibbon v-if="archived" label="Inactive" tone="danger" />
+                <CornerRibbon v-if="archived" :label="t('loyalty.programs.form.inactive')" tone="danger" />
 
                 <CardContent class="pt-6">
                     <div class="grid gap-6 md:grid-cols-2">
                         <!-- Name -->
                         <div class="grid gap-3">
                             <Label for="name"
-                                >Name
+                                >{{ t('loyalty.programs.form.name') }}
                                 <span class="text-destructive">*</span></Label
                             >
                             <UnderlineInput
                                 id="name"
                                 v-model="formData.name"
                                 type="text"
-                                placeholder="e.g. Summer Promotion"
+                                :placeholder="t('loyalty.programs.form.namePlaceholder')"
                                 required
                             />
                             <p
@@ -399,7 +402,7 @@ defineExpose({ submit: handleSubmit });
                         <!-- Program Type -->
                         <div class="grid gap-3">
                             <Label for="program_type"
-                                >Program Type
+                                >{{ t('loyalty.programs.form.programType') }}
                                 <span class="text-destructive">*</span></Label
                             >
                             <UnderlineSelect
@@ -407,12 +410,12 @@ defineExpose({ submit: handleSubmit });
                                 v-model="formData.program_type"
                                 required
                             >
-                                <option value="">-- Select type --</option>
-                                <option value="promotion">Promotion</option>
-                                <option value="coupon">Coupon</option>
-                                <option value="loyalty">Loyalty</option>
-                                <option value="buy_x_get_y">Buy X Get Y</option>
-                                <option value="promo_code">Promo Code</option>
+                                <option value="">{{ t('loyalty.programs.form.selectType') }}</option>
+                                <option value="promotion">{{ t('loyalty.programs.form.typePromotion') }}</option>
+                                <option value="coupon">{{ t('loyalty.programs.form.typeCoupon') }}</option>
+                                <option value="loyalty">{{ t('loyalty.programs.form.typeLoyalty') }}</option>
+                                <option value="buy_x_get_y">{{ t('loyalty.programs.form.typeBuyXGetY') }}</option>
+                                <option value="promo_code">{{ t('loyalty.programs.form.typePromoCode') }}</option>
                             </UnderlineSelect>
                             <p
                                 v-if="errors?.program_type"
@@ -424,7 +427,7 @@ defineExpose({ submit: handleSubmit });
 
                         <!-- Modules (channels) -->
                         <div class="grid gap-3">
-                            <Label>Aplicar en</Label>
+                            <Label>{{ t('loyalty.programs.form.applyIn') }}</Label>
                             <div class="flex flex-wrap items-center gap-6">
                                 <label class="flex items-center gap-2 text-sm cursor-pointer">
                                     <Checkbox
@@ -438,7 +441,7 @@ defineExpose({ submit: handleSubmit });
                                         :checked="formData.is_sales"
                                         @update:checked="(v: boolean) => (formData.is_sales = v)"
                                     />
-                                    Sales
+                                    {{ t('loyalty.programs.form.channelSales') }}
                                 </label>
                                 <label class="flex items-center gap-2 text-sm cursor-pointer">
                                     <Checkbox
@@ -458,13 +461,13 @@ defineExpose({ submit: handleSubmit });
 
                         <!-- Trigger -->
                         <div class="grid gap-3">
-                            <Label for="trigger">Trigger</Label>
+                            <Label for="trigger">{{ t('loyalty.programs.form.trigger') }}</Label>
                             <UnderlineSelect
                                 id="trigger"
                                 v-model="formData.trigger"
                             >
-                                <option value="auto">Auto</option>
-                                <option value="with_code">With Code</option>
+                                <option value="auto">{{ t('loyalty.programs.form.triggerAuto') }}</option>
+                                <option value="with_code">{{ t('loyalty.programs.form.triggerWithCode') }}</option>
                             </UnderlineSelect>
                             <p
                                 v-if="errors?.trigger"
@@ -476,11 +479,11 @@ defineExpose({ submit: handleSubmit });
 
                         <!-- Description -->
                         <div class="grid gap-3 md:col-span-2">
-                            <Label for="description">Description</Label>
+                            <Label for="description">{{ t('loyalty.programs.form.description') }}</Label>
                             <UnderlineTextarea
                                 id="description"
                                 v-model="formData.description"
-                                placeholder="Additional details about this program"
+                                :placeholder="t('loyalty.programs.form.descriptionPlaceholder')"
                                 rows="3"
                             />
                             <p
@@ -493,7 +496,7 @@ defineExpose({ submit: handleSubmit });
 
                         <!-- Dates -->
                         <div class="grid gap-3">
-                            <Label for="starts_at">Starts At</Label>
+                            <Label for="starts_at">{{ t('loyalty.programs.form.startsAt') }}</Label>
                             <UnderlineInput
                                 id="starts_at"
                                 v-model="formData.starts_at"
@@ -507,7 +510,7 @@ defineExpose({ submit: handleSubmit });
                             </p>
                         </div>
                         <div class="grid gap-3">
-                            <Label for="ends_at">Ends At</Label>
+                            <Label for="ends_at">{{ t('loyalty.programs.form.endsAt') }}</Label>
                             <UnderlineInput
                                 id="ends_at"
                                 v-model="formData.ends_at"
@@ -523,13 +526,13 @@ defineExpose({ submit: handleSubmit });
 
                         <!-- Max Uses -->
                         <div class="grid gap-3">
-                            <Label for="max_uses">Max Uses</Label>
+                            <Label for="max_uses">{{ t('loyalty.programs.form.maxUses') }}</Label>
                             <UnderlineInput
                                 id="max_uses"
                                 v-model="formData.max_uses"
                                 type="number"
                                 min="0"
-                                placeholder="Unlimited"
+                                :placeholder="t('loyalty.programs.form.unlimitedPlaceholder')"
                             />
                             <p
                                 v-if="errors?.max_uses"
@@ -540,14 +543,14 @@ defineExpose({ submit: handleSubmit });
                         </div>
                         <div class="grid gap-3">
                             <Label for="max_uses_per_customer"
-                                >Max Uses Per Customer</Label
+                                >{{ t('loyalty.programs.form.maxUsesPerCustomer') }}</Label
                             >
                             <UnderlineInput
                                 id="max_uses_per_customer"
                                 v-model="formData.max_uses_per_customer"
                                 type="number"
                                 min="0"
-                                placeholder="Unlimited"
+                                :placeholder="t('loyalty.programs.form.unlimitedPlaceholder')"
                             />
                             <p
                                 v-if="errors?.max_uses_per_customer"
@@ -566,7 +569,7 @@ defineExpose({ submit: handleSubmit });
             <Card>
                 <CardContent class="pt-6">
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-medium">Rules</h3>
+                        <h3 class="text-lg font-medium">{{ t('loyalty.programs.form.rulesTitle') }}</h3>
                         <Button
                             type="button"
                             variant="outline"
@@ -574,12 +577,12 @@ defineExpose({ submit: handleSubmit });
                             @click="addRule"
                         >
                             <Plus class="mr-2 h-4 w-4" />
-                            Add Rule
+                            {{ t('loyalty.programs.form.addRule') }}
                         </Button>
                     </div>
 
                     <div v-if="rules.length === 0" class="text-sm text-muted-foreground text-center py-6">
-                        No rules added yet. Click "Add Rule" to get started.
+                        {{ t('loyalty.programs.form.noRulesYet') }}
                     </div>
 
                     <div class="grid gap-4">
@@ -589,7 +592,7 @@ defineExpose({ submit: handleSubmit });
                             class="rounded-md border p-4 space-y-4"
                         >
                             <div class="flex items-center justify-between">
-                                <span class="text-sm font-medium text-muted-foreground">Rule {{ rIdx + 1 }}</span>
+                                <span class="text-sm font-medium text-muted-foreground">{{ t('loyalty.programs.form.ruleLabel', { n: rIdx + 1 }) }}</span>
                                 <Button
                                     type="button"
                                     variant="ghost"
@@ -604,7 +607,7 @@ defineExpose({ submit: handleSubmit });
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div class="grid gap-3">
                                     <Label :for="`rule_${rIdx}_reward_point_amount`"
-                                        >Reward Point Amount</Label
+                                        >{{ t('loyalty.programs.form.rewardPointAmount') }}</Label
                                     >
                                     <UnderlineInput
                                         :id="`rule_${rIdx}_reward_point_amount`"
@@ -623,15 +626,15 @@ defineExpose({ submit: handleSubmit });
                                 </div>
                                 <div class="grid gap-3">
                                     <Label :for="`rule_${rIdx}_reward_point_mode`"
-                                        >Reward Point Mode</Label
+                                        >{{ t('loyalty.programs.form.rewardPointMode') }}</Label
                                     >
                                     <UnderlineSelect
                                         :id="`rule_${rIdx}_reward_point_mode`"
                                         v-model="rule.reward_point_mode"
                                     >
-                                        <option value="order">Per Order</option>
-                                        <option value="money">Per Money Spent</option>
-                                        <option value="unit">Per Unit</option>
+                                        <option value="order">{{ t('loyalty.programs.form.perOrder') }}</option>
+                                        <option value="money">{{ t('loyalty.programs.form.perMoneySpent') }}</option>
+                                        <option value="unit">{{ t('loyalty.programs.form.perUnit') }}</option>
                                     </UnderlineSelect>
                                     <p
                                         v-if="errors?.[`rules.${rIdx}.reward_point_mode`]"
@@ -645,7 +648,7 @@ defineExpose({ submit: handleSubmit });
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div class="grid gap-3">
                                     <Label :for="`rule_${rIdx}_minimum_amount`"
-                                        >Minimum Amount</Label
+                                        >{{ t('loyalty.programs.form.minimumAmount') }}</Label
                                     >
                                     <UnderlineInput
                                         :id="`rule_${rIdx}_minimum_amount`"
@@ -664,7 +667,7 @@ defineExpose({ submit: handleSubmit });
                                 </div>
                                 <div class="grid gap-3">
                                     <Label :for="`rule_${rIdx}_minimum_qty`"
-                                        >Minimum Qty</Label
+                                        >{{ t('loyalty.programs.form.minimumQty') }}</Label
                                     >
                                     <UnderlineInput
                                         :id="`rule_${rIdx}_minimum_qty`"
@@ -683,12 +686,12 @@ defineExpose({ submit: handleSubmit });
                             </div>
 
                             <div v-if="showCode" class="grid gap-3">
-                                <Label :for="`rule_${rIdx}_code`">Code</Label>
+                                <Label :for="`rule_${rIdx}_code`">{{ t('loyalty.programs.form.code') }}</Label>
                                 <UnderlineInput
                                     :id="`rule_${rIdx}_code`"
                                     v-model="rule.code"
                                     type="text"
-                                    placeholder="e.g. SUMMER2026"
+                                    :placeholder="t('loyalty.programs.form.codePlaceholder')"
                                 />
                                 <p
                                     v-if="errors?.[`rules.${rIdx}.code`]"
@@ -699,44 +702,44 @@ defineExpose({ submit: handleSubmit });
                             </div>
 
                             <div class="grid gap-3">
-                                <Label>Product Variants</Label>
+                                <Label>{{ t('loyalty.programs.form.productVariants') }}</Label>
                                 <MultiSelect
                                     v-model="rule.product_variant_ids"
                                     :options="variantOptions"
                                     remote
                                     :loading="isLoadingVariants"
-                                    placeholder="Selecciona variantes de producto..."
-                                    search-placeholder="Escribe para buscar producto..."
-                                    empty-message="Sin resultados."
+                                    :placeholder="t('loyalty.programs.form.selectVariants')"
+                                    :search-placeholder="t('loyalty.programs.form.searchProduct')"
+                                    :empty-message="t('loyalty.programs.form.noResults')"
                                     @search="onVariantSearch"
                                 />
                                 <p class="text-xs text-muted-foreground">
-                                    Si dejas este campo vacio, la regla no se restringe por variante.
+                                    {{ t('loyalty.programs.form.variantsHelp') }}
                                 </p>
                             </div>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div class="grid gap-3">
-                                    <Label>Product Templates</Label>
+                                    <Label>{{ t('loyalty.programs.form.productTemplates') }}</Label>
                                     <MultiSelect
                                         v-model="rule.product_template_ids"
                                         :options="templateOptions"
                                         remote
                                         :loading="isLoadingTemplates"
-                                        placeholder="Selecciona plantillas de producto..."
-                                        search-placeholder="Escribe para buscar plantilla..."
-                                        empty-message="Sin resultados."
+                                        :placeholder="t('loyalty.programs.form.selectTemplates')"
+                                        :search-placeholder="t('loyalty.programs.form.searchTemplate')"
+                                        :empty-message="t('loyalty.programs.form.noResults')"
                                         @search="onTemplateSearch"
                                     />
                                 </div>
                                 <div class="grid gap-3">
-                                    <Label>Categories</Label>
+                                    <Label>{{ t('loyalty.programs.form.categories') }}</Label>
                                     <MultiSelect
                                         v-model="rule.category_ids"
                                         :options="categoryOptions"
-                                        placeholder="Selecciona categorías..."
-                                        search-placeholder="Buscar categoría..."
-                                        empty-message="No hay categorías disponibles."
+                                        :placeholder="t('loyalty.programs.form.selectCategories')"
+                                        :search-placeholder="t('loyalty.programs.form.searchCategory')"
+                                        :empty-message="t('loyalty.programs.form.noCategoriesAvailable')"
                                     />
                                 </div>
                             </div>
@@ -749,7 +752,7 @@ defineExpose({ submit: handleSubmit });
             <Card>
                 <CardContent class="pt-6">
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-medium">Rewards</h3>
+                        <h3 class="text-lg font-medium">{{ t('loyalty.programs.form.rewardsTitle') }}</h3>
                         <Button
                             type="button"
                             variant="outline"
@@ -757,12 +760,12 @@ defineExpose({ submit: handleSubmit });
                             @click="addReward"
                         >
                             <Plus class="mr-2 h-4 w-4" />
-                            Add Reward
+                            {{ t('loyalty.programs.form.addReward') }}
                         </Button>
                     </div>
 
                     <div v-if="rewards.length === 0" class="text-sm text-muted-foreground text-center py-6">
-                        No rewards added yet. Click "Add Reward" to get started.
+                        {{ t('loyalty.programs.form.noRewardsYet') }}
                     </div>
 
                     <div class="grid gap-4">
@@ -772,7 +775,7 @@ defineExpose({ submit: handleSubmit });
                             class="rounded-md border p-4 space-y-4"
                         >
                             <div class="flex items-center justify-between">
-                                <span class="text-sm font-medium text-muted-foreground">Reward {{ rwIdx + 1 }}</span>
+                                <span class="text-sm font-medium text-muted-foreground">{{ t('loyalty.programs.form.rewardLabel', { n: rwIdx + 1 }) }}</span>
                                 <Button
                                     type="button"
                                     variant="ghost"
@@ -787,14 +790,14 @@ defineExpose({ submit: handleSubmit });
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div class="grid gap-3">
                                     <Label :for="`reward_${rwIdx}_reward_type`"
-                                        >Reward Type</Label
+                                        >{{ t('loyalty.programs.form.rewardType') }}</Label
                                     >
                                     <UnderlineSelect
                                         :id="`reward_${rwIdx}_reward_type`"
                                         v-model="reward.reward_type"
                                     >
-                                        <option value="discount">Discount</option>
-                                        <option value="product">Product</option>
+                                        <option value="discount">{{ t('loyalty.programs.form.typeDiscount') }}</option>
+                                        <option value="product">{{ t('loyalty.programs.form.typeProduct') }}</option>
                                     </UnderlineSelect>
                                     <p
                                         v-if="errors?.[`rewards.${rwIdx}.reward_type`]"
@@ -805,7 +808,7 @@ defineExpose({ submit: handleSubmit });
                                 </div>
                                 <div class="grid gap-3">
                                     <Label :for="`reward_${rwIdx}_required_points`"
-                                        >Required Points</Label
+                                        >{{ t('loyalty.programs.form.requiredPoints') }}</Label
                                     >
                                     <UnderlineInput
                                         :id="`reward_${rwIdx}_required_points`"
@@ -828,7 +831,7 @@ defineExpose({ submit: handleSubmit });
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div class="grid gap-3">
                                         <Label :for="`reward_${rwIdx}_discount`"
-                                            >Discount</Label
+                                            >{{ t('loyalty.programs.form.discountFieldLabel') }}</Label
                                         >
                                         <UnderlineInput
                                             :id="`reward_${rwIdx}_discount`"
@@ -847,15 +850,15 @@ defineExpose({ submit: handleSubmit });
                                     </div>
                                     <div class="grid gap-3">
                                         <Label :for="`reward_${rwIdx}_discount_mode`"
-                                            >Discount Mode</Label
+                                            >{{ t('loyalty.programs.form.discountModeLabel') }}</Label
                                         >
                                         <UnderlineSelect
                                             :id="`reward_${rwIdx}_discount_mode`"
                                             v-model="reward.discount_mode"
                                         >
-                                            <option value="percent">Percent</option>
-                                            <option value="fixed_amount">Fixed Amount</option>
-                                            <option value="per_point">Per Point</option>
+                                            <option value="percent">{{ t('loyalty.programs.form.percent') }}</option>
+                                            <option value="fixed_amount">{{ t('loyalty.programs.form.fixedAmount') }}</option>
+                                            <option value="per_point">{{ t('loyalty.programs.form.perPoint') }}</option>
                                         </UnderlineSelect>
                                         <p
                                             v-if="errors?.[`rewards.${rwIdx}.discount_mode`]"
@@ -869,15 +872,15 @@ defineExpose({ submit: handleSubmit });
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div class="grid gap-3">
                                         <Label :for="`reward_${rwIdx}_discount_applicability`"
-                                            >Discount Applicability</Label
+                                            >{{ t('loyalty.programs.form.discountApplicability') }}</Label
                                         >
                                         <UnderlineSelect
                                             :id="`reward_${rwIdx}_discount_applicability`"
                                             v-model="reward.discount_applicability"
                                         >
-                                            <option value="order">Whole Order</option>
-                                            <option value="cheapest">Cheapest Product</option>
-                                            <option value="specific">Specific Products</option>
+                                            <option value="order">{{ t('loyalty.programs.form.wholeOrder') }}</option>
+                                            <option value="cheapest">{{ t('loyalty.programs.form.cheapestProduct') }}</option>
+                                            <option value="specific">{{ t('loyalty.programs.form.specificProducts') }}</option>
                                         </UnderlineSelect>
                                         <p
                                             v-if="errors?.[`rewards.${rwIdx}.discount_applicability`]"
@@ -888,7 +891,7 @@ defineExpose({ submit: handleSubmit });
                                     </div>
                                     <div class="grid gap-3">
                                         <Label :for="`reward_${rwIdx}_discount_max_amount`"
-                                            >Discount Max Amount</Label
+                                            >{{ t('loyalty.programs.form.discountMaxAmount') }}</Label
                                         >
                                         <UnderlineInput
                                             :id="`reward_${rwIdx}_discount_max_amount`"
@@ -896,7 +899,7 @@ defineExpose({ submit: handleSubmit });
                                             type="number"
                                             min="0"
                                             step="0.01"
-                                            placeholder="No limit"
+                                            :placeholder="t('loyalty.programs.form.noLimitPlaceholder')"
                                         />
                                         <p
                                             v-if="errors?.[`rewards.${rwIdx}.discount_max_amount`]"
@@ -912,26 +915,26 @@ defineExpose({ submit: handleSubmit });
                                     class="grid grid-cols-1 md:grid-cols-2 gap-4"
                                 >
                                     <div class="grid gap-3">
-                                        <Label>Specific Products</Label>
+                                        <Label>{{ t('loyalty.programs.form.specificProducts') }}</Label>
                                         <MultiSelect
                                             v-model="reward.discount_product_ids"
                                             :options="variantOptions"
                                             remote
                                             :loading="isLoadingVariants"
-                                            placeholder="Selecciona productos..."
-                                            search-placeholder="Escribe para buscar producto..."
-                                            empty-message="Sin resultados."
+                                            :placeholder="t('loyalty.programs.form.selectProducts')"
+                                            :search-placeholder="t('loyalty.programs.form.searchProduct')"
+                                            :empty-message="t('loyalty.programs.form.noResults')"
                                             @search="onVariantSearch"
                                         />
                                     </div>
                                     <div class="grid gap-3">
-                                        <Label>Specific Categories</Label>
+                                        <Label>{{ t('loyalty.programs.form.specificCategories') }}</Label>
                                         <MultiSelect
                                             v-model="reward.discount_category_ids"
                                             :options="categoryOptions"
-                                            placeholder="Selecciona categorías..."
-                                            search-placeholder="Buscar categoría..."
-                                            empty-message="No hay categorías disponibles."
+                                            :placeholder="t('loyalty.programs.form.selectCategories')"
+                                            :search-placeholder="t('loyalty.programs.form.searchCategory')"
+                                            :empty-message="t('loyalty.programs.form.noCategoriesAvailable')"
                                         />
                                     </div>
                                 </div>
@@ -942,13 +945,13 @@ defineExpose({ submit: handleSubmit });
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div class="grid gap-3">
                                         <Label :for="`reward_${rwIdx}_reward_product_id`"
-                                            >Reward Product</Label
+                                            >{{ t('loyalty.programs.form.rewardProduct') }}</Label
                                         >
                                         <SearchSelect
                                             :id="`reward_${rwIdx}_reward_product_id`"
                                             v-model="reward.reward_product_id"
                                             :options="variantOptions"
-                                            placeholder="Escribe para buscar producto..."
+                                            :placeholder="t('loyalty.programs.form.searchProduct')"
                                             @search="onRewardProductSearch"
                                         />
                                         <p
@@ -960,7 +963,7 @@ defineExpose({ submit: handleSubmit });
                                     </div>
                                     <div class="grid gap-3">
                                         <Label :for="`reward_${rwIdx}_reward_product_qty`"
-                                            >Reward Product Qty</Label
+                                            >{{ t('loyalty.programs.form.rewardProductQty') }}</Label
                                         >
                                         <UnderlineInput
                                             :id="`reward_${rwIdx}_reward_product_qty`"
@@ -982,13 +985,13 @@ defineExpose({ submit: handleSubmit });
                             <!-- Description -->
                             <div class="grid gap-3">
                                 <Label :for="`reward_${rwIdx}_description`"
-                                    >Description</Label
+                                    >{{ t('loyalty.programs.form.description') }}</Label
                                 >
                                 <UnderlineInput
                                     :id="`reward_${rwIdx}_description`"
                                     v-model="reward.description"
                                     type="text"
-                                    placeholder="e.g. 10% off your next order"
+                                    :placeholder="t('loyalty.programs.form.rewardDescriptionPlaceholder')"
                                 />
                                 <p
                                     v-if="errors?.[`rewards.${rwIdx}.description`]"

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, computed } from "vue";
+import { useI18n } from "vue-i18n";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import FolderTabs from "@/components/ui/tabs/FolderTabs.vue";
@@ -23,6 +24,8 @@ const props = defineProps<{
 const emit = defineEmits<{
     (e: "submit", data: any): void;
 }>();
+
+const { t } = useI18n();
 
 const form = ref({
     partner_id: undefined as number | undefined,
@@ -149,7 +152,7 @@ const isDraft = computed(
 
 const purchaseName = computed(() => {
     if (props.displayName !== undefined) return props.displayName;
-    if (props.mode === "create") return "New";
+    if (props.mode === "create") return t('purchases.form.newName');
     const serie = props.initialData?.serie ? `${props.initialData.serie}-` : "";
     const correlative = props.initialData?.correlative || "";
     return `${serie}${correlative}`;
@@ -165,7 +168,7 @@ const formTabs = [
 // ─── Create Dialog: Supplier ─────────────────────────────────────────────────
 const supplierDialog = useCreateDialog({
     endpoint: '/v1/suppliers',
-    label: 'Supplier',
+    labelKey: 'supplier',
 });
 const supplierFormRef = ref<InstanceType<typeof SupplierForm> | null>(null);
 const localSuppliers = ref<any[]>([]);
@@ -194,7 +197,7 @@ async function onSupplierSubmit(payload: any) {
 const warehouseDialog = useCreateDialog({
     endpoint: '/v1/warehouses',
     formOptionsEndpoint: '/v1/warehouses/form-options',
-    label: 'Warehouse',
+    labelKey: 'warehouse',
 });
 const warehouseFormRef = ref<InstanceType<typeof WarehouseForm> | null>(null);
 const localWarehouses = ref<{ id: number; name: string }[]>([]);
@@ -251,7 +254,7 @@ defineExpose({ submit });
             <CardContent class="pt-6">
                 <form @submit.prevent="submit" class="space-y-6">
                     <div class="space-y-2">
-                        <Label htmlFor="purchase_name">Name</Label>
+                        <Label htmlFor="purchase_name">{{ t('purchases.form.name') }}</Label>
                         <UnderlineInput
                             id="purchase_name"
                             :model-value="purchaseName"
@@ -264,7 +267,7 @@ defineExpose({ submit });
                     <div class="grid gap-4 md:grid-cols-2">
                         <div class="space-y-2">
                             <Label htmlFor="partner_id"
-                                >Supplier
+                                >{{ t('purchases.form.supplier') }}
                                 <span class="text-destructive">*</span></Label
                             >
                             <SearchSelect
@@ -272,7 +275,7 @@ defineExpose({ submit });
                                 v-model="form.partner_id"
                                 :disabled="!isDraft"
                                 :options="supplierOptions"
-                                placeholder="Buscar proveedor..."
+                                :placeholder="t('purchases.form.searchSupplier')"
                                 :show-create="isDraft"
                                 :show-edit="true"
                                 @create="supplierDialog.open($event)"
@@ -288,7 +291,7 @@ defineExpose({ submit });
 
                         <div class="space-y-2">
                             <Label htmlFor="warehouse_id"
-                                >Warehouse
+                                >{{ t('purchases.form.warehouse') }}
                                 <span class="text-destructive">*</span></Label
                             >
                             <SearchSelect
@@ -297,7 +300,7 @@ defineExpose({ submit });
                                 required
                                 :disabled="!isDraft"
                                 :options="warehouseOptions"
-                                placeholder="Buscar almacén..."
+                                :placeholder="t('purchases.form.searchWarehouse')"
                                 :show-create="isDraft"
                                 :show-edit="true"
                                 @create="warehouseDialog.open($event)"
@@ -316,12 +319,12 @@ defineExpose({ submit });
                     <div class="grid gap-4 md:grid-cols-2">
                         <div class="space-y-2">
                             <Label htmlFor="vendor_bill_number"
-                                >Vendor Bill Number</Label
+                                >{{ t('purchases.form.vendorBillNumber') }}</Label
                             >
                             <UnderlineInput
                                 id="vendor_bill_number"
                                 v-model="form.vendor_bill_number"
-                                placeholder="e.g. F001-000123"
+                                :placeholder="t('purchases.form.vendorBillNumberPlaceholder')"
                                 :disabled="!isDraft"
                             />
                             <p
@@ -334,7 +337,7 @@ defineExpose({ submit });
 
                         <div class="space-y-2">
                             <Label htmlFor="vendor_bill_date"
-                                >Vendor Bill Date</Label
+                                >{{ t('purchases.form.vendorBillDate') }}</Label
                             >
                             <UnderlineInput
                                 id="vendor_bill_date"
@@ -379,13 +382,13 @@ defineExpose({ submit });
                                 <Label
                                     htmlFor="observation"
                                     class="text-xs text-muted-foreground"
-                                    >Observations</Label
+                                    >{{ t('purchases.form.observations') }}</Label
                                 >
                                 <UnderlineTextarea
                                     id="observation"
                                     v-model="form.observation"
                                     rows="3"
-                                    placeholder="Additional details..."
+                                    :placeholder="t('purchases.form.observationsPlaceholder')"
                                     :disabled="!isDraft"
                                 />
                                 <p
@@ -408,7 +411,7 @@ defineExpose({ submit });
                 <div class="grid gap-4 md:grid-cols-2">
                     <div class="space-y-2">
                         <Label htmlFor="company_id"
-                            >Company
+                            >{{ t('purchases.form.company') }}
                             <span class="text-destructive">*</span></Label
                         >
                         <SearchSelect
@@ -417,7 +420,7 @@ defineExpose({ submit });
                             required
                             :disabled="!isDraft"
                             :options="companyOptions"
-                            placeholder="Buscar compañía..."
+                            :placeholder="t('purchases.form.searchCompany')"
                         />
                         <p
                             v-if="errors?.company_id"
@@ -428,13 +431,13 @@ defineExpose({ submit });
                     </div>
 
                     <div class="space-y-2">
-                        <Label htmlFor="buyer_id">Buyer</Label>
+                        <Label htmlFor="buyer_id">{{ t('purchases.form.buyer') }}</Label>
                         <SearchSelect
                             id="buyer_id"
                             v-model="form.buyer_id"
                             :disabled="!isDraft"
                             :options="buyerOptions"
-                            placeholder="Buscar comprador..."
+                            :placeholder="t('purchases.form.searchBuyer')"
                         />
                         <p
                             v-if="errors?.buyer_id"
@@ -443,7 +446,7 @@ defineExpose({ submit });
                             {{ errors.buyer_id }}
                         </p>
                         <p class="text-xs text-muted-foreground">
-                            Select the user responsible for this purchase.
+                            {{ t('purchases.form.buyerHelp') }}
                         </p>
                     </div>
                 </div>

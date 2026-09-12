@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
+import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { useProductTemplateStore } from "@tenant/stores/productTemplate";
@@ -24,6 +25,7 @@ import {
 import { toast } from "vue-sonner";
 import { ArrowLeft, Save, Archive, Settings2, Trash2, ArrowLeftRight } from "lucide-vue-next";
 
+const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const store = useProductTemplateStore();
@@ -48,7 +50,9 @@ const { currentIndex: prodIndex, prevRecord: prevProd, nextRecord: nextProd, nav
 const canManageProduct = computed(() => isEditing.value && !!productId.value);
 
 const archiveLabel = computed(() =>
-    currentProduct.value?.is_active === false ? "Activate" : "Deactivate",
+    currentProduct.value?.is_active === false
+        ? t('common.actions.activate')
+        : t('common.actions.deactivate'),
 );
 const isArchived = computed(
     () => isEditing.value && currentProduct.value?.is_active === false,
@@ -102,14 +106,14 @@ const handleSubmit = async (payload: any) => {
     try {
         if (isEditing.value) {
             await store.updateProduct(productId.value, payload);
-            toast.success("Product updated", {
-                description: "The product was successfully updated.",
+            toast.success(t('products.page.updatedToastTitle'), {
+                description: t('products.page.updatedToastDesc'),
             });
             activityLogRef.value?.load();
         } else {
             const newProduct = await store.createProduct(payload);
-            toast.success("Product created", {
-                description: "The product was successfully created.",
+            toast.success(t('products.page.createdToastTitle'), {
+                description: t('products.page.createdToastDesc'),
             });
             router.push(`/admin/products/${newProduct.id}/edit`);
             return;
@@ -122,13 +126,13 @@ const handleSubmit = async (payload: any) => {
                 flat[k] = Array.isArray(v) ? v[0] : String(v);
             });
             errors.value = flat;
-            toast.error("Validation error", {
-                description: "Please check the form fields for errors.",
+            toast.error(t('common.validationErrorTitle'), {
+                description: t('common.validationErrorDesc'),
             });
         } else {
             console.error("Error saving product:", err);
-            toast.error("Error saving product", {
-                description: err?.response?.data?.message || "An unexpected error occurred.",
+            toast.error(t('products.page.savingErrorToastTitle'), {
+                description: err?.response?.data?.message || t('common.unexpectedError'),
             });
         }
     } finally {
@@ -141,8 +145,8 @@ const handleCancel = () => router.push("/admin/products");
 const handleArchive = () => {
     if (!productId.value) return;
     confirmDialog.value?.show(
-        `${archiveLabel.value} product`,
-        `Are you sure you want to ${archiveLabel.value.toLowerCase()} this product?`,
+        t('products.page.archiveConfirmTitle', { action: archiveLabel.value }),
+        t('products.page.archiveConfirmMessage', { action: archiveLabel.value.toLowerCase() }),
         async () => {
             isLoading.value = true;
             try {
@@ -160,15 +164,15 @@ const handleArchive = () => {
 const handleDelete = () => {
     if (!productId.value) return;
     confirmDialog.value?.show(
-        "Delete product",
-        "Are you sure you want to delete this product and all its variants? This action cannot be undone.",
+        t('products.page.deleteConfirmTitle'),
+        t('products.page.deleteConfirmMessage'),
         async () => {
             isLoading.value = true;
             try {
                 await store.deleteProduct(productId.value);
                 router.push("/admin/products");
             } catch (err: any) {
-                const msg = err?.response?.data?.message || "Could not delete this product.";
+                const msg = err?.response?.data?.message || t('products.page.deleteErrorFallback');
                 alert(msg);
             } finally {
                 isLoading.value = false;
@@ -178,12 +182,12 @@ const handleDelete = () => {
 };
 
 const pageTitle = computed(() =>
-    isEditing.value ? "Edit Product" : "Create Product",
+    isEditing.value ? t('products.page.editTitle') : t('products.page.createTitle'),
 );
 
 const breadcrumbs = computed(() => [
-    { label: "Products", href: "/admin/products" },
-    { label: isEditing.value ? "Edit Product" : "Create Product" },
+    { label: t('products.page.breadcrumbList'), href: "/admin/products" },
+    { label: pageTitle.value },
 ]);
 </script>
 
@@ -195,7 +199,7 @@ const breadcrumbs = computed(() => [
                     variant="outline"
                     size="icon"
                     class="h-9 w-9"
-                    aria-label="Back"
+                    :aria-label="t('common.actions.back')"
                     @click="handleCancel"
                 >
                     <ArrowLeft class="h-4 w-4" />
@@ -212,7 +216,7 @@ const breadcrumbs = computed(() => [
                     disabled
                 >
                     <ArrowLeftRight class="h-4 w-4 text-muted-foreground" />
-                    Movements
+                    {{ t('products.page.movements') }}
                 </Button>
             </template>
 
@@ -226,10 +230,10 @@ const breadcrumbs = computed(() => [
                     <Save class="mr-2 h-4 w-4" />
                     {{
                         isLoading
-                            ? "Saving..."
+                            ? t('common.saving')
                             : isEditing
-                              ? "Update Product"
-                              : "Create Product"
+                              ? t('products.page.updateButton')
+                              : t('products.page.createTitle')
                     }}
                 </Button>
 
@@ -239,13 +243,13 @@ const breadcrumbs = computed(() => [
                             variant="outline"
                             size="icon"
                             class="h-9 w-9"
-                            aria-label="Product settings"
+                            :aria-label="t('products.page.settingsAriaLabel')"
                         >
                             <Settings2 class="h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" class="w-[200px]">
-                        <DropdownMenuLabel>Product Options</DropdownMenuLabel>
+                        <DropdownMenuLabel>{{ t('products.page.optionsLabel') }}</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem @click="handleArchive">
                             <Archive class="mr-2 h-4 w-4 text-muted-foreground" />
@@ -254,7 +258,7 @@ const breadcrumbs = computed(() => [
                         <DropdownMenuSeparator />
                         <DropdownMenuItem class="text-destructive" @click="handleDelete">
                             <Trash2 class="mr-2 h-4 w-4" />
-                            Delete
+                            {{ t('common.actions.delete') }}
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

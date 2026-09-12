@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, computed } from "vue";
+import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 import { useUnitOfMeasureStore } from "@tenant/stores/unitOfMeasure";
 import { storeToRefs } from "pinia";
@@ -22,6 +23,7 @@ import {
 import { toast } from "vue-sonner";
 import { ArrowLeft, Save, Archive, Settings2, Trash2 } from "lucide-vue-next";
 
+const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const store = useUnitOfMeasureStore();
@@ -44,7 +46,9 @@ const { currentIndex: unitIndex, prevRecord: prevUnit, nextRecord: nextUnit, nav
     useRecordNavigator(units, unitId, "/admin/unit-of-measures", () => store.fetchUnits(1, "total"));
 
 const archiveLabel = computed(() =>
-    currentUnit.value?.is_active === false ? "Activate" : "Deactivate",
+    currentUnit.value?.is_active === false
+        ? t('common.actions.activate')
+        : t('common.actions.deactivate'),
 );
 const isArchived = computed(() => isEditing.value && currentUnit.value?.is_active === false);
 const canManage = computed(() => isEditing.value && !!unitId.value);
@@ -77,14 +81,14 @@ const handleSubmit = async (payload: any) => {
     try {
         if (isEditing.value) {
             currentUnit.value = await store.updateUnit(unitId.value, payload);
-            toast.success("Unit updated", {
-                description: "The unit of measure was successfully updated.",
+            toast.success(t('unitOfMeasures.page.updatedToastTitle'), {
+                description: t('unitOfMeasures.page.updatedToastDesc'),
             });
             activityLogRef.value?.load();
         } else {
             const created = await store.createUnit(payload);
-            toast.success("Unit created", {
-                description: "The unit of measure was successfully created.",
+            toast.success(t('unitOfMeasures.page.createdToastTitle'), {
+                description: t('unitOfMeasures.page.createdToastDesc'),
             });
             router.push(`/admin/unit-of-measures/${created.id}/edit`);
             return;
@@ -97,13 +101,13 @@ const handleSubmit = async (payload: any) => {
                 flat[k] = Array.isArray(v) ? v[0] : String(v);
             });
             errors.value = flat;
-            toast.error("Validation error", {
-                description: "Please check the form fields for errors.",
+            toast.error(t('common.validationErrorTitle'), {
+                description: t('common.validationErrorDesc'),
             });
         } else {
             console.error("Error saving unit:", err);
-            toast.error("Error saving unit", {
-                description: err?.response?.data?.message || "An unexpected error occurred.",
+            toast.error(t('unitOfMeasures.page.savingErrorToastTitle'), {
+                description: err?.response?.data?.message || t('common.unexpectedError'),
             });
         }
     } finally {
@@ -114,8 +118,8 @@ const handleSubmit = async (payload: any) => {
 const handleArchive = () => {
     if (!unitId.value) return;
     confirmDialog.value?.show(
-        `${archiveLabel.value} unit`,
-        `Are you sure you want to ${archiveLabel.value.toLowerCase()} "${currentUnit.value?.name}"?`,
+        t('unitOfMeasures.page.archiveConfirmTitle', { action: archiveLabel.value }),
+        t('unitOfMeasures.page.archiveConfirmMessage', { action: archiveLabel.value.toLowerCase(), name: currentUnit.value?.name }),
         async () => {
             isLoading.value = true;
             try {
@@ -133,15 +137,15 @@ const handleArchive = () => {
 const handleDelete = () => {
     if (!unitId.value) return;
     confirmDialog.value?.show(
-        "Delete unit of measure",
-        `Are you sure you want to permanently delete "${currentUnit.value?.name}"? This cannot be undone.`,
+        t('unitOfMeasures.page.deleteConfirmTitle'),
+        t('unitOfMeasures.page.deleteConfirmMessage', { name: currentUnit.value?.name }),
         async () => {
             isLoading.value = true;
             try {
                 await store.deleteUnit(Number(unitId.value));
                 router.push("/admin/unit-of-measures");
             } catch (err: any) {
-                const msg = err?.response?.data?.message || "Could not delete this unit.";
+                const msg = err?.response?.data?.message || t('unitOfMeasures.page.deleteErrorFallback');
                 alert(msg);
             } finally {
                 isLoading.value = false;
@@ -153,11 +157,11 @@ const handleDelete = () => {
 const handleCancel = () => router.push("/admin/unit-of-measures");
 
 const pageTitle = computed(() =>
-    isEditing.value ? "Edit Unit of Measure" : "Create Unit of Measure",
+    isEditing.value ? t('unitOfMeasures.page.editTitle') : t('unitOfMeasures.page.createTitle'),
 );
 const breadcrumbs = computed(() => [
-    { label: "Units of Measure", href: "/admin/unit-of-measures" },
-    { label: isEditing.value ? "Edit" : "Create" },
+    { label: t('unitOfMeasures.page.breadcrumbList'), href: "/admin/unit-of-measures" },
+    { label: isEditing.value ? t('common.actions.edit') : t('common.actions.create') },
 ]);
 </script>
 
@@ -169,7 +173,7 @@ const breadcrumbs = computed(() => [
                     variant="outline"
                     size="icon"
                     class="h-9 w-9"
-                    aria-label="Back"
+                    :aria-label="t('common.actions.back')"
                     @click="handleCancel"
                 >
                     <ArrowLeft class="h-4 w-4" />
@@ -179,17 +183,17 @@ const breadcrumbs = computed(() => [
             <template #trailing>
                 <Button size="sm" class="h-9" :disabled="isLoading" @click="handleSave">
                     <Save class="mr-2 h-4 w-4" />
-                    {{ isLoading ? "Saving..." : isEditing ? "Update Unit" : "Create Unit" }}
+                    {{ isLoading ? t('common.saving') : isEditing ? t('unitOfMeasures.page.updateButton') : t('unitOfMeasures.page.createButton') }}
                 </Button>
 
                 <DropdownMenu v-if="canManage">
                     <DropdownMenuTrigger as-child>
-                        <Button variant="outline" size="icon" class="h-9 w-9" aria-label="Unit options">
+                        <Button variant="outline" size="icon" class="h-9 w-9" :aria-label="t('unitOfMeasures.page.settingsAriaLabel')">
                             <Settings2 class="h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" class="w-[200px]">
-                        <DropdownMenuLabel>Unit Options</DropdownMenuLabel>
+                        <DropdownMenuLabel>{{ t('unitOfMeasures.page.optionsLabel') }}</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem @click="handleArchive">
                             <Archive class="mr-2 h-4 w-4 text-muted-foreground" />
@@ -198,7 +202,7 @@ const breadcrumbs = computed(() => [
                         <DropdownMenuSeparator />
                         <DropdownMenuItem class="text-destructive" @click="handleDelete">
                             <Trash2 class="mr-2 h-4 w-4" />
-                            Delete
+                            {{ t('common.actions.delete') }}
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

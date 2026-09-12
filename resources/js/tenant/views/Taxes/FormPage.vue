@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
+import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { useTaxStore } from "@tenant/stores/tax";
@@ -22,6 +23,7 @@ import {
 import { toast } from "vue-sonner";
 import { ArrowLeft, Save, Archive, Settings2, Trash2 } from "lucide-vue-next";
 
+const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const taxStore = useTaxStore();
@@ -41,7 +43,9 @@ const activityLogRef = ref<InstanceType<typeof ActivityLogPanel> | null>(null);
 const errors = ref<Record<string, string>>({});
 
 const archiveLabel = computed(() =>
-    currentTax.value?.is_active === false ? "Activate" : "Deactivate",
+    currentTax.value?.is_active === false
+        ? t('common.actions.activate')
+        : t('common.actions.deactivate'),
 );
 const isArchived = computed(
     () => isEditing.value && currentTax.value?.is_active === false,
@@ -75,14 +79,14 @@ const handleSubmit = async (payload: any) => {
     try {
         if (isEditing.value) {
             await taxStore.updateTax(taxId.value, payload);
-            toast.success("Tax updated", {
-                description: "The tax was successfully updated.",
+            toast.success(t('taxes.page.updatedToastTitle'), {
+                description: t('taxes.page.updatedToastDesc'),
             });
             activityLogRef.value?.load();
         } else {
             const newTax = await taxStore.createTax(payload);
-            toast.success("Tax created", {
-                description: "The tax was successfully created.",
+            toast.success(t('taxes.page.createdToastTitle'), {
+                description: t('taxes.page.createdToastDesc'),
             });
             router.push(`/admin/taxes/${newTax.id}/edit`);
             return;
@@ -95,13 +99,13 @@ const handleSubmit = async (payload: any) => {
                 flat[k] = Array.isArray(v) ? v[0] : String(v);
             });
             errors.value = flat;
-            toast.error("Validation error", {
-                description: "Please check the form fields for errors.",
+            toast.error(t('common.validationErrorTitle'), {
+                description: t('common.validationErrorDesc'),
             });
         } else {
             console.error("Error saving tax:", err);
-            toast.error("Error saving tax", {
-                description: err?.response?.data?.message || "An unexpected error occurred.",
+            toast.error(t('taxes.page.savingErrorToastTitle'), {
+                description: err?.response?.data?.message || t('common.unexpectedError'),
             });
         }
     } finally {
@@ -114,8 +118,8 @@ const handleCancel = () => router.push("/admin/taxes");
 const handleArchive = () => {
     if (!taxId.value) return;
     confirmDialog.value?.show(
-        `${archiveLabel.value} tax`,
-        `Are you sure you want to ${archiveLabel.value.toLowerCase()} this tax?`,
+        t('taxes.page.archiveConfirmTitle', { action: archiveLabel.value }),
+        t('taxes.page.archiveConfirmMessage', { action: archiveLabel.value.toLowerCase() }),
         async () => {
             isLoading.value = true;
             try {
@@ -133,15 +137,15 @@ const handleArchive = () => {
 const handleDelete = () => {
     if (!taxId.value) return;
     confirmDialog.value?.show(
-        "Delete tax",
-        "Are you sure you want to delete this tax? This action cannot be undone.",
+        t('taxes.page.deleteConfirmTitle'),
+        t('taxes.page.deleteConfirmMessage'),
         async () => {
             isLoading.value = true;
             try {
                 await taxStore.deleteTax(taxId.value);
                 router.push("/admin/taxes");
             } catch (err: any) {
-                const msg = err?.response?.data?.message || "Could not delete this tax.";
+                const msg = err?.response?.data?.message || t('taxes.page.deleteErrorFallback');
                 alert(msg);
             } finally {
                 isLoading.value = false;
@@ -151,12 +155,12 @@ const handleDelete = () => {
 };
 
 const pageTitle = computed(() =>
-    isEditing.value ? "Edit Tax" : "Create Tax",
+    isEditing.value ? t('taxes.page.editTitle') : t('taxes.page.createTitle'),
 );
 
 const breadcrumbs = computed(() => [
-    { label: "Taxes", href: "/admin/taxes" },
-    { label: isEditing.value ? "Edit Tax" : "Create Tax" },
+    { label: t('taxes.page.breadcrumbList'), href: "/admin/taxes" },
+    { label: pageTitle.value },
 ]);
 </script>
 
@@ -168,7 +172,7 @@ const breadcrumbs = computed(() => [
                     variant="outline"
                     size="icon"
                     class="h-9 w-9"
-                    aria-label="Back"
+                    :aria-label="t('common.actions.back')"
                     @click="handleCancel"
                 >
                     <ArrowLeft class="h-4 w-4" />
@@ -185,10 +189,10 @@ const breadcrumbs = computed(() => [
                     <Save class="mr-2 h-4 w-4" />
                     {{
                         isLoading
-                            ? "Saving..."
+                            ? t('common.saving')
                             : isEditing
-                              ? "Update Tax"
-                              : "Create Tax"
+                              ? t('taxes.page.updateButton')
+                              : t('taxes.page.createTitle')
                     }}
                 </Button>
 
@@ -198,13 +202,13 @@ const breadcrumbs = computed(() => [
                             variant="outline"
                             size="icon"
                             class="h-9 w-9"
-                            aria-label="Tax settings"
+                            :aria-label="t('taxes.page.settingsAriaLabel')"
                         >
                             <Settings2 class="h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" class="w-[200px]">
-                        <DropdownMenuLabel>Tax Options</DropdownMenuLabel>
+                        <DropdownMenuLabel>{{ t('taxes.page.optionsLabel') }}</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem @click="handleArchive">
                             <Archive class="mr-2 h-4 w-4 text-muted-foreground" />
@@ -213,7 +217,7 @@ const breadcrumbs = computed(() => [
                         <DropdownMenuSeparator />
                         <DropdownMenuItem class="text-destructive" @click="handleDelete">
                             <Trash2 class="mr-2 h-4 w-4" />
-                            Delete
+                            {{ t('common.actions.delete') }}
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

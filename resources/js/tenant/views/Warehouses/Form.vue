@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import CornerRibbon from "@tenant/components/CornerRibbon.vue";
@@ -19,6 +20,8 @@ const props = defineProps<{
 const emit = defineEmits<{
     (e: "submit", data: any): void;
 }>();
+
+const { t } = useI18n();
 
 const form = ref({
     name: "",
@@ -59,17 +62,17 @@ defineExpose({ submit });
 
 <template>
     <Card class="w-full relative overflow-hidden">
-        <CornerRibbon v-if="archived" label="Inactive" tone="danger" />
+        <CornerRibbon v-if="archived" :label="t('warehouses.form.inactive')" tone="danger" />
         <CardContent class="pt-6">
             <form @submit.prevent="submit" class="space-y-6">
                 <!-- Row 1 -->
                 <div class="grid gap-4 md:grid-cols-4">
                     <div class="space-y-2 md:col-span-4">
-                        <Label htmlFor="name">Warehouse Name</Label>
+                        <Label htmlFor="name">{{ t('warehouses.form.name') }}</Label>
                         <UnderlineInput
                             id="name"
                             v-model="form.name"
-                            placeholder="e.g. Main Hub"
+                            :placeholder="t('warehouses.form.namePlaceholder')"
                             required
                         />
                         <p v-if="errors?.name" class="text-sm text-destructive">
@@ -78,11 +81,11 @@ defineExpose({ submit });
                     </div>
 
                     <div class="space-y-2 md:col-span-3">
-                        <Label htmlFor="location">Location</Label>
+                        <Label htmlFor="location">{{ t('warehouses.form.location') }}</Label>
                         <UnderlineInput
                             id="location"
                             v-model="form.location"
-                            placeholder="e.g. 123 Storage Lane"
+                            :placeholder="t('warehouses.form.locationPlaceholder')"
                         />
                         <p v-if="errors?.location" class="text-sm text-destructive">
                             {{ errors.location }}
@@ -90,12 +93,12 @@ defineExpose({ submit });
                     </div>
 
                     <div class="space-y-2 md:col-span-1">
-                        <Label htmlFor="company_id">Company</Label>
+                        <Label htmlFor="company_id">{{ t('warehouses.form.company') }}</Label>
                         <SearchSelect
                             id="company_id"
                             v-model="form.company_id"
                             :options="companyOptions"
-                            placeholder="Buscar..."
+                            :placeholder="t('common.search')"
                         />
                         <p v-if="errors?.company_id" class="text-sm text-destructive">
                             {{ errors.company_id }}

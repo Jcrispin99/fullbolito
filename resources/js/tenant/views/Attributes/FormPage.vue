@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, computed } from "vue";
+import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { useAttributeStore } from "@tenant/stores/attribute";
@@ -22,6 +23,7 @@ import {
 import { toast } from "vue-sonner";
 import { ArrowLeft, Save, Archive, Settings2, Trash2 } from "lucide-vue-next";
 
+const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const attributeStore = useAttributeStore();
@@ -38,7 +40,9 @@ const errors = ref<Record<string, string>>({});
 
 const canManageAttribute = computed(() => isEditing.value && !!attributeId.value);
 const archiveLabel = computed(() =>
-    currentAttribute.value?.is_active === false ? "Activate" : "Deactivate",
+    currentAttribute.value?.is_active === false
+        ? t('common.actions.activate')
+        : t('common.actions.deactivate'),
 );
 const isArchived = computed(
     () => isEditing.value && currentAttribute.value?.is_active === false,
@@ -85,14 +89,14 @@ const handleSubmit = async (payload: any) => {
     try {
         if (isEditing.value) {
             await attributeStore.updateAttribute(attributeId.value, payload);
-            toast.success("Attribute updated", {
-                description: "The attribute was successfully updated.",
+            toast.success(t('attributes.page.updatedToastTitle'), {
+                description: t('attributes.page.updatedToastDesc'),
             });
             activityLogRef.value?.load();
         } else {
             const newAttr = await attributeStore.createAttribute(payload);
-            toast.success("Attribute created", {
-                description: "The attribute was successfully created.",
+            toast.success(t('attributes.page.createdToastTitle'), {
+                description: t('attributes.page.createdToastDesc'),
             });
             router.push(`/admin/attributes/${newAttr.id}/edit`);
             return;
@@ -105,13 +109,13 @@ const handleSubmit = async (payload: any) => {
                 flat[k] = Array.isArray(v) ? v[0] : String(v);
             });
             errors.value = flat;
-            toast.error("Validation error", {
-                description: "Please check the form fields for errors.",
+            toast.error(t('common.validationErrorTitle'), {
+                description: t('common.validationErrorDesc'),
             });
         } else {
             console.error("Error saving attribute:", err);
-            toast.error("Error saving attribute", {
-                description: err?.response?.data?.message || "An unexpected error occurred.",
+            toast.error(t('attributes.page.savingErrorToastTitle'), {
+                description: err?.response?.data?.message || t('common.unexpectedError'),
             });
         }
     } finally {
@@ -128,8 +132,8 @@ const handleArchive = async () => {
     const id = Number(attributeId.value);
 
     confirmDialog.value?.show(
-        `${archiveLabel.value} attribute`,
-        `Are you sure you want to ${archiveLabel.value.toLowerCase()} this attribute?`,
+        t('attributes.page.archiveConfirmTitle', { action: archiveLabel.value }),
+        t('attributes.page.archiveConfirmMessage', { action: archiveLabel.value.toLowerCase() }),
         async () => {
             isLoading.value = true;
             try {
@@ -148,8 +152,8 @@ const handleDelete = async () => {
     const id = Number(attributeId.value);
 
     confirmDialog.value?.show(
-        "Delete attribute",
-        "Are you sure you want to delete this attribute? This action cannot be undone.",
+        t('attributes.page.deleteConfirmTitle'),
+        t('attributes.page.deleteConfirmMessage'),
         async () => {
             isLoading.value = true;
             try {
@@ -165,12 +169,12 @@ const handleDelete = async () => {
 };
 
 const pageTitle = computed(() =>
-    isEditing.value ? "Edit Attribute" : "Create Attribute",
+    isEditing.value ? t('attributes.page.editTitle') : t('attributes.page.createTitle'),
 );
 
 const breadcrumbs = computed(() => [
-    { label: "Attributes", href: "/admin/attributes" },
-    { label: isEditing.value ? "Edit Attribute" : "Create Attribute" },
+    { label: t('attributes.page.breadcrumbList'), href: "/admin/attributes" },
+    { label: pageTitle.value },
 ]);
 </script>
 
@@ -182,7 +186,7 @@ const breadcrumbs = computed(() => [
                     variant="outline"
                     size="icon"
                     class="h-9 w-9"
-                    aria-label="Back"
+                    :aria-label="t('common.actions.back')"
                     @click="handleCancel"
                 >
                     <ArrowLeft class="h-4 w-4" />
@@ -199,10 +203,10 @@ const breadcrumbs = computed(() => [
                     <Save class="mr-2 h-4 w-4" />
                     {{
                         isLoading
-                            ? "Saving..."
+                            ? t('common.saving')
                             : isEditing
-                              ? "Update Attribute"
-                              : "Create Attribute"
+                              ? t('attributes.page.updateButton')
+                              : t('attributes.page.createTitle')
                     }}
                 </Button>
 
@@ -212,13 +216,13 @@ const breadcrumbs = computed(() => [
                             variant="outline"
                             size="icon"
                             class="h-9 w-9"
-                            aria-label="Attribute settings"
+                            :aria-label="t('attributes.page.settingsAriaLabel')"
                         >
                             <Settings2 class="h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" class="w-[200px]">
-                        <DropdownMenuLabel>Attribute Options</DropdownMenuLabel>
+                        <DropdownMenuLabel>{{ t('attributes.page.optionsLabel') }}</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem @click="handleArchive">
                             <Archive class="mr-2 h-4 w-4 text-muted-foreground" />
@@ -227,7 +231,7 @@ const breadcrumbs = computed(() => [
                         <DropdownMenuSeparator />
                         <DropdownMenuItem class="text-destructive" @click="handleDelete">
                             <Trash2 class="mr-2 h-4 w-4" />
-                            Delete
+                            {{ t('common.actions.delete') }}
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

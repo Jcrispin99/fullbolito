@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
+import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { useLoyaltyProgramStore } from "@tenant/stores/loyaltyProgram";
@@ -22,6 +23,7 @@ import {
 import { toast } from "vue-sonner";
 import { ArrowLeft, Save, Archive, Settings2, Trash2 } from "lucide-vue-next";
 
+const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const programStore = useLoyaltyProgramStore();
@@ -52,7 +54,9 @@ const activityLogRef = ref<InstanceType<typeof ActivityLogPanel> | null>(null);
 const errors = ref<Record<string, string>>({});
 
 const archiveLabel = computed(() =>
-    currentProgram.value?.is_active === false ? "Activate" : "Deactivate",
+    currentProgram.value?.is_active === false
+        ? t('common.actions.activate')
+        : t('common.actions.deactivate'),
 );
 const isArchived = computed(
     () => isEditing.value && currentProgram.value?.is_active === false,
@@ -84,14 +88,14 @@ const handleSubmit = async (payload: any) => {
     try {
         if (isEditing.value) {
             await programStore.updateProgram(programId.value, payload);
-            toast.success("Program updated", {
-                description: "The program was successfully updated.",
+            toast.success(t('loyalty.programs.page.updatedToastTitle'), {
+                description: t('loyalty.programs.page.updatedToastDesc'),
             });
             activityLogRef.value?.load();
         } else {
             const newProgram = await programStore.createProgram(payload);
-            toast.success("Program created", {
-                description: "The program was successfully created.",
+            toast.success(t('loyalty.programs.page.createdToastTitle'), {
+                description: t('loyalty.programs.page.createdToastDesc'),
             });
             router.push(`/admin/loyalty/programs/${(newProgram as any).id}/edit`);
             return;
@@ -104,15 +108,15 @@ const handleSubmit = async (payload: any) => {
                 flat[k] = Array.isArray(v) ? v[0] : String(v);
             });
             errors.value = flat;
-            toast.error("Validation error", {
-                description: "Please check the form fields for errors.",
+            toast.error(t('common.validationErrorTitle'), {
+                description: t('common.validationErrorDesc'),
             });
         } else {
             console.error("Error saving program:", err);
-            toast.error("Error saving program", {
+            toast.error(t('loyalty.programs.page.savingErrorToastTitle'), {
                 description:
                     err?.response?.data?.message ||
-                    "An unexpected error occurred.",
+                    t('common.unexpectedError'),
             });
         }
     } finally {
@@ -128,8 +132,8 @@ const handleArchive = async () => {
     if (!programId.value) return;
 
     confirmDialog.value?.show(
-        `${archiveLabel.value} program`,
-        `Are you sure you want to ${archiveLabel.value.toLowerCase()} this program?`,
+        t('loyalty.programs.page.archiveConfirmTitle', { action: archiveLabel.value }),
+        t('loyalty.programs.page.archiveConfirmMessage', { action: archiveLabel.value.toLowerCase() }),
         async () => {
             isLoading.value = true;
             try {
@@ -148,8 +152,8 @@ const handleDelete = async () => {
     if (!programId.value) return;
 
     confirmDialog.value?.show(
-        "Delete program",
-        "Are you sure you want to delete this program? This action cannot be undone.",
+        t('loyalty.programs.page.deleteConfirmTitle'),
+        t('loyalty.programs.page.deleteConfirmMessage'),
         async () => {
             isLoading.value = true;
             try {
@@ -157,7 +161,7 @@ const handleDelete = async () => {
                 router.push("/admin/loyalty/programs");
             } catch (err: any) {
                 const msg =
-                    err?.response?.data?.message || "Could not delete this program.";
+                    err?.response?.data?.message || t('loyalty.programs.page.deleteErrorFallback');
                 alert(msg);
             } finally {
                 isLoading.value = false;
@@ -167,12 +171,12 @@ const handleDelete = async () => {
 };
 
 const pageTitle = computed(() =>
-    isEditing.value ? "Edit Program" : "Create Program",
+    isEditing.value ? t('loyalty.programs.page.editTitle') : t('loyalty.programs.page.createTitle'),
 );
 
 const breadcrumbs = computed(() => [
-    { label: "Programas", href: "/admin/loyalty/programs" },
-    { label: isEditing.value ? "Edit Program" : "Create Program" },
+    { label: t('loyalty.programs.page.breadcrumbList'), href: "/admin/loyalty/programs" },
+    { label: pageTitle.value },
 ]);
 </script>
 
@@ -184,7 +188,7 @@ const breadcrumbs = computed(() => [
                     variant="outline"
                     size="icon"
                     class="h-9 w-9"
-                    aria-label="Back"
+                    :aria-label="t('common.actions.back')"
                     @click="handleCancel"
                 >
                     <ArrowLeft class="h-4 w-4" />
@@ -201,10 +205,10 @@ const breadcrumbs = computed(() => [
                     <Save class="mr-2 h-4 w-4" />
                     {{
                         isLoading
-                            ? "Saving..."
+                            ? t('common.saving')
                             : isEditing
-                              ? "Update Program"
-                              : "Create Program"
+                              ? t('loyalty.programs.page.updateButton')
+                              : t('loyalty.programs.page.createTitle')
                     }}
                 </Button>
                 <DropdownMenu v-if="canManageProgram">
@@ -213,13 +217,13 @@ const breadcrumbs = computed(() => [
                             variant="outline"
                             size="icon"
                             class="h-9 w-9"
-                            aria-label="Program settings"
+                            :aria-label="t('loyalty.programs.page.settingsAriaLabel')"
                         >
                             <Settings2 class="h-4 w-4" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" class="w-[200px]">
-                        <DropdownMenuLabel>Program Options</DropdownMenuLabel>
+                        <DropdownMenuLabel>{{ t('loyalty.programs.page.optionsLabel') }}</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem @click="handleArchive">
                             <Archive
@@ -233,7 +237,7 @@ const breadcrumbs = computed(() => [
                             @click="handleDelete"
                         >
                             <Trash2 class="mr-2 h-4 w-4" />
-                            Delete
+                            {{ t('common.actions.delete') }}
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

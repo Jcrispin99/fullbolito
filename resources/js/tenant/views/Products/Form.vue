@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, computed } from "vue";
+import { useI18n } from "vue-i18n";
 import {
     Card,
     CardContent,
@@ -65,6 +66,8 @@ const emit = defineEmits<{
     (e: "submit", payload: any): void;
 }>();
 
+const { t } = useI18n();
+
 // ─── General Info ────────────────────────────────────────────────────────────
 const formData = ref({
     name: "",
@@ -118,7 +121,7 @@ const attributeLines = ref<AttributeLine[]>([]);
 const categoryDialog = useCreateDialog({
     endpoint: '/v1/categories',
     formOptionsEndpoint: '/v1/categories/form-options',
-    label: 'Category',
+    labelKey: 'category',
 });
 const categoryFormRef = ref<InstanceType<typeof CategoryForm> | null>(null);
 
@@ -236,7 +239,7 @@ const formatMoney = (val: number | string | null) => {
 
 const getVariantLabel = (variant: any): string => {
     const attrs = variant.attributes ?? [];
-    if (!attrs.length) return props.initialData?.name ?? "Default";
+    if (!attrs.length) return props.initialData?.name ?? t('products.form.defaultVariant');
     return attrs.map((a: any) => a.value).join(" / ");
 };
 
@@ -342,7 +345,7 @@ defineExpose({ submit: handleSubmit });
 <template>
     <form @submit.prevent="handleSubmit">
         <div class="relative">
-            <CornerRibbon v-if="archived" label="Inactive" tone="danger" />
+            <CornerRibbon v-if="archived" :label="t('products.form.inactive')" tone="danger" />
         </div>
 
         <Tabs default-value="general">
@@ -352,10 +355,10 @@ defineExpose({ submit: handleSubmit });
                     formData.tracked_by_lot ? 'grid-cols-4' : 'grid-cols-3',
                 ]"
             >
-                <TabsTrigger value="general">General Info</TabsTrigger>
-                <TabsTrigger value="attributes">Attributes</TabsTrigger>
+                <TabsTrigger value="general">{{ t('products.form.tabGeneral') }}</TabsTrigger>
+                <TabsTrigger value="attributes">{{ t('products.form.tabAttributes') }}</TabsTrigger>
                 <TabsTrigger value="variants" :disabled="!isEditing">
-                    Variants
+                    {{ t('products.form.tabVariants') }}
                     <span
                         v-if="variants.length"
                         class="ml-1.5 rounded-full bg-primary/10 px-1.5 py-0.5 text-xs font-medium"
@@ -368,7 +371,7 @@ defineExpose({ submit: handleSubmit });
                     value="lots"
                     :disabled="!isEditing"
                 >
-                    Lotes
+                    {{ t('products.form.tabLots') }}
                 </TabsTrigger>
             </TabsList>
 
@@ -381,7 +384,7 @@ defineExpose({ submit: handleSubmit });
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div class="grid gap-3 md:col-span-2">
                                     <Label for="name"
-                                        >Name
+                                        >{{ t('products.form.name') }}
                                         <span class="text-destructive"
                                             >*</span
                                         ></Label
@@ -389,7 +392,7 @@ defineExpose({ submit: handleSubmit });
                                     <UnderlineInput
                                         id="name"
                                         v-model="formData.name"
-                                        placeholder="e.g. T-Shirt Classic"
+                                        :placeholder="t('products.form.namePlaceholder')"
                                         required
                                         class="h-12 text-2xl font-semibold"
                                     />
@@ -411,7 +414,7 @@ defineExpose({ submit: handleSubmit });
                                     <Label
                                         for="is_service"
                                         class="cursor-pointer"
-                                        >Is Service</Label
+                                        >{{ t('products.form.isService') }}</Label
                                     >
                                 </div>
                                 <div class="flex items-center gap-2">
@@ -424,7 +427,7 @@ defineExpose({ submit: handleSubmit });
                                     <Label
                                         for="tracks_inventory"
                                         class="cursor-pointer"
-                                        >Track Inventory</Label
+                                        >{{ t('products.form.trackInventory') }}</Label
                                     >
                                 </div>
                                 <div class="flex items-center gap-2">
@@ -437,7 +440,7 @@ defineExpose({ submit: handleSubmit });
                                     <Label
                                         for="is_pos_visible"
                                         class="cursor-pointer"
-                                        >POS Visible</Label
+                                        >{{ t('products.form.posVisible') }}</Label
                                     >
                                 </div>
                                 <div class="flex items-center gap-2">
@@ -450,7 +453,7 @@ defineExpose({ submit: handleSubmit });
                                     <Label
                                         for="tracked_by_lot"
                                         class="cursor-pointer"
-                                        >Rastrear por lote</Label
+                                        >{{ t('products.form.trackByLot') }}</Label
                                     >
                                 </div>
                             </div>
@@ -462,14 +465,14 @@ defineExpose({ submit: handleSubmit });
                             >
                                 <div class="grid gap-3">
                                     <Label for="expiration_alert_days">
-                                        Días de alerta pre-vencimiento
+                                        {{ t('products.form.expirationAlertDays') }}
                                     </Label>
                                     <UnderlineInput
                                         id="expiration_alert_days"
                                         v-model="formData.expiration_alert_days"
                                         type="number"
                                         min="0"
-                                        placeholder="e.g. 30"
+                                        :placeholder="t('products.form.expirationAlertPlaceholder')"
                                     />
                                     <p
                                         v-if="errors?.expiration_alert_days"
@@ -480,14 +483,14 @@ defineExpose({ submit: handleSubmit });
                                 </div>
                                 <div class="grid gap-3">
                                     <Label for="expiration_block_days">
-                                        Días de bloqueo pre-vencimiento
+                                        {{ t('products.form.expirationBlockDays') }}
                                     </Label>
                                     <UnderlineInput
                                         id="expiration_block_days"
                                         v-model="formData.expiration_block_days"
                                         type="number"
                                         min="0"
-                                        placeholder="e.g. 7"
+                                        :placeholder="t('products.form.expirationBlockPlaceholder')"
                                     />
                                     <p
                                         v-if="errors?.expiration_block_days"
@@ -501,7 +504,7 @@ defineExpose({ submit: handleSubmit });
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div class="grid gap-3">
                                     <Label for="price"
-                                        >Price
+                                        >{{ t('products.form.price') }}
                                         <span class="text-destructive"
                                             >*</span
                                         ></Label
@@ -524,7 +527,7 @@ defineExpose({ submit: handleSubmit });
                                 </div>
                                 <div class="grid gap-3">
                                     <Label for="category_id"
-                                        >Category
+                                        >{{ t('products.form.category') }}
                                         <span class="text-destructive"
                                             >*</span
                                         ></Label
@@ -534,7 +537,7 @@ defineExpose({ submit: handleSubmit });
                                         v-model="formData.category_id"
                                         required
                                         :options="categoryOptions"
-                                        placeholder="Buscar..."
+                                        :placeholder="t('common.search')"
                                         :show-create="true"
                                         :show-edit="true"
                                         @create="categoryDialog.open($event)"
@@ -551,11 +554,11 @@ defineExpose({ submit: handleSubmit });
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div class="grid gap-3">
-                                    <Label for="sku">SKU</Label>
+                                    <Label for="sku">{{ t('products.form.sku') }}</Label>
                                     <UnderlineInput
                                         id="sku"
                                         v-model="formData.sku"
-                                        placeholder="Optional — auto-generated if empty"
+                                        :placeholder="t('products.form.skuPlaceholder')"
                                     />
                                     <p
                                         v-if="errors?.sku"
@@ -565,22 +568,22 @@ defineExpose({ submit: handleSubmit });
                                     </p>
                                 </div>
                                 <div class="grid gap-3">
-                                    <Label for="barcode">Barcode</Label>
+                                    <Label for="barcode">{{ t('products.form.barcode') }}</Label>
                                     <UnderlineInput
                                         id="barcode"
                                         v-model="formData.barcode"
-                                        placeholder="EAN-13 — auto-generated if empty"
+                                        :placeholder="t('products.form.barcodePlaceholder')"
                                     />
                                 </div>
                             </div>
 
                             <div class="grid gap-3">
-                                <Label for="uom_id">Unit of Measure</Label>
+                                <Label for="uom_id">{{ t('products.form.uom') }}</Label>
                                 <UnderlineSelect
                                     id="uom_id"
                                     v-model="formData.uom_id"
                                 >
-                                    <option value="">— None —</option>
+                                    <option value="">{{ t('products.form.noneOption') }}</option>
                                     <option
                                         v-for="uom in formOptions?.uoms"
                                         :key="uom.id"
@@ -595,11 +598,11 @@ defineExpose({ submit: handleSubmit });
                             </div>
 
                             <div class="grid gap-3">
-                                <Label for="description">Description</Label>
+                                <Label for="description">{{ t('products.form.description') }}</Label>
                                 <UnderlineTextarea
                                     id="description"
                                     v-model="formData.description"
-                                    placeholder="Details about this product"
+                                    :placeholder="t('products.form.descriptionPlaceholder')"
                                     rows="3"
                                 />
                             </div>
@@ -614,10 +617,9 @@ defineExpose({ submit: handleSubmit });
                     <CardHeader>
                         <div class="flex items-center justify-between">
                             <div>
-                                <CardTitle>Attributes</CardTitle>
+                                <CardTitle>{{ t('products.form.attributesTitle') }}</CardTitle>
                                 <CardDescription
-                                    >Define attributes and values to generate
-                                    product variants.</CardDescription
+                                    >{{ t('products.form.attributesDescription') }}</CardDescription
                                 >
                             </div>
                             <Button
@@ -627,7 +629,7 @@ defineExpose({ submit: handleSubmit });
                                 @click="addAttributeLine"
                             >
                                 <Plus class="mr-2 h-4 w-4" />
-                                Add Attribute
+                                {{ t('products.form.addAttribute') }}
                             </Button>
                         </div>
                     </CardHeader>
@@ -638,8 +640,7 @@ defineExpose({ submit: handleSubmit });
                         >
                             <Package class="h-10 w-10 opacity-30" />
                             <p class="text-sm">
-                                No attributes added yet. Click "Add Attribute"
-                                to start.
+                                {{ t('products.form.noAttributesYet') }}
                             </p>
                         </div>
 
@@ -652,7 +653,7 @@ defineExpose({ submit: handleSubmit });
                                 <div class="flex items-center gap-3">
                                     <div class="flex-1 grid gap-1.5">
                                         <Label :for="`attr-${idx}`"
-                                            >Attribute</Label
+                                            >{{ t('products.form.attribute') }}</Label
                                         >
                                         <UnderlineSelect
                                             :id="`attr-${idx}`"
@@ -660,7 +661,7 @@ defineExpose({ submit: handleSubmit });
                                             @change="line.values = []"
                                         >
                                             <option value="">
-                                                — Select attribute —
+                                                {{ t('products.form.selectAttribute') }}
                                             </option>
                                             <option
                                                 v-for="attr in formOptions?.attributes"
@@ -696,7 +697,7 @@ defineExpose({ submit: handleSubmit });
                                 <div v-if="line.attribute_id !== ''">
                                     <Label
                                         class="text-xs text-muted-foreground mb-2 block"
-                                        >Values</Label
+                                        >{{ t('products.form.values') }}</Label
                                     >
                                     <div class="flex flex-wrap gap-2">
                                         <button
@@ -723,8 +724,7 @@ defineExpose({ submit: handleSubmit });
                                             "
                                             class="text-xs text-muted-foreground"
                                         >
-                                            No values configured for this
-                                            attribute.
+                                            {{ t('products.form.noValuesConfigured') }}
                                         </p>
                                     </div>
                                 </div>
@@ -738,8 +738,7 @@ defineExpose({ submit: handleSubmit });
                                 <p
                                     class="text-xs font-medium text-muted-foreground mb-2"
                                 >
-                                    {{ generatedVariantNames.length }}
-                                    variant(s) will be generated:
+                                    {{ t('products.form.variantsWillBeGenerated', { count: generatedVariantNames.length }) }}
                                 </p>
                                 <div class="flex flex-wrap gap-1.5">
                                     <span
@@ -762,10 +761,9 @@ defineExpose({ submit: handleSubmit });
                     <CardHeader>
                         <div class="flex items-center justify-between gap-4">
                             <div>
-                                <CardTitle>Variants</CardTitle>
+                                <CardTitle>{{ t('products.form.variantsTitle') }}</CardTitle>
                                 <CardDescription
-                                    >All generated variants and their current
-                                    stock.</CardDescription
+                                    >{{ t('products.form.variantsDescription') }}</CardDescription
                                 >
                             </div>
                             <!-- Warehouse selector -->
@@ -774,7 +772,7 @@ defineExpose({ submit: handleSubmit });
                                     v-model="selectedWarehouseId"
                                     class="w-auto h-9"
                                 >
-                                    <option value="">All Warehouses</option>
+                                    <option value="">{{ t('products.form.allWarehouses') }}</option>
                                     <option
                                         v-for="wh in formOptions?.warehouses"
                                         :key="wh.id"
@@ -791,7 +789,7 @@ defineExpose({ submit: handleSubmit });
                             v-if="!isEditing"
                             class="text-center py-12 text-muted-foreground text-sm"
                         >
-                            Save the product first to see its variants.
+                            {{ t('products.form.saveFirstVariants') }}
                         </div>
                         <div
                             v-else-if="variants.length === 0"
@@ -799,24 +797,23 @@ defineExpose({ submit: handleSubmit });
                         >
                             <Package class="h-10 w-10 opacity-30" />
                             <p class="text-sm">
-                                No variants yet. Add attributes and save to
-                                generate them.
+                                {{ t('products.form.noVariantsYet') }}
                             </p>
                         </div>
                         <Table v-else>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Variant</TableHead>
-                                    <TableHead>SKU</TableHead>
-                                    <TableHead>Barcode</TableHead>
+                                    <TableHead>{{ t('products.form.tableVariant') }}</TableHead>
+                                    <TableHead>{{ t('products.form.sku') }}</TableHead>
+                                    <TableHead>{{ t('products.form.barcode') }}</TableHead>
                                     <TableHead class="text-right"
-                                        >Cost</TableHead
+                                        >{{ t('products.form.tableCost') }}</TableHead
                                     >
                                     <TableHead class="text-right"
-                                        >Price</TableHead
+                                        >{{ t('products.form.price') }}</TableHead
                                     >
                                     <TableHead class="text-right"
-                                        >Stock</TableHead
+                                        >{{ t('products.form.tableStock') }}</TableHead
                                     >
                                 </TableRow>
                             </TableHeader>
@@ -827,7 +824,7 @@ defineExpose({ submit: handleSubmit });
                                         <span
                                             v-if="v.is_principal"
                                             class="ml-1.5 text-xs text-muted-foreground"
-                                            >(principal)</span
+                                            >{{ t('products.form.principal') }}</span
                                         >
                                     </TableCell>
                                     <TableCell class="font-mono text-xs">{{
@@ -870,7 +867,7 @@ defineExpose({ submit: handleSubmit });
                     v-if="!isEditing"
                     class="text-center py-12 text-muted-foreground text-sm border rounded-md"
                 >
-                    Save the product first to see its lots.
+                    {{ t('products.form.saveFirstLots') }}
                 </div>
                 <ProductLotsTab
                     v-else

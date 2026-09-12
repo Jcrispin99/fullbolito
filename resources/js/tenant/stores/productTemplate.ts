@@ -79,6 +79,13 @@ export const useProductTemplateStore = defineStore("tenant-product-template", ()
         }
     }
 
+    async function searchProductTemplates(search: string, limit = 20) {
+        const { data } = await apiClient.get<any>("/v1/product-templates", {
+            params: { search, per_page: limit, status: "active" },
+        });
+        return data.data?.data ?? [];
+    }
+
     async function toggleActive(id: number | string) {
         try {
             const { data } = await apiClient.patch<any>(
@@ -186,6 +193,7 @@ export const useProductTemplateStore = defineStore("tenant-product-template", ()
         isLoading,
         error,
         fetchProducts,
+        searchProductTemplates,
         toggleActive,
         deleteProduct,
         deleteProducts,

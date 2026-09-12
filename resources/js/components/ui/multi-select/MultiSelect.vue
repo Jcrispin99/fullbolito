@@ -9,6 +9,7 @@ import {
 } from "vue";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Spinner } from "@/components/ui/spinner";
 import { ChevronDown, X, Search } from "lucide-vue-next";
 import { cn } from "@/lib/utils";
 
@@ -27,6 +28,12 @@ const props = withDefaults(
         emptyMessage?: string;
         disabled?: boolean;
         maxHeight?: string;
+        /** When true, `options` is assumed to already be the search result for the
+         * current term (server-side search) — the component skips its own local
+         * substring filtering and just renders what it's given. */
+        remote?: boolean;
+        /** Shows a loading affordance while a remote search is in flight. */
+        loading?: boolean;
     }>(),
     {
         placeholder: "Seleccionar...",
@@ -34,11 +41,14 @@ const props = withDefaults(
         emptyMessage: "Sin resultados.",
         disabled: false,
         maxHeight: "260px",
+        remote: false,
+        loading: false,
     },
 );
 
 const emit = defineEmits<{
     (e: "update:modelValue", value: V[]): void;
+    (e: "search", term: string): void;
 }>();
 
 const open = ref(false);
@@ -62,6 +72,7 @@ const panelStyle = ref<{
 const selectedSet = computed(() => new Set(props.modelValue));
 
 const filteredOptions = computed(() => {
+    if (props.remote) return props.options;
     const term = search.value.trim().toLowerCase();
     if (!term) return props.options;
     return props.options.filter(
@@ -70,6 +81,13 @@ const filteredOptions = computed(() => {
             String(o.value).toLowerCase().includes(term) ||
             (o.description ?? "").toLowerCase().includes(term),
     );
+});
+
+let searchDebounceTimer: ReturnType<typeof setTimeout> | undefined;
+watch(search, (term) => {
+    if (!props.remote) return;
+    clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(() => emit("search", term.trim()), 300);
 });
 
 const selectedOptions = computed(() =>
@@ -86,9 +104,9 @@ const updatePanelPosition = () => {
 
     panelStyle.value = {
         top: placeBelow
-            ? `${rect.bottom + window.scrollY + 4}px`
-            : `${rect.top + window.scrollY - panelMaxHeight - 4}px`,
-        left: `${rect.left + window.scrollX}px`,
+            ? `${rect.bottom + 4}px`
+            : `${rect.top - panelMaxHeight - 4}px`,
+        left: `${rect.left}px`,
         width: `${rect.width}px`,
         visibility: "visible",
     };
@@ -121,6 +139,7 @@ const openPanel = async () => {
     if (props.disabled) return;
     open.value = true;
     search.value = "";
+    if (props.remote) emit("search", "");
     await nextTick();
     updatePanelPosition();
     searchInputRef.value?.focus();
@@ -172,6 +191,7 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+    clearTimeout(searchDebounceTimer);
     document.removeEventListener("mousedown", onClickOutside);
     document.removeEventListener("keydown", onEsc);
     window.removeEventListener("scroll", onWindowChange, true);
@@ -253,7 +273,8 @@ onBeforeUnmount(() => {
                 }"
             >
                 <div class="flex items-center gap-2 border-b px-3 py-2">
-                    <Search class="h-4 w-4 text-muted-foreground" />
+                    <Spinner v-if="loading" class="h-4 w-4 text-muted-foreground" />
+                    <Search v-else class="h-4 w-4 text-muted-foreground" />
                     <input
                         ref="searchInputRef"
                         v-model="search"
@@ -264,7 +285,7 @@ onBeforeUnmount(() => {
 
                 <div class="overflow-y-auto py-1" :style="{ maxHeight }">
                     <p
-                        v-if="filteredOptions.length === 0"
+                        v-if="!loading && filteredOptions.length === 0"
                         class="px-3 py-4 text-center text-sm text-muted-foreground"
                     >
                         {{ emptyMessage }}

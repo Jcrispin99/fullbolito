@@ -22,5 +22,6 @@ return [
     'court' => App\Models\Court::class,
     'courtSchedule' => App\Models\CourtSchedule::class,
     'reservation' => App\Models\Reservation::class,
+    'loyalty_program' => App\Models\LoyaltyProgram::class,
 
 ];

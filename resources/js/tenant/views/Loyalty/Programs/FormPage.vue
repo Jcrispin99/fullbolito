@@ -253,7 +253,7 @@ const breadcrumbs = computed(() => [
 
         <div>
             <div class="grid gap-4 xl:grid-cols-12">
-                <div class="xl:col-span-8">
+                <div class="xl:col-span-9">
                     <ProgramForm
                         ref="formRef"
                         :initial-data="currentProgram || {}"
@@ -264,7 +264,7 @@ const breadcrumbs = computed(() => [
                     />
                 </div>
                 <div
-                    class="xl:col-span-4 xl:border-l xl:border-t-0 xl:pl-6 border-t pt-6 mt-6 xl:mt-0 xl:pt-0"
+                    class="xl:col-span-3 xl:border-l xl:border-t-0 xl:pl-6 border-t pt-6 mt-6 xl:mt-0 xl:pt-0"
                 >
                     <ActivityLogPanel
                         ref="activityLogRef"

@@ -7,6 +7,8 @@ import { UnderlineSelect } from "@/components/ui/underline-select";
 import { UnderlineTextarea } from "@/components/ui/underline-textarea";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { MultiSelect } from "@/components/ui/multi-select";
+import { SearchSelect } from "@/components/ui/search-select";
 import CornerRibbon from "@tenant/components/CornerRibbon.vue";
 import { Plus, Trash2 } from "lucide-vue-next";
 import type { LoyaltyProgram, LoyaltyRule, LoyaltyReward } from "@tenant/stores/loyaltyProgram";
@@ -31,9 +33,9 @@ interface RuleForm {
     minimum_amount: number | string;
     minimum_qty: number | string;
     code: string;
-    product_variant_ids: string[];
-    product_template_ids: string[];
-    category_ids: string[];
+    product_variant_ids: number[];
+    product_template_ids: number[];
+    category_ids: number[];
 }
 
 interface RewardForm {
@@ -46,13 +48,13 @@ interface RewardForm {
     discount_max_amount: number | string;
     reward_product_id: number | string;
     reward_product_qty: number | string;
-    discount_product_ids: string[];
-    discount_category_ids: string[];
+    discount_product_ids: number[];
+    discount_category_ids: number[];
 }
 
-interface SelectOption {
-    id: number;
-    name: string;
+interface MultiSelectOption {
+    value: number;
+    label: string;
 }
 
 const formData = ref({
@@ -76,9 +78,100 @@ const showCode = computed(() => formData.value.trigger === "with_code");
 const productProductStore = useProductProductStore();
 const productTemplateStore = useProductTemplateStore();
 const categoryStore = useCategoryStore();
-const variantOptions = ref<SelectOption[]>([]);
-const templateOptions = ref<SelectOption[]>([]);
-const categoryOptions = ref<SelectOption[]>([]);
+const categoryOptions = ref<MultiSelectOption[]>([]);
+
+// Product variants/templates son catálogos potencialmente enormes (50k+), así
+// que no se precargan: se buscan en el servidor a medida que el usuario
+// escribe. `variantKnownLabels`/`templateKnownLabels` conservan el nombre de
+// los ids ya guardados en el programa para que sus chips se vean bien aunque
+// todavía no coincidan con la búsqueda actual.
+const variantSearchResults = ref<MultiSelectOption[]>([]);
+const templateSearchResults = ref<MultiSelectOption[]>([]);
+const variantKnownLabels = ref<Map<number, string>>(new Map());
+const templateKnownLabels = ref<Map<number, string>>(new Map());
+const isLoadingVariants = ref(false);
+const isLoadingTemplates = ref(false);
+
+const mergeKnownOptions = (
+    searchResults: MultiSelectOption[],
+    knownLabels: Map<number, string>,
+    selectedIds: Iterable<number>,
+): MultiSelectOption[] => {
+    const map = new Map<number, MultiSelectOption>();
+    for (const opt of searchResults) map.set(opt.value, opt);
+    for (const id of selectedIds) {
+        if (!map.has(id) && knownLabels.has(id)) {
+            map.set(id, { value: id, label: knownLabels.get(id)! });
+        }
+    }
+    return [...map.values()];
+};
+
+const allSelectedVariantIds = computed(() => {
+    const ids = new Set<number>();
+    rules.value.forEach((r) => r.product_variant_ids.forEach((id) => ids.add(id)));
+    rewards.value.forEach((rw) => rw.discount_product_ids.forEach((id) => ids.add(id)));
+    return ids;
+});
+
+const allSelectedTemplateIds = computed(() => {
+    const ids = new Set<number>();
+    rules.value.forEach((r) => r.product_template_ids.forEach((id) => ids.add(id)));
+    return ids;
+});
+
+const variantOptions = computed(() =>
+    mergeKnownOptions(variantSearchResults.value, variantKnownLabels.value, allSelectedVariantIds.value),
+);
+
+const templateOptions = computed(() =>
+    mergeKnownOptions(templateSearchResults.value, templateKnownLabels.value, allSelectedTemplateIds.value),
+);
+
+const onVariantSearch = async (term: string) => {
+    isLoadingVariants.value = true;
+    try {
+        const results = await productProductStore.searchProductProducts(term, 20);
+        variantSearchResults.value = Array.isArray(results)
+            ? results.map((item: any) => ({
+                  value: item.id,
+                  label: item.display_name || item.name || `Producto ${item.id}`,
+              }))
+            : [];
+    } finally {
+        isLoadingVariants.value = false;
+    }
+};
+
+const onTemplateSearch = async (term: string) => {
+    isLoadingTemplates.value = true;
+    try {
+        const results = await productTemplateStore.searchProductTemplates(term, 20);
+        templateSearchResults.value = Array.isArray(results)
+            ? results.map((item: any) => ({ value: item.id, label: item.name }))
+            : [];
+    } finally {
+        isLoadingTemplates.value = false;
+    }
+};
+
+const rememberLabels = (
+    knownLabels: Map<number, string>,
+    items?: { id: number; name: string }[],
+) => {
+    (items ?? []).forEach((item) => knownLabels.set(item.id, item.name));
+};
+
+// El selector único "Reward Product" reutiliza el mismo caché de búsqueda de
+// variantes (`variantOptions`/`onVariantSearch`), pero SearchSelect emite
+// "search" en cada tecla sin debounce propio, así que se debounce aquí.
+let rewardProductSearchTimer: ReturnType<typeof setTimeout> | undefined;
+const onRewardProductSearch = (term: string) => {
+    clearTimeout(rewardProductSearchTimer);
+    const q = term.trim();
+    if (!q) return;
+    rewardProductSearchTimer = setTimeout(() => onVariantSearch(q), 300);
+};
 
 const createEmptyRule = (): RuleForm => ({
     reward_point_amount: "",
@@ -105,31 +198,17 @@ const createEmptyReward = (): RewardForm => ({
     discount_category_ids: [],
 });
 
-const mapIdsToStrings = (items?: number[]) =>
-    Array.isArray(items) ? items.map((item) => String(item)) : [];
+const toIdArray = (items?: number[]) => (Array.isArray(items) ? items : []);
 
 const loadSelectionOptions = async () => {
-    const [variants, _, __] = await Promise.all([
-        productProductStore.searchProductProducts("", 200),
-        productTemplateStore.fetchProducts(1, "total", "", "active"),
-        categoryStore.fetchCategories(1, "total", "", "active"),
-    ]);
-
-    variantOptions.value = Array.isArray(variants)
-        ? variants.map((item: any) => ({
-              id: item.id,
-              name: item.display_name || item.name || `Producto ${item.id}`,
-          }))
-        : [];
-
-    templateOptions.value = productTemplateStore.products.map((item) => ({
-        id: item.id,
-        name: item.name,
-    }));
+    // Categorías es un catálogo acotado (a diferencia de variantes/plantillas
+    // de producto, que pueden tener decenas de miles de filas): se precarga
+    // completa para el selector.
+    await categoryStore.fetchCategories(1, "total", "", "active");
 
     categoryOptions.value = categoryStore.categories.map((item) => ({
-        id: item.id,
-        name: item.full_name || item.name,
+        value: item.id,
+        label: item.full_name || item.name,
     }));
 };
 
@@ -176,34 +255,44 @@ watch(
             };
 
             if (newData.rules && newData.rules.length > 0) {
-                rules.value = newData.rules.map((r: LoyaltyRule) => ({
-                    reward_point_amount: r.reward_point_amount ?? "",
-                    reward_point_mode: r.reward_point_mode ?? "order",
-                    minimum_amount: r.minimum_amount ?? "",
-                    minimum_qty: r.minimum_qty ?? "",
-                    code: r.code ?? "",
-                    product_variant_ids: mapIdsToStrings(r.product_variant_ids),
-                    product_template_ids: mapIdsToStrings(r.product_template_ids),
-                    category_ids: mapIdsToStrings(r.category_ids),
-                }));
+                rules.value = newData.rules.map((r: LoyaltyRule) => {
+                    rememberLabels(variantKnownLabels.value, r.product_variants);
+                    rememberLabels(templateKnownLabels.value, r.product_templates);
+                    return {
+                        reward_point_amount: r.reward_point_amount ?? "",
+                        reward_point_mode: r.reward_point_mode ?? "order",
+                        minimum_amount: r.minimum_amount ?? "",
+                        minimum_qty: r.minimum_qty ?? "",
+                        code: r.code ?? "",
+                        product_variant_ids: toIdArray(r.product_variant_ids),
+                        product_template_ids: toIdArray(r.product_template_ids),
+                        category_ids: toIdArray(r.category_ids),
+                    };
+                });
             } else {
                 rules.value = [];
             }
 
             if (newData.rewards && newData.rewards.length > 0) {
-                rewards.value = newData.rewards.map((rw: LoyaltyReward) => ({
-                    reward_type: rw.reward_type ?? "discount",
-                    required_points: rw.required_points ?? "",
-                    description: rw.description ?? "",
-                    discount: rw.discount ?? "",
-                    discount_mode: rw.discount_mode ?? "percent",
-                    discount_applicability: rw.discount_applicability ?? "order",
-                    discount_max_amount: rw.discount_max_amount ?? "",
-                    reward_product_id: rw.reward_product_id ?? "",
-                    reward_product_qty: rw.reward_product_qty ?? 1,
-                    discount_product_ids: mapIdsToStrings(rw.discount_product_ids),
-                    discount_category_ids: mapIdsToStrings(rw.discount_category_ids),
-                }));
+                rewards.value = newData.rewards.map((rw: LoyaltyReward) => {
+                    rememberLabels(variantKnownLabels.value, rw.discount_products);
+                    if (rw.reward_product) {
+                        variantKnownLabels.value.set(rw.reward_product.id, rw.reward_product.name);
+                    }
+                    return {
+                        reward_type: rw.reward_type ?? "discount",
+                        required_points: rw.required_points ?? "",
+                        description: rw.description ?? "",
+                        discount: rw.discount ?? "",
+                        discount_mode: rw.discount_mode ?? "percent",
+                        discount_applicability: rw.discount_applicability ?? "order",
+                        discount_max_amount: rw.discount_max_amount ?? "",
+                        reward_product_id: rw.reward_product_id ?? "",
+                        reward_product_qty: rw.reward_product_qty ?? 1,
+                        discount_product_ids: toIdArray(rw.discount_product_ids),
+                        discount_category_ids: toIdArray(rw.discount_category_ids),
+                    };
+                });
             } else {
                 rewards.value = [];
             }
@@ -238,9 +327,9 @@ const handleSubmit = () => {
             minimum_amount: r.minimum_amount === "" ? 0 : Number(r.minimum_amount),
             minimum_qty: r.minimum_qty === "" ? 0 : Number(r.minimum_qty),
             code: r.code || null,
-            product_variant_ids: r.product_variant_ids.map((id) => Number(id)),
-            product_template_ids: r.product_template_ids.map((id) => Number(id)),
-            category_ids: r.category_ids.map((id) => Number(id)),
+            product_variant_ids: r.product_variant_ids,
+            product_template_ids: r.product_template_ids,
+            category_ids: r.category_ids,
         })),
         rewards: rewards.value.map((rw) => ({
             reward_type: rw.reward_type,
@@ -263,11 +352,11 @@ const handleSubmit = () => {
                     : 1,
             discount_product_ids:
                 rw.reward_type === "discount" && rw.discount_applicability === "specific"
-                    ? rw.discount_product_ids.map((id) => Number(id))
+                    ? rw.discount_product_ids
                     : [],
             discount_category_ids:
                 rw.reward_type === "discount" && rw.discount_applicability === "specific"
-                    ? rw.discount_category_ids.map((id) => Number(id))
+                    ? rw.discount_category_ids
                     : [],
         })),
     };
@@ -285,7 +374,7 @@ defineExpose({ submit: handleSubmit });
                 <CornerRibbon v-if="archived" label="Inactive" tone="danger" />
 
                 <CardContent class="pt-6">
-                    <div class="grid gap-6">
+                    <div class="grid gap-6 md:grid-cols-2">
                         <!-- Name -->
                         <div class="grid gap-3">
                             <Label for="name"
@@ -386,7 +475,7 @@ defineExpose({ submit: handleSubmit });
                         </div>
 
                         <!-- Description -->
-                        <div class="grid gap-3">
+                        <div class="grid gap-3 md:col-span-2">
                             <Label for="description">Description</Label>
                             <UnderlineTextarea
                                 id="description"
@@ -403,78 +492,76 @@ defineExpose({ submit: handleSubmit });
                         </div>
 
                         <!-- Dates -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="grid gap-3">
-                                <Label for="starts_at">Starts At</Label>
-                                <UnderlineInput
-                                    id="starts_at"
-                                    v-model="formData.starts_at"
-                                    type="datetime-local"
-                                />
-                                <p
-                                    v-if="errors?.starts_at"
-                                    class="text-sm text-destructive"
-                                >
-                                    {{ errors.starts_at }}
-                                </p>
-                            </div>
-                            <div class="grid gap-3">
-                                <Label for="ends_at">Ends At</Label>
-                                <UnderlineInput
-                                    id="ends_at"
-                                    v-model="formData.ends_at"
-                                    type="datetime-local"
-                                />
-                                <p
-                                    v-if="errors?.ends_at"
-                                    class="text-sm text-destructive"
-                                >
-                                    {{ errors.ends_at }}
-                                </p>
-                            </div>
+                        <div class="grid gap-3">
+                            <Label for="starts_at">Starts At</Label>
+                            <UnderlineInput
+                                id="starts_at"
+                                v-model="formData.starts_at"
+                                type="datetime-local"
+                            />
+                            <p
+                                v-if="errors?.starts_at"
+                                class="text-sm text-destructive"
+                            >
+                                {{ errors.starts_at }}
+                            </p>
+                        </div>
+                        <div class="grid gap-3">
+                            <Label for="ends_at">Ends At</Label>
+                            <UnderlineInput
+                                id="ends_at"
+                                v-model="formData.ends_at"
+                                type="datetime-local"
+                            />
+                            <p
+                                v-if="errors?.ends_at"
+                                class="text-sm text-destructive"
+                            >
+                                {{ errors.ends_at }}
+                            </p>
                         </div>
 
                         <!-- Max Uses -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="grid gap-3">
-                                <Label for="max_uses">Max Uses</Label>
-                                <UnderlineInput
-                                    id="max_uses"
-                                    v-model="formData.max_uses"
-                                    type="number"
-                                    min="0"
-                                    placeholder="Unlimited"
-                                />
-                                <p
-                                    v-if="errors?.max_uses"
-                                    class="text-sm text-destructive"
-                                >
-                                    {{ errors.max_uses }}
-                                </p>
-                            </div>
-                            <div class="grid gap-3">
-                                <Label for="max_uses_per_customer"
-                                    >Max Uses Per Customer</Label
-                                >
-                                <UnderlineInput
-                                    id="max_uses_per_customer"
-                                    v-model="formData.max_uses_per_customer"
-                                    type="number"
-                                    min="0"
-                                    placeholder="Unlimited"
-                                />
-                                <p
-                                    v-if="errors?.max_uses_per_customer"
-                                    class="text-sm text-destructive"
-                                >
-                                    {{ errors.max_uses_per_customer }}
-                                </p>
-                            </div>
+                        <div class="grid gap-3">
+                            <Label for="max_uses">Max Uses</Label>
+                            <UnderlineInput
+                                id="max_uses"
+                                v-model="formData.max_uses"
+                                type="number"
+                                min="0"
+                                placeholder="Unlimited"
+                            />
+                            <p
+                                v-if="errors?.max_uses"
+                                class="text-sm text-destructive"
+                            >
+                                {{ errors.max_uses }}
+                            </p>
+                        </div>
+                        <div class="grid gap-3">
+                            <Label for="max_uses_per_customer"
+                                >Max Uses Per Customer</Label
+                            >
+                            <UnderlineInput
+                                id="max_uses_per_customer"
+                                v-model="formData.max_uses_per_customer"
+                                type="number"
+                                min="0"
+                                placeholder="Unlimited"
+                            />
+                            <p
+                                v-if="errors?.max_uses_per_customer"
+                                class="text-sm text-destructive"
+                            >
+                                {{ errors.max_uses_per_customer }}
+                            </p>
                         </div>
                     </div>
                 </CardContent>
             </Card>
 
+            <!-- Cards 2 & 3 - Rules & Rewards side by side -->
+            <div class="grid gap-6 lg:grid-cols-2 items-start">
             <!-- Card 2 - Rules -->
             <Card>
                 <CardContent class="pt-6">
@@ -613,19 +700,16 @@ defineExpose({ submit: handleSubmit });
 
                             <div class="grid gap-3">
                                 <Label>Product Variants</Label>
-                                <select
+                                <MultiSelect
                                     v-model="rule.product_variant_ids"
-                                    multiple
-                                    class="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                                >
-                                    <option
-                                        v-for="option in variantOptions"
-                                        :key="option.id"
-                                        :value="String(option.id)"
-                                    >
-                                        {{ option.name }}
-                                    </option>
-                                </select>
+                                    :options="variantOptions"
+                                    remote
+                                    :loading="isLoadingVariants"
+                                    placeholder="Selecciona variantes de producto..."
+                                    search-placeholder="Escribe para buscar producto..."
+                                    empty-message="Sin resultados."
+                                    @search="onVariantSearch"
+                                />
                                 <p class="text-xs text-muted-foreground">
                                     Si dejas este campo vacio, la regla no se restringe por variante.
                                 </p>
@@ -634,35 +718,26 @@ defineExpose({ submit: handleSubmit });
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div class="grid gap-3">
                                     <Label>Product Templates</Label>
-                                    <select
+                                    <MultiSelect
                                         v-model="rule.product_template_ids"
-                                        multiple
-                                        class="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                                    >
-                                        <option
-                                            v-for="option in templateOptions"
-                                            :key="option.id"
-                                            :value="String(option.id)"
-                                        >
-                                            {{ option.name }}
-                                        </option>
-                                    </select>
+                                        :options="templateOptions"
+                                        remote
+                                        :loading="isLoadingTemplates"
+                                        placeholder="Selecciona plantillas de producto..."
+                                        search-placeholder="Escribe para buscar plantilla..."
+                                        empty-message="Sin resultados."
+                                        @search="onTemplateSearch"
+                                    />
                                 </div>
                                 <div class="grid gap-3">
                                     <Label>Categories</Label>
-                                    <select
+                                    <MultiSelect
                                         v-model="rule.category_ids"
-                                        multiple
-                                        class="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                                    >
-                                        <option
-                                            v-for="option in categoryOptions"
-                                            :key="option.id"
-                                            :value="String(option.id)"
-                                        >
-                                            {{ option.name }}
-                                        </option>
-                                    </select>
+                                        :options="categoryOptions"
+                                        placeholder="Selecciona categorías..."
+                                        search-placeholder="Buscar categoría..."
+                                        empty-message="No hay categorías disponibles."
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -838,35 +913,26 @@ defineExpose({ submit: handleSubmit });
                                 >
                                     <div class="grid gap-3">
                                         <Label>Specific Products</Label>
-                                        <select
+                                        <MultiSelect
                                             v-model="reward.discount_product_ids"
-                                            multiple
-                                            class="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                                        >
-                                            <option
-                                                v-for="option in variantOptions"
-                                                :key="option.id"
-                                                :value="String(option.id)"
-                                            >
-                                                {{ option.name }}
-                                            </option>
-                                        </select>
+                                            :options="variantOptions"
+                                            remote
+                                            :loading="isLoadingVariants"
+                                            placeholder="Selecciona productos..."
+                                            search-placeholder="Escribe para buscar producto..."
+                                            empty-message="Sin resultados."
+                                            @search="onVariantSearch"
+                                        />
                                     </div>
                                     <div class="grid gap-3">
                                         <Label>Specific Categories</Label>
-                                        <select
+                                        <MultiSelect
                                             v-model="reward.discount_category_ids"
-                                            multiple
-                                            class="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                                        >
-                                            <option
-                                                v-for="option in categoryOptions"
-                                                :key="option.id"
-                                                :value="String(option.id)"
-                                            >
-                                                {{ option.name }}
-                                            </option>
-                                        </select>
+                                            :options="categoryOptions"
+                                            placeholder="Selecciona categorías..."
+                                            search-placeholder="Buscar categoría..."
+                                            empty-message="No hay categorías disponibles."
+                                        />
                                     </div>
                                 </div>
                             </template>
@@ -878,19 +944,13 @@ defineExpose({ submit: handleSubmit });
                                         <Label :for="`reward_${rwIdx}_reward_product_id`"
                                             >Reward Product</Label
                                         >
-                                        <UnderlineSelect
+                                        <SearchSelect
                                             :id="`reward_${rwIdx}_reward_product_id`"
                                             v-model="reward.reward_product_id"
-                                        >
-                                            <option value="">-- Select product --</option>
-                                            <option
-                                                v-for="option in variantOptions"
-                                                :key="option.id"
-                                                :value="String(option.id)"
-                                            >
-                                                {{ option.name }}
-                                            </option>
-                                        </UnderlineSelect>
+                                            :options="variantOptions"
+                                            placeholder="Escribe para buscar producto..."
+                                            @search="onRewardProductSearch"
+                                        />
                                         <p
                                             v-if="errors?.[`rewards.${rwIdx}.reward_product_id`]"
                                             class="text-sm text-destructive"
@@ -941,6 +1001,7 @@ defineExpose({ submit: handleSubmit });
                     </div>
                 </CardContent>
             </Card>
+            </div>
 
             <!-- Hidden submit trigger -->
             <button type="submit" class="hidden"></button>

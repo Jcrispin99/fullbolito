@@ -20,7 +20,7 @@ class UserSeeder extends Seeder
         // Usuario 1: Admin - Acceso a TODAS las compañías
         $admin = User::firstOrCreate(
             ['email' => 'admin@gmail.com'],
-            ['name' => 'Admin User', 'password' => Hash::make('password')]
+            ['name' => 'Admin User', 'password' => Hash::make('d4b38d89232b-64936253ff63')]
         );
         // Asignar todas las compañías
         $allCompanyIds = Company::pluck('id')->toArray();

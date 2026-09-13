@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
 
+// Página temporal para probar el login con Google fuera del SPA de Vue.
+// TODO: borrar cuando el botón esté integrado en resources/js/central.
+Route::get('/google-test', fn () => view('google-test'))->name('google-test');
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes - Solo para servir el SPA

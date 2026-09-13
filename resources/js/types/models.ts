@@ -88,8 +88,11 @@ export interface Plan {
     price: number;
     currency: string;
     duration_days: number;
+    billing_rank: number;
     is_active: boolean;
     includes_all_modules?: boolean;
+    sunat_worker_slots: 1 | 2 | 4 | 8;
+    sunat_dedicated_queue: boolean;
     module_ids?: number[];
     modules?: Array<{ id: number; key: string; label: string; icon: string | null }>;
     created_at: string;

@@ -8,6 +8,7 @@ use App\Models\BillingCheckout;
 use App\Models\Payment;
 use App\Models\PaymentWebhookEvent;
 use App\Models\Subscription;
+use App\Models\SubscriptionPlanChange;
 use App\Models\Tenant;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -16,7 +17,10 @@ use Throwable;
 
 final class HandleMercadoPagoWebhook
 {
-    public function __construct(private readonly MercadoPagoClient $client) {}
+    public function __construct(
+        private readonly MercadoPagoClient $client,
+        private readonly MercadoPagoBillingService $billing,
+    ) {}
 
     /** @param array<string, mixed> $payload */
     public function handle(array $payload, string $resourceId, string $eventId): void
@@ -214,6 +218,23 @@ final class HandleMercadoPagoWebhook
         $metadata = isset($remote['metadata']) && is_array($remote['metadata']) ? $remote['metadata'] : [];
         $preapprovalId = $this->stringValue($remote['preapproval_id'] ?? $metadata['preapproval_id'] ?? null);
         $externalReference = $this->stringValue($remote['external_reference'] ?? null);
+        $planChangeId = $this->stringValue($metadata['subscription_plan_change_id'] ?? null);
+        $planChange = $planChangeId !== ''
+            ? SubscriptionPlanChange::query()->find($planChangeId)
+            : null;
+
+        if (! $planChange && $externalReference !== '') {
+            $planChange = SubscriptionPlanChange::query()
+                ->where('external_reference', $externalReference)
+                ->first();
+        }
+
+        if ($planChange && ! empty($remote['id'])) {
+            $this->syncPlanChangePayment($planChange, $remote);
+
+            return;
+        }
+
         $subscription = $preapprovalId !== ''
             ? Subscription::query()->where('provider_id', $preapprovalId)->first()
             : null;
@@ -248,6 +269,31 @@ final class HandleMercadoPagoWebhook
         if ($paymentStatus === 'failed') {
             $subscription->update(['status' => 'past_due']);
         }
+    }
+
+    /** @param array<string, mixed> $remote */
+    private function syncPlanChangePayment(SubscriptionPlanChange $change, array $remote): void
+    {
+        $providerStatus = $this->stringValue($remote['status'] ?? null) ?: 'pending';
+        $paymentStatus = $providerStatus === 'approved'
+            ? 'completed'
+            : (in_array($providerStatus, ['rejected', 'cancelled', 'canceled', 'refunded', 'charged_back'], true) ? 'failed' : 'pending');
+        $transactionId = $this->stringValue($remote['id']);
+
+        Payment::query()->updateOrCreate(
+            ['subscription_id' => $change->subscription_id, 'transaction_id' => $transactionId],
+            [
+                'amount' => $this->floatValue($remote['transaction_amount'] ?? null),
+                'currency' => mb_strtoupper($this->stringValue($remote['currency_id'] ?? null) ?: $this->currency()),
+                'method' => 'mercadopago',
+                'status' => $paymentStatus,
+                'provider_event_id' => 'payment:'.$transactionId,
+                'paid_at' => $this->date($remote['date_approved'] ?? $remote['date_created'] ?? null),
+                'provider_data' => $remote,
+            ],
+        );
+
+        $this->billing->recordPlanChangePayment($change, $remote);
     }
 
     private function mapSubscriptionStatus(string $status): string

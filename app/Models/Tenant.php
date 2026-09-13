@@ -78,6 +78,43 @@ final class Tenant extends BaseTenant implements TenantWithDatabase
     }
 
     /**
+     * Capacidad comercial efectiva para facturación electrónica.
+     *
+     * @return array{worker_slots: int, dedicated_queue: bool}
+     */
+    public function getSunatCapacity(): array
+    {
+        /** @var Subscription|null $subscription */
+        $subscription = $this->subscription()->with('plan')->first();
+
+        if ($subscription && $subscription->isValid() && $subscription->plan) {
+            return [
+                'worker_slots' => $this->normalizeSunatSlots($subscription->plan->sunat_worker_slots),
+                'dedicated_queue' => (bool) $subscription->plan->sunat_dedicated_queue,
+            ];
+        }
+
+        $slug = (string) (config('saas.default_plan') ?: 'free-trial');
+
+        return [
+            'worker_slots' => $this->normalizeSunatSlots(
+                config("saas.plans.{$slug}.sunat_worker_slots", config('saas.sunat.default_worker_slots', 1)),
+            ),
+            'dedicated_queue' => (bool) config("saas.plans.{$slug}.sunat_dedicated_queue", false),
+        ];
+    }
+
+    public function getSunatWorkerSlots(): int
+    {
+        return $this->getSunatCapacity()['worker_slots'];
+    }
+
+    public function usesDedicatedSunatQueue(): bool
+    {
+        return $this->getSunatCapacity()['dedicated_queue'];
+    }
+
+    /**
      * Features included in the current plan.
      *
      * Resolution order:
@@ -197,5 +234,12 @@ final class Tenant extends BaseTenant implements TenantWithDatabase
     private function strings(array $values): array
     {
         return array_values(array_filter($values, is_string(...)));
+    }
+
+    private function normalizeSunatSlots(mixed $slots): int
+    {
+        $maximum = max(1, (int) config('saas.sunat.max_worker_slots', 8));
+
+        return max(1, min($maximum, (int) $slots));
     }
 }

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Jobs\SendInvoiceToSunatJob;
 use App\Models\Category;
 use App\Models\Company;
 use App\Models\Inventory;
@@ -17,6 +18,11 @@ use App\Models\Sequence;
 use App\Models\Tax;
 use App\Models\UnitOfMeasure;
 use App\Models\Warehouse;
+use Illuminate\Support\Facades\Queue;
+
+beforeEach(function (): void {
+    Queue::fake();
+});
 
 /**
  * Build the minimum scaffold for a POS checkout:
@@ -113,6 +119,12 @@ it('creates a posted sale through POS checkout and returns change/paid amounts',
         ->and((float) $sale->tax_amount)->toBe(36.0)
         ->and((float) $sale->total)->toBe(236.0)
         ->and($sale->serie)->toBe('B001');
+
+    Queue::assertPushedOn('sunat', SendInvoiceToSunatJob::class);
+    Queue::assertPushed(
+        SendInvoiceToSunatJob::class,
+        fn (SendInvoiceToSunatJob $job): bool => $job->saleId() === $sale->id,
+    );
 });
 
 it('records a payment row tied to the POS session', function (): void {

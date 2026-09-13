@@ -27,7 +27,10 @@ const form = ref({
     description: "",
     price: 0,
     duration_days: 30,
+    billing_rank: 10,
     includes_all_modules: false,
+    sunat_worker_slots: 1 as 1 | 2 | 4 | 8,
+    sunat_dedicated_queue: false,
     module_ids: [] as number[],
 });
 
@@ -41,7 +44,10 @@ watch(
                 description: (newData as any).description || "",
                 price: Number(newData.price ?? 0),
                 duration_days: Number(newData.duration_days ?? 30),
+                billing_rank: Number(newData.billing_rank ?? 10),
                 includes_all_modules: Boolean(newData.includes_all_modules),
+                sunat_worker_slots: (Number(newData.sunat_worker_slots ?? 1) || 1) as 1 | 2 | 4 | 8,
+                sunat_dedicated_queue: Boolean(newData.sunat_dedicated_queue),
                 module_ids: Array.isArray(newData.module_ids)
                     ? [...newData.module_ids]
                     : [],
@@ -121,7 +127,7 @@ defineExpose({ submit });
                     />
                 </div>
 
-                <div class="grid gap-4 md:grid-cols-2">
+                <div class="grid gap-4 md:grid-cols-3">
                     <div class="space-y-2">
                         <Label htmlFor="price">Precio</Label>
                         <Input
@@ -150,6 +156,80 @@ defineExpose({ submit });
                         >
                             {{ errors.duration_days }}
                         </p>
+                    </div>
+
+                    <div class="space-y-2">
+                        <Label htmlFor="billing_rank">Nivel comercial</Label>
+                        <Input
+                            id="billing_rank"
+                            type="number"
+                            min="0"
+                            v-model="form.billing_rank"
+                            required
+                        />
+                        <p class="text-xs text-muted-foreground">
+                            Un número mayor representa un plan superior.
+                        </p>
+                        <p v-if="errors?.billing_rank" class="text-sm text-destructive">
+                            {{ errors.billing_rank }}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="space-y-4 border-t pt-5">
+                    <div>
+                        <h3 class="text-sm font-semibold">
+                            Facturación electrónica SUNAT
+                        </h3>
+                        <p class="text-xs text-muted-foreground">
+                            Capacidad comercial incluida en la suscripción.
+                        </p>
+                    </div>
+
+                    <div class="grid gap-4 md:grid-cols-2">
+                        <div class="space-y-2">
+                            <Label htmlFor="sunat_worker_slots">
+                                Canales simultáneos
+                            </Label>
+                            <select
+                                id="sunat_worker_slots"
+                                v-model.number="form.sunat_worker_slots"
+                                class="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
+                            >
+                                <option :value="1">1 canal</option>
+                                <option :value="2">2 canales</option>
+                                <option :value="4">4 canales</option>
+                                <option :value="8">8 canales</option>
+                            </select>
+                            <p class="text-xs text-muted-foreground">
+                                Máximo de comprobantes del tenant procesados al mismo tiempo.
+                            </p>
+                            <p
+                                v-if="errors?.sunat_worker_slots"
+                                class="text-sm text-destructive"
+                            >
+                                {{ errors.sunat_worker_slots }}
+                            </p>
+                        </div>
+
+                        <div class="flex items-start gap-3 rounded-md border p-3">
+                            <Checkbox
+                                id="sunat_dedicated_queue"
+                                :checked="form.sunat_dedicated_queue"
+                                @update:checked="(v: boolean) => (form.sunat_dedicated_queue = v)"
+                            />
+                            <div class="space-y-1">
+                                <Label
+                                    htmlFor="sunat_dedicated_queue"
+                                    class="cursor-pointer"
+                                >
+                                    Cola dedicada Enterprise
+                                </Label>
+                                <p class="text-xs text-muted-foreground">
+                                    Enruta cada tenant a su propia cola cuando la infraestructura dedicada está habilitada.
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 

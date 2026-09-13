@@ -131,12 +131,12 @@ const routes: RouteRecordRaw[] = [
         meta: { requiresAuth: true, roles: ["superadmin"] },
     },
     {
-        path: "/billing/success",
+        path: "/billing/success/:tenant?",
         name: "BillingSuccess",
         component: () => import("@central/views/Billing/Return.vue"),
     },
     {
-        path: "/billing/cancel",
+        path: "/billing/cancel/:tenant?",
         name: "BillingCancel",
         component: () => import("@central/views/Billing/Return.vue"),
     },

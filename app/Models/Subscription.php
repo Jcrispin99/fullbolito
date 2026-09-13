@@ -72,6 +72,11 @@ final class Subscription extends Model
         return $this->hasMany(Payment::class);
     }
 
+    public function planChanges(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(SubscriptionPlanChange::class);
+    }
+
     public function isValid(): bool
     {
         if (! in_array($this->status, ['active', 'trial'], true)) {

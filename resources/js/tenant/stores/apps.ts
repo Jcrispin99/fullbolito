@@ -20,6 +20,7 @@ export interface CurrentPlan {
   slug: string
   price: number
   duration_days: number
+  billing_rank: number
   status: string
   starts_at: string | null
   ends_at: string | null
@@ -32,6 +33,7 @@ export interface PlanOption {
   slug: string
   price: number
   duration_days: number
+  billing_rank: number
   modules: Array<{ key: string; label: string; icon: string | null }>
 }
 
@@ -41,6 +43,19 @@ export interface AppsCatalog {
   plans: PlanOption[]
   addon_total: number
   has_payment_subscription: boolean
+}
+
+export interface PlanChangeResult {
+  change_id?: number
+  change_type: 'new_subscription' | 'upgrade' | 'downgrade' | 'cycle_change'
+  status?: string
+  checkout_url: string | null
+  pending: boolean
+  scheduled: boolean
+  effective_at: string | null
+  proration_amount: number | null
+  recurring_amount?: number
+  currency?: string
 }
 
 export const useAppsStore = defineStore('apps', () => {
@@ -91,16 +106,17 @@ export const useAppsStore = defineStore('apps', () => {
     }
   }
 
-  async function switchPlan(slug: string): Promise<void> {
+  async function switchPlan(slug: string): Promise<PlanChangeResult> {
     switchingPlan.value = slug
     error.value = null
     try {
-      const { data } = await apiClient.post<{ checkout_url: string; pending: boolean }>('/v1/apps/plan', {
+      const { data } = await apiClient.post<PlanChangeResult>('/v1/apps/plan', {
         plan_slug: slug,
       })
       if (data.data.checkout_url) {
         window.location.href = data.data.checkout_url
       }
+      return data.data
     } catch (err: any) {
       error.value = err?.response?.data?.message ?? err.message ?? 'Failed to switch plan'
       throw err

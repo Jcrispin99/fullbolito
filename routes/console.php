@@ -51,3 +51,22 @@ Schedule::command('subscriptions:expire')
     ->name('subscriptions-expire')
     ->withoutOverlapping()
     ->onOneServer();
+
+/*
+|--------------------------------------------------------------------------
+| Scheduled billing plan changes (central)
+|--------------------------------------------------------------------------
+| Actualiza la recurrencia poco antes del vencimiento y habilita el nuevo
+| plan justo al cerrar el periodo pagado. Es imprescindible para downgrades.
+*/
+Schedule::command('billing:apply-scheduled-plan-changes')
+    ->everyMinute()
+    ->name('billing-apply-scheduled-plan-changes')
+    ->withoutOverlapping()
+    ->onOneServer();
+
+Schedule::command('billing:reconcile-mercadopago')
+    ->everyMinute()
+    ->name('billing-reconcile-mercadopago')
+    ->withoutOverlapping()
+    ->onOneServer();

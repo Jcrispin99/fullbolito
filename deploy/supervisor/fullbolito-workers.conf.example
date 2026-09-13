@@ -1,0 +1,34 @@
+; Copiar a /etc/supervisor/conf.d/fullbolito-workers.conf en el VPS.
+; Reemplazar __PHP_BINARY__, __APP_PATH__ y __APP_USER__ antes de activarlo.
+
+[program:fullbolito-default]
+process_name=%(program_name)s_%(process_num)02d
+command=__PHP_BINARY__ __APP_PATH__/artisan queue:work database --queue=default --sleep=2 --timeout=60 --max-time=3600 --memory=256
+directory=__APP_PATH__
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+user=__APP_USER__
+numprocs=1
+redirect_stderr=true
+stdout_logfile=__APP_PATH__/storage/logs/worker-default-%(process_num)02d.log
+stdout_logfile_maxbytes=20MB
+stdout_logfile_backups=5
+stopwaitsecs=130
+
+[program:fullbolito-sunat]
+process_name=%(program_name)s_%(process_num)02d
+command=__PHP_BINARY__ __APP_PATH__/artisan queue:work database --queue=sunat --sleep=1 --timeout=75 --max-time=3600 --memory=256
+directory=__APP_PATH__
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+user=__APP_USER__
+numprocs=4
+redirect_stderr=true
+stdout_logfile=__APP_PATH__/storage/logs/worker-sunat-%(process_num)02d.log
+stdout_logfile_maxbytes=20MB
+stdout_logfile_backups=5
+stopwaitsecs=130

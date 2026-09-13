@@ -131,6 +131,7 @@ const showSendButton = computed(
         props.canSend &&
         props.doc.sunat_status &&
         props.doc.sunat_status !== "accepted" &&
+        props.doc.sunat_status !== "rejected" &&
         props.doc.sunat_status !== "skipped",
 );
 

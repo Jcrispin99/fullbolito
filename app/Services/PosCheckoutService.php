@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Http\Resources\PosSessionResource;
 use App\Http\Resources\SaleResource;
+use App\Jobs\SendInvoiceToSunatJob;
 use App\Models\Journal;
 use App\Models\LoyaltyCard;
 use App\Models\LoyaltyReward;
@@ -435,6 +436,11 @@ final class PosCheckoutService
         if ($sale->partner_id) {
             $this->loyaltyService->processSale($sale, $sale->partner, 'pos');
         }
+
+        // El checkout completo vive dentro de una transacción. afterCommit()
+        // evita que un worker intente cargar la venta antes de que exista de
+        // forma definitiva en la base del tenant.
+        SendInvoiceToSunatJob::dispatch($sale->fresh())->afterCommit();
     }
 
     private function prepareLineData(array $item): array

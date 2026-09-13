@@ -49,6 +49,14 @@ const missingApp = computed(() => {
 // ─── Derived state ───────────────────────────────────────────────────────────
 const currentPlanSlug = computed(() => store.catalog?.current_plan?.slug ?? null)
 const hasPaymentSubscription = computed(() => store.catalog?.has_payment_subscription === true)
+const selectedPlanDirection = computed(() => {
+  const currentRank = store.catalog?.current_plan?.billing_rank
+  const targetRank = planToConfirm.value?.billing_rank
+  if (currentRank == null || targetRank == null) return 'new'
+  if (targetRank > currentRank) return 'upgrade'
+  if (targetRank < currentRank) return 'downgrade'
+  return 'cycle_change'
+})
 const addons = computed<AppItem[]>(() => store.catalog?.apps.filter((a) => a.is_addon) ?? [])
 
 const monthlyTotal = computed(() => {
@@ -113,8 +121,16 @@ async function confirmPlanSwitch(): Promise<void> {
   const plan = planToConfirm.value
   if (!plan) return
   try {
-    await store.switchPlan(plan.slug)
-    toast.info('Completa la autorización en Mercado Pago para aplicar el cambio.')
+    const result = await store.switchPlan(plan.slug)
+    if (result.checkout_url) {
+      toast.info('Completa el pago prorrateado en Mercado Pago para aplicar el upgrade.')
+    } else if (result.scheduled) {
+      toast.success(`Cambio programado para ${new Date(result.effective_at as string).toLocaleDateString()}.`)
+      await store.fetchCatalog()
+    } else {
+      toast.success('Plan actualizado correctamente.')
+      await store.fetchCatalog()
+    }
   } catch {
     toast.error(store.error ?? 'No se pudo cambiar el plan')
   } finally {
@@ -419,12 +435,15 @@ async function confirmPlanSwitch(): Promise<void> {
             <span class="block">
               Tu nuevo plan costará
               <strong>{{ planToConfirm ? formatPrice(planToConfirm.price) : '' }}</strong>
-              cada {{ planToConfirm?.duration_days }} días y la fecha de renovación
-              se reiniciará desde hoy.
+              cada {{ planToConfirm?.duration_days }} días.
             </span>
-            <span v-if="hasPaymentSubscription" class="block">
-              Mercado Pago solicitará una nueva autorización. El plan actual
-              seguirá activo hasta que se confirme el nuevo proceso de pago.
+            <span v-if="hasPaymentSubscription && selectedPlanDirection === 'upgrade'" class="block">
+              Se cobrará únicamente la diferencia prorrateada del periodo actual.
+              El nuevo precio recurrente se aplicará en la próxima renovación.
+            </span>
+            <span v-else-if="hasPaymentSubscription" class="block">
+              No habrá cobro inmediato. El plan actual continuará hasta terminar
+              el periodo pagado y el cambio se aplicará en la próxima renovación.
             </span>
             <span v-if="addonsLostByConfirmedPlan.length" class="block">
               Los siguientes complementos quedarán incluidos en el nuevo plan y se

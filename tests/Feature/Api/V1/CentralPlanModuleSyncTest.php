@@ -6,6 +6,7 @@ use App\Models\Module;
 use App\Models\Plan;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Role;
 
 uses(RefreshDatabase::class);
 
@@ -16,7 +17,9 @@ uses(RefreshDatabase::class);
  */
 function asAdmin(): User
 {
-    $user = User::factory()->create(['role' => 'superadmin']);
+    $user = User::factory()->create();
+    Role::findOrCreate('superadmin', 'web');
+    $user->assignRole('superadmin');
     test()->actingAs($user, 'sanctum');
 
     return $user;
@@ -124,4 +127,38 @@ it('rejects module_ids that reference non-existent modules', function (): void {
         'module_ids' => [999999],
     ])->assertStatus(422)
       ->assertJsonValidationErrors(['module_ids.0']);
+});
+
+it('stores and exposes the commercial SUNAT processing capacity', function (): void {
+    asAdmin();
+
+    $response = $this->postJson('/api/v1/plans', [
+        'name' => 'Scale',
+        'slug' => 'scale',
+        'price' => 199,
+        'duration_days' => 30,
+        'sunat_worker_slots' => 4,
+        'sunat_dedicated_queue' => true,
+    ]);
+
+    $response->assertCreated()
+        ->assertJsonPath('data.sunat_worker_slots', 4)
+        ->assertJsonPath('data.sunat_dedicated_queue', true);
+
+    $plan = Plan::query()->where('slug', 'scale')->firstOrFail();
+    expect((int) $plan->sunat_worker_slots)->toBe(4)
+        ->and((bool) $plan->sunat_dedicated_queue)->toBeTrue();
+});
+
+it('rejects unsupported SUNAT slot quantities', function (): void {
+    asAdmin();
+
+    $this->postJson('/api/v1/plans', [
+        'name' => 'Invalid slots',
+        'slug' => 'invalid-slots',
+        'price' => 10,
+        'duration_days' => 30,
+        'sunat_worker_slots' => 3,
+    ])->assertStatus(422)
+        ->assertJsonValidationErrors(['sunat_worker_slots']);
 });

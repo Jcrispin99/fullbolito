@@ -1,0 +1,21 @@
+; Crear un bloque por tenant Enterprise usando la salida de:
+; php artisan sunat:dedicated-queues --commands
+;
+; Reemplazar __TENANT_LABEL__ por un identificador apto para Supervisor,
+; __QUEUE_NAME__ por la cola generada, y los demás placeholders del servidor.
+
+[program:fullbolito-sunat-__TENANT_LABEL__]
+process_name=%(program_name)s_%(process_num)02d
+command=__PHP_BINARY__ __APP_PATH__/artisan queue:work database --queue=__QUEUE_NAME__ --sleep=1 --timeout=75 --max-time=3600 --memory=256
+directory=__APP_PATH__
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+user=__APP_USER__
+numprocs=__WORKER_SLOTS__
+redirect_stderr=true
+stdout_logfile=__APP_PATH__/storage/logs/worker-sunat-__TENANT_LABEL__-%(process_num)02d.log
+stdout_logfile_maxbytes=20MB
+stdout_logfile_backups=5
+stopwaitsecs=130

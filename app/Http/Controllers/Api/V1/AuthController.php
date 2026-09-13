@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\Api\V1\ForgotPasswordRequest;
+use App\Http\Requests\Api\V1\GoogleLoginRequest;
 use App\Http\Requests\Api\V1\LoginRequest;
 use App\Http\Requests\Api\V1\RegisterRequest;
 use App\Http\Requests\Api\V1\ResendVerificationRequest;
@@ -13,12 +14,14 @@ use App\Http\Requests\Api\V1\ResetPasswordRequest;
 use App\Http\Requests\Api\V1\VerifyEmailRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Services\GoogleIdTokenVerifier;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
 
 final class AuthController extends ApiController
 {
@@ -46,6 +49,52 @@ final class AuthController extends ApiController
 
         if (! $user || ! Hash::check($request->password, $user->password)) {
             return $this->unauthorized('Invalid credentials');
+        }
+
+        $token = $user->createToken('auth-token')->plainTextToken;
+
+        return $this->success([
+            'user' => new UserResource($user),
+            'token' => $token,
+        ], 'Login successful');
+    }
+
+    /**
+     * Login/registro con Google Identity Services. El frontend manda el ID
+     * token que devuelve el botón "Sign in with Google"; acá lo verificamos
+     * contra las llaves públicas de Google (GoogleIdTokenVerifier) antes de
+     * confiar en el email — así no se puede falsear la identidad.
+     */
+    public function loginWithGoogle(GoogleLoginRequest $request, GoogleIdTokenVerifier $verifier): JsonResponse
+    {
+        try {
+            $claims = $verifier->verify($request->credential);
+        } catch (\Throwable $e) {
+            return $this->unauthorized('Token de Google inválido o expirado.');
+        }
+
+        $user = User::query()->where('google_id', $claims['sub'])->first();
+
+        if (! $user) {
+            $user = User::query()->where('email', $claims['email'])->first();
+        }
+
+        if ($user) {
+            if (! $user->google_id) {
+                $user->forceFill([
+                    'google_id' => $claims['sub'],
+                    'avatar_url' => $claims['picture'] ?? $user->avatar_url,
+                ])->save();
+            }
+        } else {
+            $user = User::query()->create([
+                'name' => $claims['name'] ?? $claims['email'],
+                'email' => $claims['email'],
+                'password' => Hash::make(Str::random(40)),
+                'google_id' => $claims['sub'],
+                'avatar_url' => $claims['picture'],
+                'email_verified_at' => now(),
+            ]);
         }
 
         $token = $user->createToken('auth-token')->plainTextToken;

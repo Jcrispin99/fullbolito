@@ -75,7 +75,8 @@
     $sunatStatus = $sale->sunat_status ?? 'pending';
     $statusLabel = [
         'accepted' => 'Aceptado por SUNAT',
-        'error' => 'Rechazado por SUNAT',
+        'rejected' => 'Rechazado por SUNAT',
+        'error' => 'Error de envío a SUNAT',
         'sent' => 'Enviado a SUNAT',
         'pending' => 'Pendiente',
         'processing' => 'Procesando',
@@ -356,6 +357,7 @@
         font-weight: 600;
     }
     .badge.accepted { background: #dcfce7; color: #166534; }
+    .badge.rejected { background: #fee2e2; color: #991b1b; }
     .badge.error { background: #fee2e2; color: #991b1b; }
     .badge.sent { background: #dbeafe; color: #1e40af; }
     .badge.pending { background: #f3f4f6; color: #4b5563; }

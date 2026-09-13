@@ -20,6 +20,8 @@ final class FakeGreenterInvoiceService extends GreenterInvoiceService
 
     public string $errorMessage = 'Mocked SUNAT failure';
 
+    public bool $retryableFailure = false;
+
     /** @var list<int> */
     public array $sentSaleIds = [];
 
@@ -33,6 +35,7 @@ final class FakeGreenterInvoiceService extends GreenterInvoiceService
             $sale->sunat_status = 'error';
             $sale->sunat_response = [
                 'accepted' => false,
+                'retryable' => $this->retryableFailure,
                 'error' => $this->errorMessage,
                 'updated_at' => now()->toIso8601String(),
             ];

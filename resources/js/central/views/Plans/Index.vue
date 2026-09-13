@@ -44,7 +44,7 @@ const perPage = ref(20);
 const search = ref("");
 const selectedPlans = ref<number[]>([]);
 
-type ColumnKey = "name" | "slug" | "price" | "duration" | "status";
+type ColumnKey = "name" | "slug" | "price" | "duration" | "sunat" | "status";
 
 const COLUMN_STORAGE_KEY = "plans_table_columns";
 
@@ -53,6 +53,7 @@ const columnOptions: { key: ColumnKey; label: string }[] = [
     { key: "slug", label: "Slug" },
     { key: "price", label: "Precio" },
     { key: "duration", label: "Duración" },
+    { key: "sunat", label: "Canales SUNAT" },
     { key: "status", label: "Estado" },
 ];
 
@@ -61,6 +62,7 @@ const defaultColumnVisibility: Record<ColumnKey, boolean> = {
     slug: true,
     price: true,
     duration: true,
+    sunat: true,
     status: true,
 };
 
@@ -329,6 +331,9 @@ const handleBatchToggleStatus = () => {
                             <TableHead v-if="columnVisibility.duration"
                                 >Duración</TableHead
                             >
+                            <TableHead v-if="columnVisibility.sunat"
+                                >Canales SUNAT</TableHead
+                            >
                             <TableHead v-if="columnVisibility.status"
                                 >Estado</TableHead
                             >
@@ -383,6 +388,17 @@ const handleBatchToggleStatus = () => {
                             <TableCell v-if="columnVisibility.duration"
                                 >{{ plan.duration_days }} días</TableCell
                             >
+                            <TableCell v-if="columnVisibility.sunat">
+                                <div class="flex items-center gap-2">
+                                    <span>{{ plan.sunat_worker_slots }} simultáneos</span>
+                                    <span
+                                        v-if="plan.sunat_dedicated_queue"
+                                        class="rounded bg-purple-100 px-1.5 py-0.5 text-[10px] font-medium text-purple-700"
+                                    >
+                                        Dedicada
+                                    </span>
+                                </div>
+                            </TableCell>
                             <TableCell v-if="columnVisibility.status">
                                 <span
                                     :class="[

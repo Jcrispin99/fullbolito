@@ -393,6 +393,13 @@ const handleSendToSunat = () => {
                     toast.success(t('sales.page.sunatAcceptedToast'));
                 } else if (status === "sent") {
                     toast.success(t('sales.page.sunatSentToast'));
+                } else if (status === "rejected") {
+                    toast.error(t('sales.page.sunatRejectedToast'), {
+                        description:
+                            data?.sunat_response?.description ||
+                            data?.sunat_response?.error ||
+                            t('sales.page.sunatErrorToastDescFallback'),
+                    });
                 } else if (status === "skipped") {
                     toast.info(t('sales.page.sunatSkippedToast'));
                 } else {
@@ -423,6 +430,7 @@ const sunatBadge = computed(() => {
         processing: { label: t('sales.page.sunatProcessing'), class: "bg-amber-100 text-amber-800" },
         sent: { label: t('sales.page.sunatSentBadge'), class: "bg-blue-100 text-blue-800" },
         accepted: { label: t('sales.page.sunatAcceptedBadge'), class: "bg-green-100 text-green-800" },
+        rejected: { label: t('sales.page.sunatRejectedBadge'), class: "bg-red-100 text-red-800" },
         error: { label: t('sales.page.sunatErrorBadge'), class: "bg-red-100 text-red-800" },
         skipped: { label: t('sales.page.sunatNA'), class: "bg-gray-100 text-gray-500" },
     };
@@ -458,7 +466,7 @@ const breadcrumbs = computed(() => [
 // y arrancar con esa pestaña activa.
 const sunatNeedsAttention = computed(() => {
     const s = currentSale.value?.sunat_status;
-    return s === "error" || s === "pending" || s === "sent";
+    return s === "error" || s === "rejected" || s === "pending" || s === "sent";
 });
 
 const sideTab = ref<string>("logs");
@@ -558,6 +566,7 @@ watch(
                                     currentSale?.status === 'posted' &&
                                     currentSale?.sunat_status &&
                                     currentSale.sunat_status !== 'accepted' &&
+                                    currentSale.sunat_status !== 'rejected' &&
                                     currentSale.sunat_status !== 'skipped'
                                 "
                                 @click="handleSendToSunat"

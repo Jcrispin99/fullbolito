@@ -5,8 +5,11 @@ declare(strict_types=1);
 use App\Models\BillingCheckout;
 use App\Models\Payment;
 use App\Models\Plan;
+use App\Models\SubscriptionPlanChange;
 use App\Models\User;
+use App\Services\MercadoPago\HandleMercadoPagoWebhook;
 use Illuminate\Http\Client\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 
 beforeEach(function (): void {
@@ -22,9 +25,16 @@ beforeEach(function (): void {
             'name' => 'Pro Mensual',
             'price' => 59.99,
             'duration_days' => 30,
+            'billing_rank' => 20,
             'is_active' => true,
+            'sunat_worker_slots' => 2,
+            'sunat_dedicated_queue' => false,
         ]);
     });
+});
+
+afterEach(function (): void {
+    Carbon::setTestNow();
 });
 
 it('requires authentication', function (): void {
@@ -38,7 +48,9 @@ it('returns the current provider-neutral billing state', function (): void {
         ->assertOk()
         ->assertJsonPath('data.tenant_id', tenant()->id)
         ->assertJsonPath('data.has_payment_subscription', false)
-        ->assertJsonPath('data.subscription.provider', null);
+        ->assertJsonPath('data.subscription.provider', null)
+        ->assertJsonPath('data.sunat_capacity.worker_slots', 1)
+        ->assertJsonPath('data.sunat_capacity.queue_name', 'sunat');
 });
 
 it('lists every active paid plan without remote price ids', function (): void {
@@ -49,6 +61,9 @@ it('lists every active paid plan without remote price ids', function (): void {
     expect(collect($response->json('data.data'))->pluck('slug')->all())
         ->toContain('pro-mensual')
         ->not->toContain('test-plan');
+
+    expect(collect($response->json('data.data'))->firstWhere('slug', 'pro-mensual')['sunat_worker_slots'])
+        ->toBe(2);
 });
 
 it('creates a pending Mercado Pago preapproval without replacing the active plan', function (): void {
@@ -77,6 +92,40 @@ it('creates a pending Mercado Pago preapproval without replacing the active plan
             && $request['auto_recurring']['transaction_amount'] === 59.99
             && $request['status'] === 'pending';
     });
+});
+
+it('reconciles an authorized checkout when Mercado Pago does not send a real test webhook', function (): void {
+    $this->actingAsTenantUser(User::factory()->create(['email' => 'payer@example.test']));
+
+    Http::fake(function (Request $request) {
+        if ($request->method() === 'POST') {
+            return Http::response([
+                'id' => 'preapproval-reconcile',
+                'status' => 'pending',
+                'init_point' => 'https://www.mercadopago.com.pe/subscriptions/checkout?preapproval_id=preapproval-reconcile',
+            ], 201);
+        }
+
+        return Http::response([
+            'id' => 'preapproval-reconcile',
+            'status' => 'authorized',
+            'external_reference' => BillingCheckout::query()->latest('id')->value('external_reference'),
+            'payer_id' => 123456,
+            'payment_method_id' => 'master',
+            'date_created' => now()->toIso8601String(),
+            'next_payment_date' => now()->addMonth()->toIso8601String(),
+        ]);
+    });
+
+    $this->tenantPostJson('/api/v1/billing/checkout', ['plan_slug' => 'pro-mensual'])
+        ->assertOk();
+
+    $this->artisan('billing:reconcile-mercadopago')->assertSuccessful();
+
+    expect(tenant()->subscriptions()->where('provider_id', 'preapproval-reconcile')->value('status'))
+        ->toBe('active')
+        ->and(BillingCheckout::query()->where('provider_id', 'preapproval-reconcile')->value('completed_at'))
+        ->not->toBeNull();
 });
 
 it('returns locally reconciled Mercado Pago payments', function (): void {
@@ -159,4 +208,142 @@ it('forbids billing mutations for a non-owner without the admin role', function 
 
     $this->tenantPostJson('/api/v1/billing/checkout', ['plan_slug' => 'pro-mensual'])
         ->assertForbidden();
+});
+
+it('charges only the remaining-period difference for an upgrade and applies it after payment approval', function (): void {
+    Carbon::setTestNow('2026-09-12 10:00:00');
+    $this->actingAsTenantUser(User::factory()->create(['email' => 'payer@example.test']));
+
+    $basic = Plan::query()->updateOrCreate(['slug' => 'basico-mensual'], [
+        'name' => 'Básico mensual',
+        'price' => 30,
+        'duration_days' => 30,
+        'billing_rank' => 10,
+        'is_active' => true,
+    ]);
+    $pro = Plan::query()->where('slug', 'pro-mensual')->firstOrFail();
+    $subscription = tenant()->subscription()->firstOrFail();
+    $subscription->update([
+        'plan_id' => $basic->id,
+        'provider' => 'mercadopago',
+        'provider_id' => 'preapproval-upgrade',
+        'provider_status' => 'authorized',
+        'status' => 'active',
+        'next_billing_at' => now()->addDays(15),
+        'ends_at' => now()->addDays(15),
+    ]);
+
+    Http::fake([
+        'api.mercadopago.com/checkout/preferences' => Http::response([
+            'id' => 'preference-upgrade',
+            'init_point' => 'https://www.mercadopago.com.pe/checkout/v1/redirect?pref_id=preference-upgrade',
+        ], 201),
+    ]);
+
+    $response = $this->tenantPostJson('/api/v1/billing/checkout', ['plan_slug' => 'pro-mensual'])
+        ->assertOk()
+        ->assertJsonPath('data.change_type', 'upgrade')
+        ->assertJsonPath('data.status', 'pending_payment')
+        ->assertJsonPath('data.proration_amount', 15);
+
+    $change = SubscriptionPlanChange::query()->findOrFail($response->json('data.change_id'));
+    expect($subscription->fresh()->plan_id)->toBe($basic->id)
+        ->and($change->provider_preference_id)->toBe('preference-upgrade');
+
+    Http::assertSent(function (Request $request) use ($change): bool {
+        return $request->url() === 'https://api.mercadopago.com/checkout/preferences'
+            && $request['external_reference'] === $change->external_reference
+            && $request['items'][0]['unit_price'] === 15.0;
+    });
+
+    Http::fake([
+        'api.mercadopago.com/v1/payments/payment-upgrade' => Http::response([
+            'id' => 'payment-upgrade',
+            'status' => 'approved',
+            'transaction_amount' => 15,
+            'currency_id' => 'PEN',
+            'external_reference' => $change->external_reference,
+            'metadata' => ['subscription_plan_change_id' => $change->id],
+            'date_approved' => now()->toIso8601String(),
+        ]),
+        'api.mercadopago.com/preapproval/preapproval-upgrade' => Http::response([
+            'id' => 'preapproval-upgrade',
+            'status' => 'authorized',
+            'next_payment_date' => now()->addDays(15)->toIso8601String(),
+            'auto_recurring' => [
+                'frequency' => 1,
+                'frequency_type' => 'months',
+                'transaction_amount' => 60,
+                'currency_id' => 'PEN',
+            ],
+        ]),
+    ]);
+
+    app(HandleMercadoPagoWebhook::class)->handle([
+        'id' => 'event-upgrade',
+        'type' => 'payment',
+        'data' => ['id' => 'payment-upgrade'],
+    ], 'payment-upgrade', 'event-upgrade');
+
+    expect($subscription->fresh()->plan_id)->toBe($pro->id)
+        ->and($change->fresh()->status)->toBe('applied')
+        ->and(Payment::query()->where('transaction_id', 'payment-upgrade')->value('status'))->toBe('completed');
+
+    Http::assertSent(function (Request $request): bool {
+        return $request->method() === 'PUT'
+            && $request->url() === 'https://api.mercadopago.com/preapproval/preapproval-upgrade'
+            && $request['auto_recurring']['transaction_amount'] === 59.99;
+    });
+});
+
+it('schedules a downgrade without charging and applies it at the next renewal', function (): void {
+    Carbon::setTestNow('2026-09-12 10:00:00');
+    $this->actingAsTenantUser(User::factory()->create(['email' => 'payer@example.test']));
+
+    $basic = Plan::query()->updateOrCreate(['slug' => 'basico-mensual'], [
+        'name' => 'Básico mensual',
+        'price' => 29.99,
+        'duration_days' => 30,
+        'billing_rank' => 10,
+        'is_active' => true,
+    ]);
+    $pro = Plan::query()->where('slug', 'pro-mensual')->firstOrFail();
+    $subscription = tenant()->subscription()->firstOrFail();
+    $renewal = now()->addDays(15);
+    $subscription->update([
+        'plan_id' => $pro->id,
+        'provider' => 'mercadopago',
+        'provider_id' => 'preapproval-downgrade',
+        'provider_status' => 'authorized',
+        'status' => 'active',
+        'next_billing_at' => $renewal,
+        'ends_at' => $renewal,
+    ]);
+    Http::fake([
+        '*preapproval/preapproval-downgrade*' => Http::response([
+            'id' => 'preapproval-downgrade',
+            'status' => 'authorized',
+            'next_payment_date' => '2026-10-27T10:00:00-05:00',
+        ]),
+    ]);
+
+    $response = $this->tenantPostJson('/api/v1/billing/checkout', ['plan_slug' => 'basico-mensual'])
+        ->assertOk()
+        ->assertJsonPath('data.change_type', 'downgrade')
+        ->assertJsonPath('data.status', 'scheduled')
+        ->assertJsonPath('data.checkout_url', null)
+        ->assertJsonPath('data.proration_amount', 0);
+
+    $change = SubscriptionPlanChange::query()->findOrFail($response->json('data.change_id'));
+    expect($subscription->fresh()->plan_id)->toBe($pro->id)
+        ->and($change->effective_at->equalTo($renewal))->toBeTrue();
+    Http::assertNothingSent();
+
+    Carbon::setTestNow($renewal);
+    $this->artisan('billing:apply-scheduled-plan-changes')->assertSuccessful();
+
+    expect($subscription->fresh()->plan_id)->toBe($basic->id)
+        ->and($change->fresh()->status)->toBe('applied');
+    Http::assertSent(fn (Request $request): bool => $request->method() === 'PUT'
+        && $request['auto_recurring']['transaction_amount'] === 29.99);
 });

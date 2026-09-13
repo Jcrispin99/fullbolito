@@ -29,6 +29,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['tenant.or.central', 'throttle:auth'])->group(function () {
     Route::post('login', [AuthController::class, 'login'])->name('login');
     Route::post('register', [AuthController::class, 'register'])->name('register');
+    Route::post('auth/google', [AuthController::class, 'loginWithGoogle'])->name('auth.google');
 });
 
 // Protected routes with authenticated rate limiter (120/min)

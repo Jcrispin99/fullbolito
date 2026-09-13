@@ -64,6 +64,7 @@ class GreenterInvoiceService
             $sale->sunat_status = 'skipped';
             $sale->sunat_response = [
                 'accepted' => false,
+                'retryable' => false,
                 'error' => $isFiscal ? 'Tipo de documento no soportado' : 'No fiscal',
                 'updated_at' => now()->toIso8601String(),
             ];
@@ -74,11 +75,17 @@ class GreenterInvoiceService
             return true;
         }
 
-        // Idempotencia: si ya fue aceptado, no reenviar.
+        // Idempotencia: un comprobante aceptado o rechazado por CDR no se
+        // reenvía. Un rechazo requiere corregir y emitir un nuevo documento;
+        // reenviar exactamente el mismo XML sólo genera duplicidad/errores.
         $alreadyAccepted = data_get($sale->sunat_response, 'accepted') === true
             || $sale->sunat_status === 'accepted';
         if ($alreadyAccepted) {
             return true;
+        }
+
+        if ($sale->sunat_status === 'rejected') {
+            return false;
         }
 
         // Validación de notas (07/08): debe existir venta original 01/03 con numeración.
@@ -91,6 +98,7 @@ class GreenterInvoiceService
                 $sale->sunat_status = 'error';
                 $sale->sunat_response = [
                     'accepted' => false,
+                    'retryable' => false,
                     'error' => 'Falta venta original válida para Nota de Crédito/Débito (01/03 con numeración).',
                     'updated_at' => now()->toIso8601String(),
                 ];
@@ -147,16 +155,12 @@ class GreenterInvoiceService
 
             $sale->save();
 
-            $accepted = data_get($result, 'sunat_response.accepted') === true
-                || ($sale->sunat_status === 'accepted');
-            $event = $accepted ? 'sunat.accepted' : (
-                $sale->sunat_status === 'error' ? 'sunat.rejected' : 'sunat.sent'
-            );
-            $description = $accepted
-                ? 'SUNAT aceptó el comprobante'
-                : ($sale->sunat_status === 'error'
-                    ? 'SUNAT rechazó el comprobante'
-                    : 'SUNAT recibió el comprobante (sin CDR)');
+            [$event, $description] = match ($sale->sunat_status) {
+                'accepted' => ['sunat.accepted', 'SUNAT aceptó el comprobante'],
+                'rejected' => ['sunat.rejected', 'SUNAT rechazó el comprobante mediante CDR'],
+                'sent' => ['sunat.sent', 'SUNAT recibió el comprobante (sin CDR definitivo)'],
+                default => ['sunat.failed', 'Falló el envío del comprobante a SUNAT'],
+            };
 
             $this->logSunatActivity($sale, $event, $description, [
                 'doc_type' => $docType,
@@ -175,6 +179,7 @@ class GreenterInvoiceService
             $sale->sunat_status = 'error';
             $sale->sunat_response = [
                 'accepted' => false,
+                'retryable' => true,
                 'error' => $e->getMessage(),
                 'updated_at' => now()->toIso8601String(),
             ];
@@ -248,6 +253,7 @@ class GreenterInvoiceService
                 'sunat_response' => [
                     'channel' => 'api',
                     'accepted' => false,
+                    'retryable' => false,
                     'error' => 'Falta configuración GREENTER_API_URL o GREENTER_API_TOKEN',
                 ],
             ];
@@ -258,6 +264,8 @@ class GreenterInvoiceService
         /** @var Response $response */
         $response = Http::withToken($this->token)
             ->acceptJson()
+            ->connectTimeout(10)
+            ->timeout(30)
             ->post($endpoint, $payload);
 
         $json = $response->json();
@@ -265,25 +273,54 @@ class GreenterInvoiceService
             ?? data_get($json, 'body.response.SunatResponse.success')
             ?? data_get($json, 'data.SunatResponse.success');
         $cdrCode = data_get($json, 'response.SunatResponse.cdrResponse.code')
+            ?? data_get($json, 'body.response.SunatResponse.cdrResponse.code')
             ?? data_get($json, 'cdrResponse.code')
             ?? data_get($json, 'data.cdrResponse.code');
-        $accepted = $response->successful() && ($successFlag === true || (is_numeric($cdrCode) && (int) $cdrCode === 0));
+        $normalizedCdrCode = is_numeric($cdrCode) ? (int) $cdrCode : null;
+        $outcome = $this->classifySunatOutcome(
+            $normalizedCdrCode,
+            $response->successful(),
+            is_bool($successFlag) ? $successFlag : null,
+        );
+        $description = data_get($json, 'response.SunatResponse.cdrResponse.description')
+            ?? data_get($json, 'body.response.SunatResponse.cdrResponse.description')
+            ?? data_get($json, 'cdrResponse.description')
+            ?? data_get($json, 'data.cdrResponse.description');
+        $notes = data_get($json, 'response.SunatResponse.cdrResponse.notes')
+            ?? data_get($json, 'body.response.SunatResponse.cdrResponse.notes')
+            ?? data_get($json, 'cdrResponse.notes')
+            ?? data_get($json, 'data.cdrResponse.notes');
+        $retryable = $outcome['status'] === 'error'
+            && ! $response->successful()
+            && $this->isRetryableHttpStatus($response->status());
+        $apiError = data_get($json, 'message')
+            ?? data_get($json, 'error.message')
+            ?? data_get($json, 'response.error.message');
+        $apiError = is_scalar($apiError) ? (string) $apiError : null;
+        $normalizedNotes = is_array($notes)
+            ? array_values($notes)
+            : (is_scalar($notes) && (string) $notes !== '' ? [(string) $notes] : []);
 
         return [
             'ok' => $response->successful(),
-            'sunat_status' => $accepted ? 'accepted' : ($response->successful() ? 'sent' : 'error'),
+            'sunat_status' => $outcome['status'],
             'sunat_response' => [
                 'channel' => 'api',
                 'http_status' => $response->status(),
-                'accepted' => $accepted,
-                'cdr_code' => is_numeric($cdrCode) ? (int) $cdrCode : null,
+                'accepted' => $outcome['accepted'],
+                'retryable' => $retryable,
+                'cdr_code' => $normalizedCdrCode,
+                'description' => $description,
+                'notes' => $normalizedNotes,
                 'hash' => data_get($json, 'response.hash') ?? data_get($json, 'data.hash'),
                 'document_id' => data_get($json, 'response.document_id') ?? data_get($json, 'data.document_id'),
                 'payload_tipoDoc' => $payload['tipoDoc'] ?? null,
                 'payload_serie' => $payload['serie'] ?? null,
                 'payload_correlativo' => $payload['correlativo'] ?? null,
                 'raw' => $json,
-                'error' => $response->successful() ? null : $response->body(),
+                'error' => $outcome['status'] === 'error'
+                    ? ($apiError ?: $response->body() ?: 'SUNAT no devolvió una respuesta válida.')
+                    : null,
             ],
         ];
     }
@@ -297,6 +334,7 @@ class GreenterInvoiceService
                 'sunat_response' => [
                     'channel' => 'local',
                     'accepted' => false,
+                    'retryable' => false,
                     'error' => 'No se encontró greenter/lite instalado.',
                 ],
             ];
@@ -310,6 +348,7 @@ class GreenterInvoiceService
                 'sunat_response' => [
                     'channel' => 'local',
                     'accepted' => false,
+                    'retryable' => false,
                     'error' => 'No existe el certificado en cert_path.',
                 ],
             ];
@@ -329,22 +368,36 @@ class GreenterInvoiceService
         $result = $see->send($document);
         $sunatResponse = $this->normalizeGreenterResult($result);
         $cdrCode = data_get($sunatResponse, 'cdrResponse.code');
-        $accepted = ($sunatResponse['success'] ?? false) === true && is_numeric($cdrCode) && (int) $cdrCode === 0;
+        $normalizedCdrCode = is_numeric($cdrCode) ? (int) $cdrCode : null;
+        $transportSucceeded = ($sunatResponse['success'] ?? false) === true;
+        $outcome = $this->classifySunatOutcome(
+            $normalizedCdrCode,
+            $transportSucceeded,
+            $transportSucceeded ? null : false,
+        );
+        $greenterErrorCode = data_get($sunatResponse, 'error.code');
+        $retryable = ! $transportSucceeded && $this->isRetryableGreenterError($greenterErrorCode);
 
         // Archivar XML firmado + CDR ZIP en disk privado del tenant.
         // Conservación obligatoria por SUNAT (Res. 097-2012/SUNAT y act.).
         $archives = $this->archiveDocuments($sale, $company, $see, $result, $payload, $docType);
 
         return [
-            'ok' => true,
-            'sunat_status' => $accepted ? 'accepted' : (($sunatResponse['success'] ?? false) ? 'sent' : 'error'),
+            'ok' => $transportSucceeded,
+            'sunat_status' => $outcome['status'],
             'sunat_response' => [
                 'channel' => 'local',
                 'environment' => $credential->production ? 'produccion' : 'beta',
-                'accepted' => $accepted,
-                'cdr_code' => is_numeric($cdrCode) ? (int) $cdrCode : null,
+                'accepted' => $outcome['accepted'],
+                'retryable' => $retryable,
+                'cdr_code' => $normalizedCdrCode,
+                'description' => data_get($sunatResponse, 'cdrResponse.description'),
+                'notes' => (array) data_get($sunatResponse, 'cdrResponse.notes', []),
                 'hash' => $this->extractXmlHash($see),
                 'sunat' => $sunatResponse,
+                'error' => $transportSucceeded
+                    ? null
+                    : (string) (data_get($sunatResponse, 'error.message') ?: 'Falló el envío local a SUNAT.'),
                 'payload_tipoDoc' => $payload['tipoDoc'] ?? null,
                 'payload_serie' => $payload['serie'] ?? null,
                 'payload_correlativo' => $payload['correlativo'] ?? null,
@@ -352,6 +405,54 @@ class GreenterInvoiceService
             'signed_xml_path' => $archives['xml'] ?? null,
             'cdr_zip_path' => $archives['cdr'] ?? null,
         ];
+    }
+
+    /**
+     * Traduce la respuesta técnica al estado de negocio persistido.
+     * Los códigos CDR 2000-3999 representan rechazos definitivos de SUNAT.
+     * Otros códigos CDR distintos de cero requieren revisión/corrección y no
+     * se consideran fallos transitorios de infraestructura.
+     *
+     * @return array{status: 'accepted'|'rejected'|'sent'|'error', accepted: bool}
+     */
+    private function classifySunatOutcome(?int $cdrCode, bool $transportSucceeded, ?bool $explicitSuccess): array
+    {
+        // Si existe CDR, su código es más autoritativo que el status HTTP del
+        // intermediario/PSE que lo transportó.
+        if ($cdrCode === 0) {
+            return ['status' => 'accepted', 'accepted' => true];
+        }
+
+        if ($cdrCode !== null && $cdrCode >= 2000 && $cdrCode <= 3999) {
+            return ['status' => 'rejected', 'accepted' => false];
+        }
+
+        if (! $transportSucceeded) {
+            return ['status' => 'error', 'accepted' => false];
+        }
+
+        if ($cdrCode === null && $explicitSuccess === true) {
+            return ['status' => 'accepted', 'accepted' => true];
+        }
+
+        if ($cdrCode !== null || $explicitSuccess === false) {
+            return ['status' => 'error', 'accepted' => false];
+        }
+
+        return ['status' => 'sent', 'accepted' => false];
+    }
+
+    private function isRetryableHttpStatus(int $status): bool
+    {
+        return in_array($status, [408, 425, 429], true) || $status >= 500;
+    }
+
+    private function isRetryableGreenterError(mixed $code): bool
+    {
+        // Los códigos numéricos provienen normalmente de SUNAT y requieren
+        // corregir datos/configuración. Errores sin código suelen ser de red,
+        // TLS o disponibilidad y sí pueden resolverse en un nuevo intento.
+        return $code === null || $code === '' || ! is_numeric($code);
     }
 
     /**

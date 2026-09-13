@@ -26,6 +26,8 @@ interface PlanCard {
   description?: string | null
   price: number
   duration_days: number
+  sunat_worker_slots: number
+  sunat_dedicated_queue?: boolean
   features: string[]
   highlight?: boolean
 }
@@ -40,6 +42,7 @@ const plans = ref<PlanCard[]>([
     description: "Prueba Fullbolito gratis por 14 días, sin tarjeta.",
     price: 0,
     duration_days: 14,
+    sunat_worker_slots: 1,
     features: ["1 sede, hasta 2 canchas", "Reservas en línea ilimitadas", "Soporte por correo electrónico"],
   },
   {
@@ -48,6 +51,7 @@ const plans = ref<PlanCard[]>([
     description: "Para complejos que están comenzando a gestionar reservas en línea.",
     price: 49,
     duration_days: 30,
+    sunat_worker_slots: 1,
     features: [
       "1 sede, hasta 4 canchas",
       "Pagos en línea (Mercado Pago / Yape)",
@@ -61,6 +65,7 @@ const plans = ref<PlanCard[]>([
     description: "Lo más elegido por complejos en operación.",
     price: 99,
     duration_days: 30,
+    sunat_worker_slots: 2,
     features: [
       "Hasta 3 sedes, canchas ilimitadas",
       "Recordatorios por WhatsApp",
@@ -76,6 +81,8 @@ const plans = ref<PlanCard[]>([
     description: "Cadenas y operaciones grandes.",
     price: 499,
     duration_days: 365,
+    sunat_worker_slots: 8,
+    sunat_dedicated_queue: true,
     features: [
       "Sedes y canchas ilimitadas",
       "Varios usuarios con roles",
@@ -99,6 +106,8 @@ onMounted(async () => {
         description: p.description,
         price: Number(p.price ?? 0),
         duration_days: Number(p.duration_days ?? 30),
+        sunat_worker_slots: Number(p.sunat_worker_slots ?? 1),
+        sunat_dedicated_queue: Boolean(p.sunat_dedicated_queue),
         features: Array.isArray(p.features) && p.features.length
           ? p.features
           : ["Acceso completo a la plataforma"],
@@ -418,6 +427,16 @@ const mockGrid: number[][] = [
             </div>
 
             <ul class="relative mt-5 space-y-2 text-sm">
+              <li class="flex items-start gap-2">
+                <Check class="mt-0.5 size-4 shrink-0 text-primary" />
+                <span class="text-muted-foreground">
+                  {{ p.sunat_worker_slots }} canal<span v-if="p.sunat_worker_slots !== 1">es</span> simultáneo<span v-if="p.sunat_worker_slots !== 1">s</span> de facturación electrónica
+                </span>
+              </li>
+              <li v-if="p.sunat_dedicated_queue" class="flex items-start gap-2">
+                <Check class="mt-0.5 size-4 shrink-0 text-primary" />
+                <span class="text-muted-foreground">Cola SUNAT dedicada Enterprise</span>
+              </li>
               <li v-for="(f, i) in p.features" :key="i" class="flex items-start gap-2">
                 <Check class="mt-0.5 size-4 shrink-0 text-primary" />
                 <span class="text-muted-foreground">{{ f }}</span>

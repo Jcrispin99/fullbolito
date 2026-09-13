@@ -11,7 +11,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 /**
  * @mixin Plan
  */
-class PlanResource extends JsonResource
+final class PlanResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -24,10 +24,14 @@ class PlanResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'slug' => $this->slug,
+            'description' => $this->description,
             'price' => (float) $this->price,
             'duration_days' => $this->duration_days,
+            'billing_rank' => (int) $this->billing_rank,
             'is_active' => $this->is_active,
             'includes_all_modules' => (bool) $this->includes_all_modules,
+            'sunat_worker_slots' => (int) $this->sunat_worker_slots,
+            'sunat_dedicated_queue' => (bool) $this->sunat_dedicated_queue,
             'module_ids' => $this->whenLoaded(
                 'modules',
                 fn () => $this->modules->pluck('id')->all(),

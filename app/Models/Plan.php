@@ -12,10 +12,14 @@ use Spatie\Activitylog\Traits\LogsActivity;
  * @property int $id
  * @property string $name
  * @property string $slug
+ * @property string|null $description
  * @property string $price
  * @property int $duration_days
+ * @property int $billing_rank
  * @property bool $is_active
  * @property bool $includes_all_modules
+ * @property int $sunat_worker_slots
+ * @property bool $sunat_dedicated_queue
  */
 final class Plan extends Model
 {
@@ -24,10 +28,14 @@ final class Plan extends Model
     protected $fillable = [
         'name',
         'slug',
+        'description',
         'price',
         'duration_days',
+        'billing_rank',
         'is_active',
         'includes_all_modules',
+        'sunat_worker_slots',
+        'sunat_dedicated_queue',
     ];
 
     protected $casts = [
@@ -35,6 +43,9 @@ final class Plan extends Model
         'is_active' => 'boolean',
         'includes_all_modules' => 'boolean',
         'duration_days' => 'integer',
+        'billing_rank' => 'integer',
+        'sunat_worker_slots' => 'integer',
+        'sunat_dedicated_queue' => 'boolean',
     ];
 
     /**
@@ -52,7 +63,17 @@ final class Plan extends Model
     {
         return LogOptions::defaults()
             ->useLogName('plans')
-            ->logOnly(['name', 'slug', 'price', 'duration_days', 'is_active'])
+            ->logOnly([
+                'name',
+                'slug',
+                'description',
+                'price',
+                'duration_days',
+                'billing_rank',
+                'is_active',
+                'sunat_worker_slots',
+                'sunat_dedicated_queue',
+            ])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }

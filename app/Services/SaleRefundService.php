@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Jobs\SendInvoiceToSunatJob;
 use App\Models\Inventory;
 use App\Models\Journal;
 use App\Models\Lot;
@@ -144,6 +145,10 @@ final class SaleRefundService
                 ->causedBy($user)
                 ->withProperties(['original_sale_id' => $original->id])
                 ->log('Nota de Crédito generada y posteada');
+
+            // Las NC nacen posteadas, por lo que deben seguir el mismo circuito
+            // automático que facturas y boletas. Se despacha sólo tras commit.
+            SendInvoiceToSunatJob::dispatch($note->fresh())->afterCommit();
 
             return $note;
         });

@@ -25,7 +25,27 @@ interface BillingState {
         slug: string;
         price: number;
         duration_days: number;
+        billing_rank: number;
+        sunat_worker_slots: number;
+        sunat_dedicated_queue: boolean;
     } | null;
+    pending_plan_change: {
+        id: number;
+        kind: "upgrade" | "downgrade" | "cycle_change";
+        status: string;
+        from_plan: string | null;
+        to_plan: string | null;
+        proration_amount: number;
+        currency: string;
+        effective_at: string | null;
+        checkout_url: string | null;
+    } | null;
+    sunat_capacity: {
+        worker_slots: number;
+        dedicated_queue: boolean;
+        dedicated_queue_active: boolean;
+        queue_name: string;
+    };
 }
 
 interface PlanOption {
@@ -35,6 +55,9 @@ interface PlanOption {
     description: string | null;
     price: number;
     duration_days: number;
+    billing_rank: number;
+    sunat_worker_slots: number;
+    sunat_dedicated_queue: boolean;
 }
 
 interface Invoice {
@@ -51,6 +74,7 @@ const plans = ref<PlanOption[]>([]);
 const invoices = ref<Invoice[]>([]);
 const loading = ref(false);
 const error = ref<string | null>(null);
+const notice = ref<string | null>(null);
 const actionLoading = ref(false);
 
 async function load() {
@@ -78,16 +102,36 @@ async function load() {
 }
 
 async function upgradeTo(slug: string) {
+    const target = plans.value.find((plan) => plan.slug === slug);
+    const current = billing.value?.plan;
+    if (target && current && billing.value?.has_payment_subscription) {
+        const isUpgrade = target.billing_rank > current.billing_rank;
+        const message = isUpgrade
+            ? "Se cobrará la diferencia prorrateada hasta tu próxima renovación. ¿Continuar?"
+            : "No habrá cobro ahora. El cambio se aplicará al finalizar el periodo ya pagado. ¿Programarlo?";
+        if (!window.confirm(message)) return;
+    }
+
     actionLoading.value = true;
     error.value = null;
+    notice.value = null;
     try {
-        const { data } = await apiClient.post<{ checkout_url: string }>(
+        const { data } = await apiClient.post<{
+            checkout_url: string | null;
+            scheduled: boolean;
+            effective_at: string | null;
+        }>(
             "/v1/billing/checkout",
             { plan_slug: slug },
         );
         if (data.data.checkout_url) {
             window.location.href = data.data.checkout_url;
+            return;
         }
+        notice.value = data.data.scheduled
+            ? `Cambio programado para ${formatDate(data.data.effective_at)}. No se realizó ningún cobro.`
+            : "El plan se actualizó correctamente.";
+        await load();
     } catch (err: any) {
         error.value = err?.response?.data?.message ?? "No se pudo iniciar el proceso de pago";
     } finally {
@@ -113,6 +157,11 @@ async function updateSubscriptionStatus(status: "authorized" | "paused" | "cance
     } finally {
         actionLoading.value = false;
     }
+}
+
+function continuePendingPayment() {
+    const url = billing.value?.pending_plan_change?.checkout_url;
+    if (url) window.location.href = url;
 }
 
 const statusBadgeClass = computed(() => {
@@ -153,6 +202,9 @@ onMounted(load);
             </div>
 
             <p v-if="error" class="text-sm text-destructive">{{ error }}</p>
+            <p v-if="notice" class="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-800">
+                {{ notice }}
+            </p>
 
             <Card v-if="loading">
                 <CardContent class="p-6 text-sm text-muted-foreground">
@@ -190,6 +242,24 @@ onMounted(load);
                                 <dt class="text-muted-foreground">Fin del trial</dt>
                                 <dd>{{ formatDate(billing.subscription.trial_ends_at) }}</dd>
                             </div>
+                            <div>
+                                <dt class="text-muted-foreground">Canales SUNAT</dt>
+                                <dd>
+                                    {{ billing.sunat_capacity.worker_slots }} comprobante<span v-if="billing.sunat_capacity.worker_slots !== 1">s</span> simultáneo<span v-if="billing.sunat_capacity.worker_slots !== 1">s</span>
+                                </dd>
+                            </div>
+                            <div>
+                                <dt class="text-muted-foreground">Procesamiento SUNAT</dt>
+                                <dd>
+                                    {{
+                                        billing.sunat_capacity.dedicated_queue_active
+                                            ? "Cola dedicada Enterprise"
+                                            : billing.sunat_capacity.dedicated_queue
+                                              ? "Cola dedicada pendiente de activación"
+                                              : "Pool compartido"
+                                    }}
+                                </dd>
+                            </div>
                         </dl>
 
                         <div v-if="billing.has_payment_subscription" class="flex flex-wrap gap-2 pt-2">
@@ -218,6 +288,30 @@ onMounted(load);
                                 Cancelar suscripción
                             </Button>
                         </div>
+                    </CardContent>
+                </Card>
+
+                <Card v-if="billing.pending_plan_change">
+                    <CardContent class="space-y-2 border-amber-200 bg-amber-50 p-6 text-sm">
+                        <h2 class="font-semibold">Cambio de plan pendiente</h2>
+                        <p>
+                            {{ billing.pending_plan_change.from_plan }} →
+                            {{ billing.pending_plan_change.to_plan }}
+                        </p>
+                        <p v-if="['scheduled', 'ready'].includes(billing.pending_plan_change.status)">
+                            Se aplicará el {{ formatDate(billing.pending_plan_change.effective_at) }}.
+                            No se efectuó un cobro inmediato.
+                        </p>
+                        <p v-else>
+                            El upgrade se aplicará cuando Mercado Pago confirme el pago prorrateado.
+                        </p>
+                        <Button
+                            v-if="billing.pending_plan_change.status === 'pending_payment' && billing.pending_plan_change.checkout_url"
+                            size="sm"
+                            @click="continuePendingPayment"
+                        >
+                            Continuar pago
+                        </Button>
                     </CardContent>
                 </Card>
 
@@ -283,15 +377,30 @@ onMounted(load);
                                     >
                                         {{ p.description }}
                                     </p>
+                                    <p class="mt-2 text-xs font-medium text-emerald-700">
+                                        {{ p.sunat_worker_slots }} canal<span v-if="p.sunat_worker_slots !== 1">es</span> simultáneo<span v-if="p.sunat_worker_slots !== 1">s</span> de facturación electrónica
+                                    </p>
+                                    <p
+                                        v-if="p.sunat_dedicated_queue"
+                                        class="mt-1 text-xs text-purple-700"
+                                    >
+                                        Cola dedicada Enterprise incluida
+                                    </p>
                                 </div>
                                 <div class="flex items-center justify-between mt-3">
                                     <span class="text-sm font-semibold">{{ formatPrice(p) }}</span>
                                     <Button
                                         size="sm"
-                                        :disabled="actionLoading || p.id === billing.plan?.id"
+                                        :disabled="actionLoading || p.id === billing.plan?.id || billing.pending_plan_change?.status === 'pending_payment'"
                                         @click="upgradeTo(p.slug)"
                                     >
-                                        {{ p.id === billing.plan?.id ? "Plan actual" : "Elegir" }}
+                                        {{
+                                            p.id === billing.plan?.id
+                                                ? "Plan actual"
+                                                : p.billing_rank > (billing.plan?.billing_rank ?? -1)
+                                                  ? "Mejorar plan"
+                                                  : "Programar cambio"
+                                        }}
                                     </Button>
                                 </div>
                             </div>

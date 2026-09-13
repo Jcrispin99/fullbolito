@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\Tenant\V1;
 
 use App\Http\Controllers\Api\ApiController;
+use App\Jobs\SendInvoiceToSunatJob;
 use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\Tenant;
@@ -13,6 +14,7 @@ use App\Services\MercadoPago\MercadoPagoBillingService;
 use App\Services\MercadoPago\MercadoPagoInvoiceService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use RuntimeException;
 
 /**
  * Tenant-facing billing endpoints. Surfaces current subscription state,
@@ -33,6 +35,21 @@ final class BillingController extends ApiController
         $subscription = $tenant->subscription()->with('plan')->first();
         /** @var Plan|null $plan */
         $plan = $subscription?->plan;
+        $sunatCapacity = $tenant->getSunatCapacity();
+        $dedicatedActive = $sunatCapacity['dedicated_queue']
+            && (bool) config('saas.sunat.dedicated_queues_enabled', false);
+        $pendingChange = \App\Models\SubscriptionPlanChange::query()
+            ->with(['fromPlan', 'toPlan'])
+            ->where('tenant_id', $tenant->id)
+            ->whereIn('status', ['creating', 'pending_payment', 'paid', 'applying', 'scheduled', 'ready'])
+            ->latest('id')
+            ->first();
+        /** @var Plan|null $fromPlan */
+        $fromPlan = $pendingChange?->fromPlan;
+        /** @var Plan|null $toPlan */
+        $toPlan = $pendingChange?->toPlan;
+        $tenantKey = $tenant->getTenantKey();
+        $tenantKeyString = is_string($tenantKey) || is_int($tenantKey) ? (string) $tenantKey : '';
 
         return $this->success([
             'tenant_id' => $tenant->id,
@@ -55,7 +72,29 @@ final class BillingController extends ApiController
                 'slug' => $plan->slug,
                 'price' => (float) $plan->price,
                 'duration_days' => (int) $plan->duration_days,
+                'billing_rank' => (int) $plan->billing_rank,
+                'sunat_worker_slots' => (int) $plan->sunat_worker_slots,
+                'sunat_dedicated_queue' => (bool) $plan->sunat_dedicated_queue,
             ] : null,
+            'pending_plan_change' => $pendingChange ? [
+                'id' => $pendingChange->id,
+                'kind' => $pendingChange->kind,
+                'status' => $pendingChange->status,
+                'from_plan' => $fromPlan?->name,
+                'to_plan' => $toPlan?->name,
+                'proration_amount' => (float) $pendingChange->proration_amount,
+                'currency' => $pendingChange->currency,
+                'effective_at' => $pendingChange->effective_at->toIso8601String(),
+                'checkout_url' => $pendingChange->checkout_url,
+            ] : null,
+            'sunat_capacity' => [
+                'worker_slots' => $sunatCapacity['worker_slots'],
+                'dedicated_queue' => $sunatCapacity['dedicated_queue'],
+                'dedicated_queue_active' => $dedicatedActive,
+                'queue_name' => $dedicatedActive
+                    ? SendInvoiceToSunatJob::dedicatedQueueName($tenantKeyString)
+                    : 'sunat',
+            ],
         ]);
     }
 
@@ -65,7 +104,17 @@ final class BillingController extends ApiController
             ->where('is_active', true)
             ->where('price', '>', 0)
             ->orderBy('price')
-            ->get(['id', 'name', 'slug', 'description', 'price', 'duration_days']);
+            ->get([
+                'id',
+                'name',
+                'slug',
+                'description',
+                'price',
+                'duration_days',
+                'billing_rank',
+                'sunat_worker_slots',
+                'sunat_dedicated_queue',
+            ]);
 
         return $this->success(['data' => $plans]);
     }
@@ -99,13 +148,17 @@ final class BillingController extends ApiController
             return $this->error("El plan [{$data['plan_slug']}] no requiere un checkout.", 422);
         }
 
-        $url = $billing->createSubscriptionCheckout(
-            $tenant,
-            $plan,
-            mb_rtrim($this->appUrl(), '/').'/billing/success?tenant='.$tenant->id,
-        );
+        try {
+            $result = $billing->requestPlanChange(
+                $tenant,
+                $plan,
+                mb_rtrim($this->appUrl(), '/').'/billing/success/'.$tenant->id,
+            );
+        } catch (RuntimeException $e) {
+            return $this->error($e->getMessage(), 422);
+        }
 
-        return $this->success(['checkout_url' => $url]);
+        return $this->success($result);
     }
 
     public function invoices(MercadoPagoInvoiceService $invoices): JsonResponse

@@ -22,6 +22,22 @@ final class MercadoPagoClient
             ->throw());
     }
 
+    /**
+     * Creates a one-time Checkout Pro preference. Plan upgrades use this for
+     * the prorated difference; the recurring preapproval is updated only
+     * after this payment is approved.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>
+     */
+    public function createPreference(array $payload, string $idempotencyKey): array
+    {
+        return $this->json($this->request()
+            ->withHeader('X-Idempotency-Key', $idempotencyKey)
+            ->post('/checkout/preferences', $payload)
+            ->throw());
+    }
+
     /** @return array<string, mixed> */
     public function getSubscription(string $id): array
     {
@@ -47,6 +63,16 @@ final class MercadoPagoClient
     public function getPayment(string $id): array
     {
         return $this->json($this->request()->get('/v1/payments/'.$id)->throw());
+    }
+
+    /** @return array<string, mixed> */
+    public function searchPayments(string $externalReference): array
+    {
+        return $this->json($this->request()->get('/v1/payments/search', [
+            'external_reference' => $externalReference,
+            'sort' => 'date_created',
+            'criteria' => 'desc',
+        ])->throw());
     }
 
     private function request(): PendingRequest

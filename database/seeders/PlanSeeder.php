@@ -20,7 +20,10 @@ final class PlanSeeder extends Seeder
                 'slug' => 'free-trial',
                 'price' => 0.00,
                 'duration_days' => 14,
+                'billing_rank' => 0,
                 'is_active' => true,
+                'sunat_worker_slots' => 1,
+                'sunat_dedicated_queue' => false,
                 'modules' => ['dashboard', 'inventory', 'sales', 'purchases', 'pos'],
             ],
             [
@@ -28,7 +31,10 @@ final class PlanSeeder extends Seeder
                 'slug' => 'basico-mensual',
                 'price' => 29.99,
                 'duration_days' => 30,
+                'billing_rank' => 10,
                 'is_active' => true,
+                'sunat_worker_slots' => 1,
+                'sunat_dedicated_queue' => false,
                 'modules' => ['dashboard', 'inventory', 'sales', 'pos'],
             ],
             [
@@ -36,7 +42,10 @@ final class PlanSeeder extends Seeder
                 'slug' => 'pro-mensual',
                 'price' => 59.99,
                 'duration_days' => 30,
+                'billing_rank' => 20,
                 'is_active' => true,
+                'sunat_worker_slots' => 2,
+                'sunat_dedicated_queue' => false,
                 'modules' => ['dashboard', 'inventory', 'sales', 'purchases', 'pos'],
             ],
             [
@@ -44,7 +53,10 @@ final class PlanSeeder extends Seeder
                 'slug' => 'enterprise-anual',
                 'price' => 499.99,
                 'duration_days' => 365,
+                'billing_rank' => 30,
                 'is_active' => true,
+                'sunat_worker_slots' => 8,
+                'sunat_dedicated_queue' => true,
                 'modules' => ['dashboard', 'inventory', 'sales', 'purchases', 'pos'],
             ],
         ];

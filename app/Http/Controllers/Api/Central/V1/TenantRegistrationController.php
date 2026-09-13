@@ -126,7 +126,7 @@ final class TenantRegistrationController extends ApiController
             $checkoutUrl = $billing->createSubscriptionCheckout(
                 $tenant,
                 $chosenPlan,
-                mb_rtrim($this->appUrl(), '/').'/billing/success?tenant='.$tenant->id,
+                mb_rtrim($this->appUrl(), '/').'/billing/success/'.$tenant->id,
             );
         }
 

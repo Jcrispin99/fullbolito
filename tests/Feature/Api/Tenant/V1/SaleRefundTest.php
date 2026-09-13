@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Jobs\SendInvoiceToSunatJob;
 use App\Models\Category;
 use App\Models\Company;
 use App\Models\Inventory;
@@ -19,7 +20,12 @@ use App\Models\UnitOfMeasure;
 use App\Models\Warehouse;
 use App\Services\KardexService;
 use App\Services\SaleRefundService;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Validation\ValidationException;
+
+beforeEach(function (): void {
+    Queue::fake();
+});
 
 /**
  * Build a POS scaffold + a credit-note journal attached to the same company.
@@ -145,6 +151,12 @@ it('creates a posted credit note linked to the original via original_sale_id', f
         ->and($note->serie)->toBe('FC01')
         ->and((float) $note->total)->toBe((float) $original->total)
         ->and($note->journal_id)->toBe($scaffold['creditJournal']->id);
+
+    Queue::assertPushedOn('sunat', SendInvoiceToSunatJob::class);
+    Queue::assertPushed(
+        SendInvoiceToSunatJob::class,
+        fn (SendInvoiceToSunatJob $job): bool => $job->saleId() === $note->id,
+    );
 });
 
 it('writes a kardex entry returning inventory to the original lot', function (): void {

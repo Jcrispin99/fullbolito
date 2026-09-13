@@ -64,6 +64,7 @@ final class TenantAppService
             'slug' => $subscription->plan->slug,
             'price' => (float) $subscription->plan->price,
             'duration_days' => $subscription->plan->duration_days,
+            'billing_rank' => (int) $subscription->plan->billing_rank,
             'status' => $subscription->status,
             'starts_at' => $subscription->starts_at?->toIso8601String(),
             'ends_at' => $subscription->ends_at?->toIso8601String(),
@@ -80,6 +81,7 @@ final class TenantAppService
                 'slug' => $plan->slug,
                 'price' => (float) $plan->price,
                 'duration_days' => $plan->duration_days,
+                'billing_rank' => (int) $plan->billing_rank,
                 'modules' => $this->modulesForPlan($plan->slug, $modules),
             ])
             ->values()

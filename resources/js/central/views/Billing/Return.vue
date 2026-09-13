@@ -4,7 +4,9 @@ import { useRoute, RouterLink } from "vue-router";
 
 const route = useRoute();
 const isSuccess = computed(() => route.name === "BillingSuccess");
-const tenantId = computed(() => (route.query.tenant as string | undefined) ?? "");
+const tenantId = computed(() =>
+    String(route.params.tenant ?? route.query.tenant ?? "").split("?")[0],
+);
 </script>
 
 <template>

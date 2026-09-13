@@ -39,7 +39,13 @@ return [
 
         'database' => [
             'driver' => 'database',
-            'connection' => env('DB_QUEUE_CONNECTION'),
+            // La cola debe vivir en la base central. Durante una petición tenant,
+            // DatabaseTenancyBootstrapper cambia la conexión por defecto a
+            // `tenant`; dejar este valor en null repartiría los jobs entre las
+            // bases de cada tenant y un worker central no podría encontrarlos.
+            // QueueTenancyBootstrapper conserva el tenant_id en cada payload y
+            // restaura su contexto justo antes de ejecutar el job.
+            'connection' => env('DB_QUEUE_CONNECTION', env('DB_CONNECTION', 'central')),
             'table' => env('DB_QUEUE_TABLE', 'jobs'),
             'queue' => env('DB_QUEUE', 'default'),
             'retry_after' => (int) env('DB_QUEUE_RETRY_AFTER', 90),

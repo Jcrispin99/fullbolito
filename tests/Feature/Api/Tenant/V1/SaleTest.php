@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Jobs\SendInvoiceToSunatJob;
+use App\Jobs\Middleware\EnsureSunatOriginalAccepted;
 use App\Models\Category;
 use App\Models\Company;
 use App\Models\Journal;
@@ -247,6 +249,105 @@ it('persists error status when SUNAT call fails (mocked)', function (): void {
     $this->tenantPostJson("/api/v1/sales/{$sale->id}/sunat/send")->assertOk();
 
     expect($sale->fresh()->sunat_status)->toBe('error');
+});
+
+it('does not resend a document rejected through a CDR', function (): void {
+    $fake = $this->mockGreenterInvoice();
+    $this->actingAsTenantUser();
+    $scaffold = makeSaleScaffold();
+
+    $sale = Sale::factory()->posted()->create([
+        'warehouse_id' => $scaffold['warehouse']->id,
+        'company_id' => $scaffold['company']->id,
+        'journal_id' => $scaffold['journal']->id,
+        'user_id' => $this->tenantUser->id,
+        'sunat_status' => 'rejected',
+        'sunat_response' => [
+            'accepted' => false,
+            'retryable' => false,
+            'cdr_code' => 2335,
+        ],
+    ]);
+
+    $this->tenantPostJson("/api/v1/sales/{$sale->id}/sunat/send")
+        ->assertStatus(422);
+
+    expect($fake->sentSaleIds)->not->toContain($sale->id);
+});
+
+it('releases the SUNAT job for a retryable transport failure', function (): void {
+    $fake = $this->mockGreenterInvoice(shouldSucceed: false);
+    $fake->retryableFailure = true;
+    $this->actingAsTenantUser();
+    $scaffold = makeSaleScaffold();
+
+    $sale = Sale::factory()->posted()->create([
+        'warehouse_id' => $scaffold['warehouse']->id,
+        'company_id' => $scaffold['company']->id,
+        'journal_id' => $scaffold['journal']->id,
+        'user_id' => $this->tenantUser->id,
+    ]);
+
+    $job = new SendInvoiceToSunatJob($sale);
+
+    expect(fn () => $job->handle($fake))->toThrow(RuntimeException::class);
+});
+
+it('marks a SUNAT transport failure as terminal after job retries are exhausted', function (): void {
+    $this->actingAsTenantUser();
+    $scaffold = makeSaleScaffold();
+    $sale = Sale::factory()->posted()->create([
+        'warehouse_id' => $scaffold['warehouse']->id,
+        'company_id' => $scaffold['company']->id,
+        'journal_id' => $scaffold['journal']->id,
+        'user_id' => $this->tenantUser->id,
+        'sunat_status' => 'error',
+        'sunat_response' => ['accepted' => false, 'retryable' => true],
+    ]);
+    $job = new SendInvoiceToSunatJob($sale);
+
+    $job->failed(new RuntimeException('SUNAT sigue sin responder'));
+
+    expect(data_get($sale->fresh()->sunat_response, 'retryable'))->toBeFalse()
+        ->and(data_get($sale->fresh()->sunat_response, 'attempts_exhausted'))->toBeTrue();
+});
+
+it('blocks a credit note when its original document was rejected by SUNAT', function (): void {
+    $this->actingAsTenantUser();
+    $scaffold = makeSaleScaffold();
+    $creditJournal = Journal::factory()->creditNote()->create([
+        'company_id' => $scaffold['company']->id,
+        'code' => 'BC01',
+        'sequence_id' => Sequence::factory()->create(['prefix' => 'BC01'])->id,
+    ]);
+    $original = Sale::factory()->posted()->create([
+        'warehouse_id' => $scaffold['warehouse']->id,
+        'company_id' => $scaffold['company']->id,
+        'journal_id' => $scaffold['journal']->id,
+        'user_id' => $this->tenantUser->id,
+        'sunat_status' => 'rejected',
+        'sunat_response' => ['accepted' => false, 'retryable' => false],
+    ]);
+    $note = Sale::factory()->posted()->create([
+        'warehouse_id' => $scaffold['warehouse']->id,
+        'company_id' => $scaffold['company']->id,
+        'journal_id' => $creditJournal->id,
+        'user_id' => $this->tenantUser->id,
+        'original_sale_id' => $original->id,
+        'sunat_status' => 'pending',
+    ]);
+    $continued = false;
+
+    (new EnsureSunatOriginalAccepted())->handle(
+        new SendInvoiceToSunatJob($note),
+        function () use (&$continued): void {
+            $continued = true;
+        },
+    );
+
+    expect($continued)->toBeFalse()
+        ->and($note->fresh()->sunat_status)->toBe('error')
+        ->and(data_get($note->fresh()->sunat_response, 'dependency_sale_id'))->toBe($original->id);
 });
 
 it('emits a posted credit note refund from a posted sale', function (): void {

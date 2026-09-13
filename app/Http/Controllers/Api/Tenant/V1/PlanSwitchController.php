@@ -12,12 +12,13 @@ use App\Services\MercadoPago\MercadoPagoBillingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use RuntimeException;
 
 /**
  * POST /api/v1/apps/plan — switches the tenant to a different plan.
  *
- * A paid plan change creates a new Mercado Pago authorization checkout.
- * The webhook applies the local plan only after Mercado Pago authorizes it.
+ * Upgrades charge only the prorated difference. Downgrades are scheduled for
+ * the end of the period already paid by the tenant.
  */
 final class PlanSwitchController extends ApiController
 {
@@ -66,16 +67,17 @@ final class PlanSwitchController extends ApiController
             return $this->error('Los planes gratuitos no se pueden reactivar desde autoservicio.', 422);
         }
 
-        $checkoutUrl = $this->billing->createSubscriptionCheckout(
-            $tenant,
-            $plan,
-            mb_rtrim($this->appUrl(), '/').'/billing/success?tenant='.$tenant->id,
-        );
+        try {
+            $result = $this->billing->requestPlanChange(
+                $tenant,
+                $plan,
+                mb_rtrim($this->appUrl(), '/').'/billing/success/'.$tenant->id,
+            );
+        } catch (RuntimeException $e) {
+            return $this->error($e->getMessage(), 422);
+        }
 
-        return $this->success([
-            'checkout_url' => $checkoutUrl,
-            'pending' => true,
-        ]);
+        return $this->success($result);
     }
 
     private function appUrl(): string

@@ -7,7 +7,7 @@ namespace App\Http\Requests\Api\Central\V1;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class PlanRequest extends FormRequest
+final class PlanRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -30,10 +30,14 @@ class PlanRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255', Rule::unique('plans', 'slug')->ignore($planId)],
+            'description' => ['nullable', 'string', 'max:2000'],
             'price' => ['required', 'numeric', 'min:0'],
             'duration_days' => ['required', 'integer', 'min:1'],
+            'billing_rank' => ['sometimes', 'integer', 'min:0', 'max:65535'],
             'is_active' => ['boolean'],
             'includes_all_modules' => ['boolean'],
+            'sunat_worker_slots' => ['sometimes', 'integer', Rule::in([1, 2, 4, 8])],
+            'sunat_dedicated_queue' => ['boolean'],
             'module_ids' => ['array'],
             'module_ids.*' => ['integer', Rule::exists('modules', 'id')],
         ];

@@ -17,6 +17,7 @@ use App\Models\PosSessionPayment;
 use App\Models\Sale;
 use App\Models\Sequence;
 use App\Models\Tax;
+use App\Models\Tenant;
 use App\Models\UnitOfMeasure;
 use App\Models\User;
 use App\Models\Warehouse;
@@ -24,6 +25,7 @@ use App\Services\GreenterInvoiceService;
 use App\Services\KardexService;
 use App\Services\LoyaltyService;
 use App\Services\SaleRefundService;
+use App\Services\SunatConcurrencyService;
 use Carbon\Carbon;
 use Endroid\QrCode\Builder\Builder as QrBuilder;
 use Endroid\QrCode\Writer\PngWriter;
@@ -521,15 +523,55 @@ final class SaleController extends ApiController
      * el envío de ventas previas que no llegaron a procesarse. Si la venta
      * ya está aceptada, el servicio devuelve sin hacer nada.
      */
-    public function sendToSunat(Sale $sale, GreenterInvoiceService $greenter): JsonResponse
+    public function sendToSunat(
+        Sale $sale,
+        GreenterInvoiceService $greenter,
+        SunatConcurrencyService $concurrency,
+    ): JsonResponse
     {
         if ($sale->status !== 'posted') {
             return $this->error('Solo se pueden enviar a SUNAT ventas publicadas.', 422);
         }
 
+        if ($sale->sunat_status === 'rejected') {
+            return $this->error(
+                'El comprobante fue rechazado mediante CDR. Corrige la información y emite uno nuevo; no se debe reenviar el mismo XML.',
+                422,
+            );
+        }
+
+        $sale->loadMissing(['journal', 'originalSale']);
+        $docType = (string) ($sale->journal?->document_type_code ?? '');
+        if (in_array($docType, ['07', '08'], true)
+            && $sale->originalSale?->sunat_status !== 'accepted'
+            && data_get($sale->originalSale?->sunat_response, 'accepted') !== true
+        ) {
+            return $this->error(
+                'La nota no puede enviarse hasta que su factura o boleta original sea aceptada por SUNAT.',
+                422,
+            );
+        }
+
+        $tenant = tenant();
+        if (! $tenant instanceof Tenant) {
+            return $this->error('No se pudo resolver el tenant para el envío SUNAT.', 422);
+        }
+
+        $lease = $concurrency->acquire($tenant, (int) $sale->getKey());
+        if (! $lease) {
+            return $this->error(
+                'Todos los canales simultáneos de facturación del plan están ocupados. Intenta nuevamente en unos segundos.',
+                429,
+            );
+        }
+
         // Ejecución síncrona: el endpoint manual ya implica que el usuario
         // espera el resultado en pantalla.
-        $greenter->sendInvoiceFromSale($sale);
+        try {
+            $greenter->sendInvoiceFromSale($sale);
+        } finally {
+            $concurrency->release($lease);
+        }
 
         return $this->success(new SaleResource($sale->fresh()->load(self::SALE_LOAD_RELATIONS)));
     }

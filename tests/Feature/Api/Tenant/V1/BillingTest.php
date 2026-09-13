@@ -177,7 +177,7 @@ it('pauses an active Mercado Pago subscription and mirrors its status', function
         ->and($subscription->fresh()->provider_status)->toBe('paused');
 });
 
-it('translates the local cancelled status to Mercado Pago canceled', function (): void {
+it('sends the Mercado Pago cancelled status when cancelling a subscription', function (): void {
     $this->actingAsTenantUser(User::factory()->create(['email' => 'payer@example.test']));
     $subscription = tenant()->subscription()->first();
     $subscription->update([
@@ -190,16 +190,16 @@ it('translates the local cancelled status to Mercado Pago canceled', function ()
     Http::fake([
         'api.mercadopago.com/preapproval/preapproval-cancel' => Http::response([
             'id' => 'preapproval-cancel',
-            'status' => 'canceled',
+            'status' => 'cancelled',
             'external_reference' => $subscription->external_reference,
         ]),
     ]);
 
     $this->tenantPatchJson('/api/v1/billing/subscription/status', ['status' => 'cancelled'])
         ->assertOk()
-        ->assertJsonPath('data.status', 'canceled');
+        ->assertJsonPath('data.status', 'cancelled');
 
-    Http::assertSent(fn (Request $request): bool => $request['status'] === 'canceled');
+    Http::assertSent(fn (Request $request): bool => $request['status'] === 'cancelled');
     expect($subscription->fresh()->status)->toBe('cancelled');
 });
 

@@ -7,6 +7,7 @@ use App\Models\PaymentWebhookEvent;
 use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\Tenant;
+use App\Services\MercadoPago\HandleMercadoPagoWebhook;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Http;
@@ -102,4 +103,40 @@ it('activates a subscription only from a signed authorized preapproval and is id
         ->and(Tenant::query()->findOrFail($checkout->tenant_id)->billing_provider)->toBe('mercadopago');
 
     Http::assertSentCount(1);
+});
+
+it('uses the Mercado Pago cancelled status when replacing an authorized subscription', function (): void {
+    $checkout = mercadoPagoCheckout();
+    $tenant = Tenant::query()->findOrFail($checkout->tenant_id);
+    $oldSubscription = Subscription::query()->create([
+        'tenant_id' => $tenant->id,
+        'plan_id' => $checkout->plan_id,
+        'status' => 'active',
+        'starts_at' => now()->subMonth(),
+        'ends_at' => now()->addMonth(),
+        'provider' => 'mercadopago',
+        'provider_id' => 'preapproval-old',
+        'provider_status' => 'authorized',
+        'external_reference' => 'ec17fc78-7777-4444-8888-bdc87f456780',
+    ]);
+    $checkout->update(['replaces_subscription_id' => $oldSubscription->id]);
+
+    Http::fake([
+        'api.mercadopago.com/preapproval/preapproval-old' => Http::response([
+            'id' => 'preapproval-old',
+            'status' => 'cancelled',
+        ]),
+    ]);
+
+    app(HandleMercadoPagoWebhook::class)->syncPreapproval([
+        'id' => 'preapproval-001',
+        'status' => 'authorized',
+        'external_reference' => $checkout->external_reference,
+        'date_created' => now()->toIso8601String(),
+        'next_payment_date' => now()->addYear()->toIso8601String(),
+    ]);
+
+    Http::assertSent(fn ($request): bool => $request['status'] === 'cancelled');
+    expect($oldSubscription->fresh()->status)->toBe('cancelled')
+        ->and(Subscription::query()->where('provider_id', 'preapproval-001')->value('status'))->toBe('active');
 });

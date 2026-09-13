@@ -107,7 +107,7 @@ final class HandleMercadoPagoWebhook
 
             if ($replaced?->provider_id && $replaced->provider_id !== $providerId) {
                 $this->client->updateSubscription((string) $replaced->provider_id, [
-                    'status' => 'canceled',
+                    'status' => 'cancelled',
                 ]);
             }
         }

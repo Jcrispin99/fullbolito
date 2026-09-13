@@ -356,10 +356,9 @@ final class MercadoPagoBillingService
     public function changeStatus(Tenant $tenant, string $status): array
     {
         $subscription = $this->providerSubscription($tenant);
-        $providerStatus = $status === 'cancelled' ? 'canceled' : $status;
 
         return $this->client->updateSubscription((string) $subscription->provider_id, [
-            'status' => $providerStatus,
+            'status' => $status,
         ]);
     }
 

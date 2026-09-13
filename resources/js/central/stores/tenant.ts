@@ -140,6 +140,24 @@ export const useTenantStore = defineStore("tenant", () => {
         }
     }
 
+    async function deleteTenants(ids: string[]) {
+        isLoading.value = true;
+        error.value = null;
+        try {
+            await apiClient.post("/v1/tenants/batch-delete", { ids });
+            tenants.value = tenants.value.filter((t) => !ids.includes(t.id));
+            if (currentTenant.value && ids.includes(currentTenant.value.id)) {
+                currentTenant.value = null;
+            }
+        } catch (err: any) {
+            error.value =
+                err.response?.data?.message || "No se pudieron eliminar los negocios";
+            throw err;
+        } finally {
+            isLoading.value = false;
+        }
+    }
+
     async function renewSubscription(
         tenantId: string,
         payload: { duration_days: number; payment_reference?: string },
@@ -173,6 +191,7 @@ export const useTenantStore = defineStore("tenant", () => {
         registerTenant,
         updateTenant,
         deleteTenant,
+        deleteTenants,
         renewSubscription,
     };
 });

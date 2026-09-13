@@ -8,8 +8,12 @@ use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\Api\Central\V1\TenantRequest;
 use App\Http\Resources\TenantResource;
 use App\Models\Tenant;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 final class TenantController extends ApiController
 {
@@ -99,6 +103,10 @@ final class TenantController extends ApiController
             $tenant->domains()->create([
                 'domain' => $domain,
             ]);
+        }
+
+        if ($tenant->user_id) {
+            $this->provisionTenantOwner($tenant);
         }
 
         $tenant->load('domains');
@@ -205,6 +213,36 @@ final class TenantController extends ApiController
             return $this->forbidden('Only superadmins can delete tenants.');
         }
 
+        $this->deleteTenantWithLog($tenant, $user);
+
+        return $this->noContent();
+    }
+
+    public function batchDestroy(Request $request): JsonResponse
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        if (! $user->isSuperAdmin()) {
+            return $this->forbidden('Only superadmins can delete tenants.');
+        }
+
+        $validated = $request->validate([
+            'ids' => ['required', 'array'],
+            'ids.*' => ['string', 'exists:tenants,id'],
+        ]);
+
+        $tenants = Tenant::query()->whereIn('id', $validated['ids'])->get();
+
+        foreach ($tenants as $tenant) {
+            $this->deleteTenantWithLog($tenant, $user);
+        }
+
+        return $this->noContent();
+    }
+
+    private function deleteTenantWithLog(Tenant $tenant, User $user): void
+    {
         $old = [
             'user_id' => $tenant->user_id,
             'business_name' => $tenant->getAttribute('business_name'),
@@ -224,7 +262,39 @@ final class TenantController extends ApiController
             ->log('deleted');
 
         $tenant->delete();
+    }
 
-        return $this->noContent();
+    /**
+     * Crea, dentro de la base de datos del tenant recién creado, el usuario
+     * correspondiente al dueño central (`tenant.user_id`) y le asigna el rol
+     * admin. Sin esto, el owner nunca podría entrar a su propio tenant: cada
+     * tenant tiene su propia tabla `users`, separada de la central.
+     *
+     * No se conoce la contraseña del owner en este flujo (lo crea un
+     * superadmin), así que se genera una aleatoria y el owner debe usar
+     * "forgot password" (disponible también en el dominio del tenant) para
+     * fijar la suya antes de iniciar sesión.
+     */
+    private function provisionTenantOwner(Tenant $tenant): void
+    {
+        $owner = User::query()->find($tenant->user_id);
+
+        if (! $owner) {
+            return;
+        }
+
+        try {
+            tenancy()->initialize($tenant);
+
+            $tenantUser = User::query()->create([
+                'name' => $owner->name,
+                'email' => $owner->email,
+                'password' => Hash::make(Str::random(40)),
+            ]);
+
+            $tenantUser->assignRole('admin');
+        } finally {
+            tenancy()->end();
+        }
     }
 }

@@ -14,6 +14,13 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
+        // Usuarios demo con contraseñas fijas: solo para tenants de desarrollo/pruebas.
+        // En producción el dueño real del tenant se crea (y recibe el rol admin) en
+        // TenantRegistrationController::register().
+        if (app()->environment('production')) {
+            return;
+        }
+
         $mainOffice = Company::where('is_main', true)->first();
         $branches = Company::where('is_main', false)->get();
 

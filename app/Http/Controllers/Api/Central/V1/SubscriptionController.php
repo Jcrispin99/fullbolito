@@ -30,7 +30,7 @@ final class SubscriptionController extends ApiController
         $perPage = (int) ($request->query('per_page', 20));
 
         $query = Subscription::query()
-            ->with(['tenant:id,business_name', 'plan:id,name,slug,price,duration_days'])
+            ->with(['tenant', 'plan:id,name,slug,price,duration_days'])
             ->orderByDesc('id');
 
         if (is_string($status) && $status !== '') {

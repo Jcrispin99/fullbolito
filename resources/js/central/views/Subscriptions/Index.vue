@@ -2,6 +2,7 @@
 import { onMounted, ref } from "vue";
 import { apiClient } from "@central/lib/api";
 import { Card, CardContent } from "@/components/ui/card";
+import DashboardLayout from "@/central/layouts/DashboardLayout.vue";
 
 interface SubscriptionRow {
     id: number;
@@ -67,7 +68,8 @@ onMounted(load);
 </script>
 
 <template>
-    <div class="space-y-6 p-6">
+    <DashboardLayout :breadcrumbs="[{ label: 'Suscripciones' }]">
+    <div class="space-y-6">
         <div>
             <h1 class="text-2xl font-bold">Suscripciones</h1>
             <p class="text-muted-foreground text-sm">
@@ -168,4 +170,5 @@ onMounted(load);
             </CardContent>
         </Card>
     </div>
+    </DashboardLayout>
 </template>

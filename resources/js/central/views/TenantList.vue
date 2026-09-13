@@ -7,6 +7,17 @@ import ModuleHeader from "@/central/components/ModuleHeader.vue"
 import { useAuthStore } from "@/central/stores/auth"
 import { useTenantStore } from "@/central/stores/tenant"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Trash2, ChevronDown } from "lucide-vue-next"
+import ConfirmDialog from "@/components/ConfirmDialog.vue"
 import TableColumnSettingsHead from "@/components/TableColumnSettingsHead.vue"
 import {
   Table,
@@ -25,6 +36,7 @@ const { tenants, meta, isLoading } = storeToRefs(tenantStore)
 const perPage = ref(15)
 const search = ref("")
 const selectedTenants = ref<string[]>([])
+const confirmDialog = ref<InstanceType<typeof ConfirmDialog> | null>(null)
 
 type ColumnKey = "id" | "business" | "domains" | "owner" | "created"
 
@@ -137,6 +149,19 @@ const formatCreated = (iso: string | null | undefined) => {
 const canCreate = computed(() =>
   (authStore.user?.roles ?? []).includes("superadmin"),
 )
+
+const handleBatchDelete = () => {
+  if (selectedTenants.value.length === 0) return
+
+  confirmDialog.value?.show(
+    "Eliminar negocios",
+    `¿Seguro que deseas eliminar ${selectedTenants.value.length} negocio(s)? Se borrará también toda su base de datos. Esta acción no se puede deshacer.`,
+    async () => {
+      await tenantStore.deleteTenants(selectedTenants.value)
+      loadTenants(meta.value.current_page)
+    },
+  )
+}
 </script>
 
 <template>
@@ -156,7 +181,29 @@ const canCreate = computed(() =>
         @update:per-page="handlePerPageChange"
         @update:search="handleSearch"
         @page-change="handlePageChange"
-      />
+      >
+        <template v-if="canCreate" #actions>
+          <DropdownMenu>
+            <DropdownMenuTrigger as-child>
+              <Button variant="outline" size="sm" class="h-9 gap-1">
+                Acciones
+                <ChevronDown class="h-4 w-4 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" class="w-[160px]">
+              <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                @click="handleBatchDelete"
+                class="text-destructive"
+              >
+                <Trash2 class="mr-2 h-4 w-4" />
+                Eliminar
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </template>
+      </ModuleHeader>
 
       <div class="rounded-md border">
         <Table>
@@ -242,5 +289,7 @@ const canCreate = computed(() =>
         </Table>
       </div>
     </div>
+
+    <ConfirmDialog ref="confirmDialog" />
   </DashboardLayout>
 </template>

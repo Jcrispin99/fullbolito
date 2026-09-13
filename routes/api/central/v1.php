@@ -73,6 +73,7 @@ Route::prefix('v1')->group(function () {
 
         // Endpoints de administración de Tenants
         Route::get('tenants', [TenantController::class, 'index'])->name('central.tenants.index');
+        Route::post('tenants/batch-delete', [TenantController::class, 'batchDestroy'])->name('central.tenants.batch-delete');
         Route::post('tenants', [TenantController::class, 'store'])->name('central.tenants.store');
         Route::get('tenants/{tenant}', [TenantController::class, 'show'])->name('central.tenants.show');
         Route::put('tenants/{tenant}', [TenantController::class, 'update'])->name('central.tenants.update');

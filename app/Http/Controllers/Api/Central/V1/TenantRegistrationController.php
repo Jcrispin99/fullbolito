@@ -90,6 +90,8 @@ final class TenantRegistrationController extends ApiController
                 'password' => Hash::make($request->password),
             ]);
 
+            $tenantUser->assignRole('admin');
+
             $tenantToken = $tenantUser->createToken('tenant-auth-token')->plainTextToken;
 
             // Sembrar datos base del tenant (el usuario ya existe, se omite UserSeeder)

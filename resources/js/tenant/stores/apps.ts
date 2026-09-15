@@ -25,6 +25,9 @@ export interface CurrentPlan {
   starts_at: string | null
   ends_at: string | null
   trial_ends_at: string | null
+  cancel_at_period_end: boolean
+  cancellation_requested_at: string | null
+  access_until: string | null
 }
 
 export interface PlanOption {

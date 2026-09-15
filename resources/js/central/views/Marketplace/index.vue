@@ -27,6 +27,7 @@ import {
   Clock,
   Frown,
   Goal,
+  LocateFixed,
   MapPin,
   RotateCcw,
   Search,
@@ -61,6 +62,7 @@ interface CourtRow {
     ubigeo_names: UbigeoNames | null
     ubigeo_label: string | null
     company_address: string | null
+    distance_km?: number | null
     available_at_requested_time?: boolean
     requested_slot?: { start: string; end: string }
   }
@@ -76,7 +78,7 @@ interface Meta {
   iterated_tenants: number
 }
 
-type FilterKey = "sport" | "ubigeo" | "search" | "date" | "time"
+type FilterKey = "sport" | "ubigeo" | "search" | "date" | "time" | "location"
 
 const route = useRoute()
 const router = useRouter()
@@ -93,6 +95,10 @@ const loading = ref(false)
 const errored = ref(false)
 const desktopFiltersOpen = ref(false)
 const mobileFiltersOpen = ref(false)
+const userLat = ref<number | null>(null)
+const userLng = ref<number | null>(null)
+const locatingUser = ref(false)
+const locationError = ref<string | null>(null)
 
 const sports = [
   { value: "", label: "Todos los deportes" },
@@ -104,8 +110,9 @@ const sports = [
 const popularSports = sports.filter((item) => item.value)
 const todayIso = new Date().toISOString().slice(0, 10)
 
+const hasLocation = computed(() => userLat.value !== null && userLng.value !== null)
 const hasActiveFilters = computed(
-  () => !!(sport.value || ubigeo.value || search.value || date.value || time.value),
+  () => !!(sport.value || ubigeo.value || search.value || date.value || time.value || hasLocation.value),
 )
 const additionalFilterCount = computed(
   () => [sport.value, ubigeo.value, time.value].filter(Boolean).length,
@@ -131,6 +138,10 @@ function syncFromQuery() {
   date.value = String(route.query.date ?? "")
   time.value = String(route.query.time ?? "")
   page.value = Number(route.query.page ?? 1) || 1
+  const queryLat = Number(route.query.lat)
+  const queryLng = Number(route.query.lng)
+  userLat.value = route.query.lat && Number.isFinite(queryLat) ? queryLat : null
+  userLng.value = route.query.lng && Number.isFinite(queryLng) ? queryLng : null
 }
 
 function pushQuery() {
@@ -142,6 +153,7 @@ function pushQuery() {
       ...(search.value ? { search: search.value } : {}),
       ...(date.value ? { date: date.value } : {}),
       ...(date.value && time.value ? { time: time.value } : {}),
+      ...(hasLocation.value ? { lat: String(userLat.value), lng: String(userLng.value) } : {}),
       ...(page.value > 1 ? { page: String(page.value) } : {}),
     },
   })
@@ -162,6 +174,10 @@ async function fetchCourts() {
     if (date.value && time.value) {
       params.date = date.value
       params.time = time.value
+    }
+    if (hasLocation.value) {
+      params.lat = String(userLat.value)
+      params.lng = String(userLng.value)
     }
 
     const { data } = await apiClient.get<any>("/v1/marketplace/courts", { params })
@@ -189,6 +205,8 @@ function clearFilters() {
   search.value = ""
   date.value = ""
   time.value = ""
+  userLat.value = null
+  userLng.value = null
   page.value = 1
   pushQuery()
 }
@@ -202,8 +220,45 @@ function removeFilter(key: FilterKey) {
     time.value = ""
   }
   if (key === "time") time.value = ""
+  if (key === "location") {
+    userLat.value = null
+    userLng.value = null
+  }
   page.value = 1
   pushQuery()
+}
+
+function useMyLocation() {
+  if (!("geolocation" in navigator)) {
+    locationError.value = "Tu navegador no soporta geolocalización."
+    return
+  }
+
+  locatingUser.value = true
+  locationError.value = null
+
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      userLat.value = position.coords.latitude
+      userLng.value = position.coords.longitude
+      locatingUser.value = false
+      page.value = 1
+      pushQuery()
+    },
+    (error) => {
+      locatingUser.value = false
+      locationError.value =
+        error.code === error.PERMISSION_DENIED
+          ? "Necesitamos permiso de ubicación para mostrarte las canchas más cercanas."
+          : "No pudimos obtener tu ubicación. Intenta de nuevo."
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 },
+  )
+}
+
+function formatDistance(km: number) {
+  if (km < 1) return `${Math.round(km * 1000)} m`
+  return `${km.toFixed(1)} km`
 }
 
 function selectSport(value: string) {
@@ -354,11 +409,16 @@ watch(date, (value) => {
         </form>
 
         <div class="mt-5 flex flex-wrap items-center justify-center gap-2">
+          <button type="button" class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition disabled:opacity-60" :class="hasLocation ? 'border-secondary bg-secondary text-secondary-foreground' : 'border-white/15 bg-black/15 text-white/65 hover:border-white/30 hover:text-white'" :disabled="locatingUser" @click="hasLocation ? removeFilter('location') : useMyLocation()">
+            <LocateFixed class="size-3.5" />
+            {{ locatingUser ? "Ubicándote…" : hasLocation ? "Cerca de ti" : "Cerca de mí" }}
+          </button>
           <span class="mr-1 hidden text-xs text-white/45 sm:inline">Explora por deporte</span>
           <button v-for="item in popularSports" :key="item.value" type="button" class="rounded-full border px-3 py-1.5 text-xs font-medium transition" :class="sport === item.value ? 'border-secondary bg-secondary text-secondary-foreground' : 'border-white/15 bg-black/15 text-white/65 hover:border-white/30 hover:text-white'" @click="selectSport(item.value)">
             {{ item.label }}
           </button>
         </div>
+        <p v-if="locationError" class="mt-2.5 text-center text-xs text-amber-200/90">{{ locationError }}</p>
       </div>
     </section>
 
@@ -427,6 +487,7 @@ watch(date, (value) => {
               Mostrando <span class="font-medium text-foreground">{{ showingFrom }}–{{ showingTo }}</span>
               de <span class="font-medium text-foreground">{{ meta.total }}</span>
               en {{ meta.iterated_tenants }} {{ meta.iterated_tenants === 1 ? "complejo" : "complejos" }}.
+              <template v-if="hasLocation"> Ordenadas por cercanía a ti.</template>
             </template>
             <template v-else>Prueba una búsqueda nueva o amplía la ubicación.</template>
           </p>
@@ -453,6 +514,9 @@ watch(date, (value) => {
         </button>
         <button v-if="time" type="button" class="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3 py-1.5 text-xs font-medium shadow-sm transition hover:border-primary/30" @click="removeFilter('time')">
           <Clock class="size-3.5 text-primary" /> {{ time }} <X class="size-3 text-muted-foreground" />
+        </button>
+        <button v-if="hasLocation" type="button" class="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3 py-1.5 text-xs font-medium shadow-sm transition hover:border-primary/30" @click="removeFilter('location')">
+          <LocateFixed class="size-3.5 text-primary" /> Cerca de ti <X class="size-3 text-muted-foreground" />
         </button>
       </div>
 
@@ -524,9 +588,12 @@ watch(date, (value) => {
             </p>
 
             <div class="mt-4 space-y-1.5">
-              <p v-if="row.court.ubigeo_label" class="flex items-start gap-1.5 text-sm font-medium text-foreground/80">
+              <p v-if="row.court.ubigeo_label || row.court.distance_km != null" class="flex items-start gap-1.5 text-sm font-medium text-foreground/80">
                 <MapPin class="mt-0.5 size-4 shrink-0 text-primary" />
-                {{ row.court.ubigeo_label }}
+                <span>{{ row.court.ubigeo_label }}</span>
+                <span v-if="row.court.distance_km != null" class="font-normal text-muted-foreground">
+                  {{ row.court.ubigeo_label ? "·" : "" }} a {{ formatDistance(row.court.distance_km) }}
+                </span>
               </p>
               <p v-if="row.court.company_address" class="line-clamp-1 pl-[1.375rem] text-xs text-muted-foreground">{{ row.court.company_address }}</p>
             </div>

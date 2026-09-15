@@ -49,6 +49,7 @@ const missingApp = computed(() => {
 // ─── Derived state ───────────────────────────────────────────────────────────
 const currentPlanSlug = computed(() => store.catalog?.current_plan?.slug ?? null)
 const hasPaymentSubscription = computed(() => store.catalog?.has_payment_subscription === true)
+const cancellationPending = computed(() => store.catalog?.current_plan?.cancel_at_period_end === true)
 const selectedPlanDirection = computed(() => {
   const currentRank = store.catalog?.current_plan?.billing_rank
   const targetRank = planToConfirm.value?.billing_rank
@@ -206,7 +207,7 @@ async function confirmPlanSwitch(): Promise<void> {
                 {{ formatPrice(store.catalog.current_plan.price) }}
                 cada {{ store.catalog.current_plan.duration_days }} días
                 <span v-if="daysUntilRenewal !== null">
-                  · Renueva en
+                  · {{ cancellationPending ? 'Acceso por' : 'Renueva en' }}
                   <strong class="text-foreground">{{ daysUntilRenewal }} días</strong>
                 </span>
               </p>
@@ -228,6 +229,18 @@ async function confirmPlanSwitch(): Promise<void> {
               </p>
             </div>
           </div>
+        </section>
+
+        <section
+          v-if="cancellationPending"
+          class="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950"
+        >
+          <p class="font-semibold">Renovación cancelada</p>
+          <p>
+            Conservarás este plan hasta el
+            {{ new Date(store.catalog.current_plan?.access_until ?? '').toLocaleDateString() }}.
+            No se realizarán nuevos cobros.
+          </p>
         </section>
 
         <!-- ─── Planes ─────────────────────────────────────────────────── -->
@@ -305,7 +318,7 @@ async function confirmPlanSwitch(): Promise<void> {
                   v-if="currentPlanSlug !== plan.slug"
                   :variant="plan.slug === RECOMMENDED_PLAN_SLUG ? 'default' : 'outline'"
                   class="w-full"
-                  :disabled="store.switchingPlan === plan.slug"
+                  :disabled="cancellationPending || store.switchingPlan === plan.slug"
                   @click="requestPlanSwitch(plan)"
                 >
                   <Loader2
@@ -398,7 +411,7 @@ async function confirmPlanSwitch(): Promise<void> {
                   v-if="addon.can_toggle"
                   :variant="addon.is_active_addon ? 'outline' : 'default'"
                   class="w-full"
-                  :disabled="store.togglingKey === addon.key"
+                  :disabled="cancellationPending || store.togglingKey === addon.key"
                   @click="toggleAddon(addon)"
                 >
                   <Loader2

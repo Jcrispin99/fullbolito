@@ -3,6 +3,7 @@ import { computed, ref, watch } from "vue";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import CornerRibbon from "@tenant/components/CornerRibbon.vue";
+import LocationMapPicker from "@tenant/components/LocationMapPicker.vue";
 import type { Company } from "@/types/models";
 import { SearchSelect } from "@/components/ui/search-select";
 import { UnderlineInput } from "@/components/ui/underline-input";
@@ -29,6 +30,8 @@ const form = ref({
     phone: "",
     email: "",
     ubigeo: "",
+    latitude: null as number | null,
+    longitude: null as number | null,
     active: true,
     parent_id: undefined as number | undefined,
     branch_code: "",
@@ -47,6 +50,8 @@ watch(
                 phone: newData.phone || "",
                 email: newData.email || "",
                 ubigeo: newData.ubigeo || "",
+                latitude: newData.latitude ?? null,
+                longitude: newData.longitude ?? null,
                 active: newData.active !== undefined ? newData.active : true,
                 parent_id: newData.parent_id || undefined,
                 branch_code: newData.branch_code || "",
@@ -175,6 +180,21 @@ defineExpose({ submit });
                     />
                     <p v-if="errors?.address" class="text-sm text-destructive">
                         {{ errors.address }}
+                    </p>
+                </div>
+
+                <!-- Row 4b: Ubicación en el mapa -->
+                <div class="space-y-2">
+                    <Label>Ubicación en el mapa</Label>
+                    <LocationMapPicker
+                        v-model:latitude="form.latitude"
+                        v-model:longitude="form.longitude"
+                    />
+                    <p v-if="errors?.latitude" class="text-sm text-destructive">
+                        {{ errors.latitude }}
+                    </p>
+                    <p v-if="errors?.longitude" class="text-sm text-destructive">
+                        {{ errors.longitude }}
                     </p>
                 </div>
 

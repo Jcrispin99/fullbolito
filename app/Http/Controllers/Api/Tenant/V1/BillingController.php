@@ -65,6 +65,11 @@ final class BillingController extends ApiController
                 'provider_id' => $subscription->provider_id,
                 'provider_status' => $subscription->provider_status,
                 'next_billing_at' => $subscription->next_billing_at?->toIso8601String(),
+                'cancel_at_period_end' => (bool) $subscription->cancel_at_period_end,
+                'cancellation_requested_at' => $subscription->cancellation_requested_at?->toIso8601String(),
+                'cancellation_requested_by' => $subscription->cancellation_requested_by,
+                'cancellation_reason' => $subscription->cancellation_reason,
+                'access_until' => $subscription->ends_at?->toIso8601String(),
             ] : null,
             'plan' => $plan ? [
                 'id' => $plan->id,
@@ -185,13 +190,29 @@ final class BillingController extends ApiController
             return $this->validationError(['tenant' => ['Tenant context required.']]);
         }
 
-        /** @var array{status: string} $data */
+        /** @var array{status: string, reason?: string|null} $data */
         $data = $request->validate([
             'status' => ['required', 'string', 'in:authorized,paused,cancelled'],
+            'reason' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $remote = $billing->changeStatus($tenant, $data['status']);
-        $webhooks->syncPreapproval($remote);
+        try {
+            if ($data['status'] === 'cancelled') {
+                $user = $request->user();
+                $requestedBy = is_string($user?->email) ? $user->email : null;
+
+                return $this->success($billing->cancelAtPeriodEnd(
+                    $tenant,
+                    $requestedBy,
+                    $data['reason'] ?? null,
+                ));
+            }
+
+            $remote = $billing->changeStatus($tenant, $data['status']);
+            $webhooks->syncPreapproval($remote);
+        } catch (RuntimeException $e) {
+            return $this->error($e->getMessage(), 422);
+        }
 
         return $this->success([
             'status' => $remote['status'] ?? $data['status'],

@@ -25,6 +25,8 @@ class Company extends Model
         'phone',
         'email',
         'ubigeo',
+        'latitude',
+        'longitude',
         'is_active',
         'parent_id',
         'branch_code',
@@ -39,6 +41,8 @@ class Company extends Model
         return [
             'is_active' => 'boolean',
             'is_main' => 'boolean',
+            'latitude' => 'decimal:7',
+            'longitude' => 'decimal:7',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];

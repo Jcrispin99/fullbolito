@@ -28,6 +28,8 @@ class CompanyRequest extends FormRequest
             'phone' => ['nullable', 'string', 'max:20'],
             'email' => ['nullable', 'string', 'email', 'max:100'],
             'ubigeo' => ['nullable', 'string', 'size:6', new UbigeoExists()],
+            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
             'is_active' => ['sometimes', 'boolean'],
             'parent_id' => ['nullable', 'integer', 'exists:companies,id'],
             'branch_code' => [

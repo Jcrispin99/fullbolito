@@ -94,6 +94,37 @@ it('creates a pending Mercado Pago preapproval without replacing the active plan
     });
 });
 
+it('keeps self-service billing available after the paid access period ends', function (): void {
+    $this->actingAsTenantUser(User::factory()->create(['email' => 'payer@example.test']));
+    $subscription = tenant()->subscription()->firstOrFail();
+    $subscription->update([
+        'provider' => 'mercadopago',
+        'provider_id' => 'preapproval-ended',
+        'provider_status' => 'cancelled',
+        'status' => 'cancelled',
+        'ends_at' => now()->subMinute(),
+        'next_billing_at' => now()->subMinute(),
+        'cancel_at_period_end' => true,
+        'cancellation_requested_at' => now()->subWeek(),
+    ]);
+
+    Http::fake([
+        'api.mercadopago.com/preapproval' => Http::response([
+            'id' => 'preapproval-reactivation',
+            'status' => 'pending',
+            'init_point' => 'https://www.mercadopago.com.pe/subscriptions/checkout?preapproval_id=preapproval-reactivation',
+        ], 201),
+    ]);
+
+    $this->tenantGetJson('/api/v1/billing')
+        ->assertOk()
+        ->assertJsonPath('data.subscription.status', 'cancelled');
+
+    $this->tenantPostJson('/api/v1/billing/checkout', ['plan_slug' => 'pro-mensual'])
+        ->assertOk()
+        ->assertJsonPath('data.change_type', 'new_subscription');
+});
+
 it('reconciles an authorized checkout when Mercado Pago does not send a real test webhook', function (): void {
     $this->actingAsTenantUser(User::factory()->create(['email' => 'payer@example.test']));
 
@@ -177,14 +208,34 @@ it('pauses an active Mercado Pago subscription and mirrors its status', function
         ->and($subscription->fresh()->provider_status)->toBe('paused');
 });
 
-it('sends the Mercado Pago cancelled status when cancelling a subscription', function (): void {
+it('cancels renewal in Mercado Pago but preserves access until the paid period ends', function (): void {
     $this->actingAsTenantUser(User::factory()->create(['email' => 'payer@example.test']));
     $subscription = tenant()->subscription()->first();
+    $accessUntil = now()->addDays(20)->startOfSecond();
     $subscription->update([
         'provider' => 'mercadopago',
         'provider_id' => 'preapproval-cancel',
         'provider_status' => 'authorized',
         'external_reference' => (string) Illuminate\Support\Str::uuid(),
+        'status' => 'active',
+        'ends_at' => $accessUntil,
+        'next_billing_at' => $accessUntil,
+    ]);
+    $targetPlan = Plan::query()->where('slug', 'pro-mensual')->firstOrFail();
+    $pendingChange = SubscriptionPlanChange::query()->create([
+        'tenant_id' => tenant()->id,
+        'subscription_id' => $subscription->id,
+        'from_plan_id' => $subscription->plan_id,
+        'to_plan_id' => $targetPlan->id,
+        'kind' => 'upgrade',
+        'status' => 'pending_payment',
+        'external_reference' => (string) Illuminate\Support\Str::uuid(),
+        'provider' => 'mercadopago',
+        'current_recurring_amount' => 0,
+        'target_recurring_amount' => 59.99,
+        'proration_amount' => 20,
+        'currency' => 'PEN',
+        'effective_at' => now(),
     ]);
 
     Http::fake([
@@ -197,10 +248,97 @@ it('sends the Mercado Pago cancelled status when cancelling a subscription', fun
 
     $this->tenantPatchJson('/api/v1/billing/subscription/status', ['status' => 'cancelled'])
         ->assertOk()
-        ->assertJsonPath('data.status', 'cancelled');
+        ->assertJsonPath('data.status', 'active')
+        ->assertJsonPath('data.provider_status', 'cancelled')
+        ->assertJsonPath('data.cancel_at_period_end', true);
 
     Http::assertSent(fn (Request $request): bool => $request['status'] === 'cancelled');
-    expect($subscription->fresh()->status)->toBe('cancelled');
+    $subscription->refresh();
+    expect($subscription->status)->toBe('active')
+        ->and($subscription->provider_status)->toBe('cancelled')
+        ->and($subscription->cancel_at_period_end)->toBeTrue()
+        ->and($subscription->ends_at->equalTo($accessUntil))->toBeTrue()
+        ->and($subscription->cancellation_requested_by)->toBe('payer@example.test')
+        ->and($subscription->isValid())->toBeTrue()
+        ->and($pendingChange->fresh()->status)->toBe('cancelled');
+
+    app(HandleMercadoPagoWebhook::class)->syncPreapproval([
+        'id' => 'preapproval-cancel',
+        'status' => 'cancelled',
+        'external_reference' => $subscription->external_reference,
+    ]);
+
+    expect($subscription->fresh()->status)->toBe('active');
+});
+
+it('makes period-end cancellation idempotent and blocks later plan changes', function (): void {
+    $this->actingAsTenantUser(User::factory()->create(['email' => 'payer@example.test']));
+    $subscription = tenant()->subscription()->firstOrFail();
+    $subscription->update([
+        'provider' => 'mercadopago',
+        'provider_id' => 'preapproval-cancel-once',
+        'provider_status' => 'authorized',
+        'status' => 'active',
+        'ends_at' => now()->addDays(10),
+        'next_billing_at' => now()->addDays(10),
+    ]);
+
+    Http::fake([
+        'api.mercadopago.com/preapproval/preapproval-cancel-once' => Http::response([
+            'id' => 'preapproval-cancel-once',
+            'status' => 'cancelled',
+        ]),
+    ]);
+
+    $this->tenantPatchJson('/api/v1/billing/subscription/status', ['status' => 'cancelled'])->assertOk();
+    $this->tenantPatchJson('/api/v1/billing/subscription/status', ['status' => 'cancelled'])->assertOk();
+
+    Http::assertSentCount(1);
+    $this->tenantPostJson('/api/v1/billing/checkout', ['plan_slug' => 'pro-mensual'])
+        ->assertStatus(422)
+        ->assertJsonPath('message', 'La suscripción ya está cancelada y conservará acceso hasta el final del periodo pagado.');
+});
+
+it('does not cancel renewal while a paid plan change is being applied', function (): void {
+    $this->actingAsTenantUser(User::factory()->create(['email' => 'payer@example.test']));
+    $subscription = tenant()->subscription()->firstOrFail();
+    $subscription->update([
+        'provider' => 'mercadopago',
+        'provider_id' => 'preapproval-with-paid-change',
+        'provider_status' => 'authorized',
+        'status' => 'active',
+        'ends_at' => now()->addDays(10),
+        'next_billing_at' => now()->addDays(10),
+    ]);
+    $targetPlan = Plan::query()->where('slug', 'pro-mensual')->firstOrFail();
+    SubscriptionPlanChange::query()->create([
+        'tenant_id' => tenant()->id,
+        'subscription_id' => $subscription->id,
+        'from_plan_id' => $subscription->plan_id,
+        'to_plan_id' => $targetPlan->id,
+        'kind' => 'upgrade',
+        'status' => 'paid',
+        'external_reference' => (string) Illuminate\Support\Str::uuid(),
+        'provider' => 'mercadopago',
+        'current_recurring_amount' => 0,
+        'target_recurring_amount' => 59.99,
+        'proration_amount' => 20,
+        'currency' => 'PEN',
+        'effective_at' => now(),
+        'paid_at' => now(),
+    ]);
+
+    Http::fake();
+
+    $this->tenantPatchJson('/api/v1/billing/subscription/status', ['status' => 'cancelled'])
+        ->assertStatus(422)
+        ->assertJsonPath(
+            'message',
+            'Hay un cambio de plan pagado en proceso. Espera a que termine de aplicarse antes de cancelar la renovación.'
+        );
+
+    Http::assertNothingSent();
+    expect($subscription->fresh()->cancel_at_period_end)->toBeFalse();
 });
 
 it('forbids billing mutations for a non-owner without the admin role', function (): void {

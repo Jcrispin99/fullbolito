@@ -18,6 +18,11 @@ interface BillingState {
         provider_id: string | null;
         provider_status: string | null;
         next_billing_at: string | null;
+        cancel_at_period_end: boolean;
+        cancellation_requested_at: string | null;
+        cancellation_requested_by: string | null;
+        cancellation_reason: string | null;
+        access_until: string | null;
     } | null;
     plan: {
         id: number;
@@ -140,17 +145,27 @@ async function upgradeTo(slug: string) {
 }
 
 async function updateSubscriptionStatus(status: "authorized" | "paused" | "cancelled") {
-    if (status === "cancelled" && !window.confirm("¿Cancelar la suscripción? Esta acción detendrá los próximos cobros.")) {
-        return;
+    if (status === "cancelled") {
+        const accessUntil = formatDate(
+            billing.value?.subscription?.access_until
+                ?? billing.value?.subscription?.ends_at
+                ?? null,
+        );
+        if (!window.confirm(
+            `¿Cancelar la renovación? No se devolverá el pago realizado. Conservarás el acceso hasta el ${accessUntil}.`,
+        )) return;
     }
 
     actionLoading.value = true;
     error.value = null;
     try {
-        await apiClient.patch(
+        const { data } = await apiClient.patch(
             "/v1/billing/subscription/status",
             { status },
         );
+        if (status === "cancelled") {
+            notice.value = `Renovación cancelada. Conservarás acceso hasta el ${formatDate(data.data.access_until)}.`;
+        }
         await load();
     } catch (err: any) {
         error.value = err?.response?.data?.message ?? "No se pudo actualizar la suscripción";
@@ -225,7 +240,11 @@ onMounted(load);
                             <span
                                 :class="['rounded-full px-3 py-1 text-xs font-medium', statusBadgeClass]"
                             >
-                                {{ billing.subscription?.status ?? "—" }}
+                                {{
+                                    billing.subscription?.cancel_at_period_end
+                                        ? "Activa hasta fin del periodo"
+                                        : billing.subscription?.status ?? "—"
+                                }}
                             </span>
                         </div>
 
@@ -235,8 +254,18 @@ onMounted(load);
                                 <dd>{{ formatDate(billing.subscription?.starts_at ?? null) }}</dd>
                             </div>
                             <div>
-                                <dt class="text-muted-foreground">Próximo cobro</dt>
-                                <dd>{{ formatDate(billing.subscription?.next_billing_at ?? billing.subscription?.ends_at ?? null) }}</dd>
+                                <dt class="text-muted-foreground">
+                                    {{ billing.subscription?.cancel_at_period_end ? "Acceso hasta" : "Próximo cobro" }}
+                                </dt>
+                                <dd>
+                                    {{
+                                        formatDate(
+                                            billing.subscription?.cancel_at_period_end
+                                                ? billing.subscription.access_until
+                                                : billing.subscription?.next_billing_at ?? billing.subscription?.ends_at ?? null,
+                                        )
+                                    }}
+                                </dd>
                             </div>
                             <div v-if="billing.subscription?.trial_ends_at">
                                 <dt class="text-muted-foreground">Fin del trial</dt>
@@ -262,7 +291,21 @@ onMounted(load);
                             </div>
                         </dl>
 
-                        <div v-if="billing.has_payment_subscription" class="flex flex-wrap gap-2 pt-2">
+                        <div
+                            v-if="billing.subscription?.cancel_at_period_end"
+                            class="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950"
+                        >
+                            <p class="font-semibold">Renovación cancelada</p>
+                            <p>
+                                No se realizarán nuevos cobros. Mantendrás el acceso hasta el
+                                {{ formatDate(billing.subscription.access_until) }}.
+                            </p>
+                        </div>
+
+                        <div
+                            v-if="billing.has_payment_subscription && !billing.subscription?.cancel_at_period_end"
+                            class="flex flex-wrap gap-2 pt-2"
+                        >
                             <Button
                                 v-if="billing.subscription?.provider_status === 'authorized'"
                                 variant="outline"
@@ -285,7 +328,7 @@ onMounted(load);
                                 :disabled="actionLoading"
                                 @click="updateSubscriptionStatus('cancelled')"
                             >
-                                Cancelar suscripción
+                                Cancelar renovación
                             </Button>
                         </div>
                     </CardContent>
@@ -391,7 +434,7 @@ onMounted(load);
                                     <span class="text-sm font-semibold">{{ formatPrice(p) }}</span>
                                     <Button
                                         size="sm"
-                                        :disabled="actionLoading || p.id === billing.plan?.id || billing.pending_plan_change?.status === 'pending_payment'"
+                                        :disabled="actionLoading || billing.subscription?.cancel_at_period_end || p.id === billing.plan?.id || billing.pending_plan_change?.status === 'pending_payment'"
                                         @click="upgradeTo(p.slug)"
                                     >
                                         {{

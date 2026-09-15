@@ -114,6 +114,10 @@ final class MercadoPagoBillingService
             ];
         }
 
+        if ($subscription->cancel_at_period_end) {
+            throw new RuntimeException('La suscripción ya está cancelada y conservará acceso hasta el final del periodo pagado.');
+        }
+
         if ((int) $subscription->plan_id === (int) $targetPlan->id) {
             throw new RuntimeException("El tenant ya usa el plan [{$targetPlan->slug}].");
         }
@@ -254,6 +258,18 @@ final class MercadoPagoBillingService
             return;
         }
 
+        if (in_array($change->status, ['cancelled', 'expired'], true)) {
+            $change->update([
+                'provider_payment_id' => $paymentId ?: $change->provider_payment_id,
+                'provider_data' => $providerData,
+                'error' => $providerStatus === 'approved'
+                    ? 'Se recibió un pago después de cancelar el cambio; requiere revisión y posible devolución.'
+                    : $change->error,
+            ]);
+
+            return;
+        }
+
         if ($providerStatus !== 'approved') {
             $change->update([
                 // A Checkout Pro preference can receive another payment
@@ -327,7 +343,78 @@ final class MercadoPagoBillingService
             ->where('provider', 'mercadopago')
             ->whereNotNull('provider_id')
             ->whereIn('status', ['active', 'past_due', 'paused'])
+            ->where('cancel_at_period_end', false)
             ->exists();
+    }
+
+    /** @return array<string, mixed> */
+    public function cancelAtPeriodEnd(Tenant $tenant, ?string $requestedBy = null, ?string $reason = null): array
+    {
+        $subscription = $this->providerSubscription($tenant);
+        $accessUntil = $subscription->ends_at ?? $subscription->next_billing_at;
+
+        if (! $accessUntil || ! $accessUntil->isFuture()) {
+            throw new RuntimeException('La suscripción no tiene un periodo pagado vigente para programar la cancelación.');
+        }
+
+        if ($subscription->cancel_at_period_end) {
+            return $this->cancellationResult($subscription);
+        }
+
+        $hasPaidChangeInProgress = SubscriptionPlanChange::query()
+            ->where('tenant_id', $tenant->id)
+            ->whereIn('status', ['paid', 'applying'])
+            ->exists();
+
+        if ($hasPaidChangeInProgress) {
+            throw new RuntimeException(
+                'Hay un cambio de plan pagado en proceso. Espera a que termine de aplicarse antes de cancelar la renovación.'
+            );
+        }
+
+        $remote = $this->client->updateSubscription((string) $subscription->provider_id, [
+            'status' => 'cancelled',
+        ]);
+        $providerStatus = $this->stringValue($remote['status'] ?? null) ?: 'cancelled';
+
+        if (! in_array($providerStatus, ['cancelled', 'canceled'], true)) {
+            throw new RuntimeException("Mercado Pago no confirmó la cancelación de la recurrencia ({$providerStatus}).");
+        }
+
+        DB::connection($this->centralConnection())->transaction(function () use (
+            $subscription,
+            $accessUntil,
+            $remote,
+            $providerStatus,
+            $requestedBy,
+            $reason,
+        ): void {
+            /** @var Subscription $locked */
+            $locked = Subscription::query()->lockForUpdate()->findOrFail($subscription->id);
+            $locked->update([
+                'status' => 'active',
+                'provider_status' => $providerStatus,
+                'ends_at' => $accessUntil,
+                'cancel_at_period_end' => true,
+                'cancellation_requested_at' => now(),
+                'cancellation_requested_by' => $requestedBy,
+                'cancellation_reason' => $reason,
+                'provider_data' => $remote,
+            ]);
+
+            SubscriptionPlanChange::query()
+                ->where('tenant_id', $locked->tenant_id)
+                ->whereIn('status', ['creating', 'pending_payment', 'scheduled', 'ready'])
+                ->update([
+                    'status' => 'cancelled',
+                    'error' => 'Cancelado porque el cliente solicitó finalizar su suscripción.',
+                ]);
+        });
+
+        /** @var Subscription $freshSubscription */
+        $freshSubscription = $subscription->fresh() ?? $subscription;
+
+        return $this->cancellationResult($freshSubscription);
     }
 
     /**
@@ -356,6 +443,10 @@ final class MercadoPagoBillingService
     public function changeStatus(Tenant $tenant, string $status): array
     {
         $subscription = $this->providerSubscription($tenant);
+
+        if ($subscription->cancel_at_period_end) {
+            throw new RuntimeException('La renovación ya fue cancelada. La suscripción conservará acceso hasta el final del periodo pagado.');
+        }
 
         return $this->client->updateSubscription((string) $subscription->provider_id, [
             'status' => $status,
@@ -392,6 +483,18 @@ final class MercadoPagoBillingService
         }
 
         return $subscription;
+    }
+
+    /** @return array<string, mixed> */
+    private function cancellationResult(Subscription $subscription): array
+    {
+        return [
+            'status' => $subscription->status,
+            'provider_status' => $subscription->provider_status,
+            'cancel_at_period_end' => (bool) $subscription->cancel_at_period_end,
+            'cancellation_requested_at' => $subscription->cancellation_requested_at?->toIso8601String(),
+            'access_until' => $subscription->ends_at?->toIso8601String(),
+        ];
     }
 
     private function currentProviderSubscription(Tenant $tenant): ?Subscription

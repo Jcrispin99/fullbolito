@@ -6,7 +6,6 @@ use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Carbon;
 
 uses(RefreshDatabase::class);
 
@@ -86,6 +85,22 @@ it('respects grace window for provider-backed active subs', function (): void {
 
     expect($withinGrace->fresh()->status)->toBe('active');
     expect($pastGrace->fresh()->status)->toBe('expired');
+});
+
+it('finalizes period-end cancellations without provider grace time', function (): void {
+    $cancelled = makeSub([
+        'status' => 'active',
+        'starts_at' => now()->subMonth(),
+        'ends_at' => now()->subMinute(),
+        'provider_id' => 'sub_cancel_at_period_end',
+        'provider_status' => 'cancelled',
+        'cancel_at_period_end' => true,
+        'cancellation_requested_at' => now()->subWeek(),
+    ]);
+
+    $this->artisan('subscriptions:expire', ['--grace-hours' => 24])->assertSuccessful();
+
+    expect($cancelled->fresh()->status)->toBe('cancelled');
 });
 
 it('makes no writes when --dry-run is set', function (): void {

@@ -25,6 +25,8 @@ final class CompanyResource extends JsonResource
             'phone' => $this->phone,
             'email' => $this->email,
             'ubigeo' => $this->ubigeo,
+            'latitude' => $this->latitude !== null ? (float) $this->latitude : null,
+            'longitude' => $this->longitude !== null ? (float) $this->longitude : null,
             'is_active' => (bool) $this->is_active,
             'parent_id' => $this->parent_id,
             'branch_code' => $this->branch_code,

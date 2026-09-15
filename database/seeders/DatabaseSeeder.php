@@ -20,6 +20,9 @@ final class DatabaseSeeder extends Seeder
             return;
         }
 
+        $this->call(UbigeoDepartmentSeeder::class);
+        $this->call(UbigeoProvinceSeeder::class);
+        $this->call(UbigeoDistrictSeeder::class);
         $this->call(PlanSeeder::class);
         $this->call(ModuleSeeder::class);
         $this->call(SiteBlockCatalogSeeder::class);

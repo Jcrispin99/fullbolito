@@ -43,11 +43,11 @@ Schedule::command('tenants:run reservations:cleanup-expired-holds')
 |--------------------------------------------------------------------------
 | Subscription expiration safety net (central)
 |--------------------------------------------------------------------------
-| Cada hora marca `expired` los trials vencidos y, con 24h de gracia, las
-| suscripciones de pasarela cuyo `ends_at` pasó sin webhook de renovación.
+| Cada minuto finaliza las cancelaciones programadas cuyo acceso terminó y
+| aplica la gracia de 24h a suscripciones vencidas sin webhook de renovación.
 */
 Schedule::command('subscriptions:expire')
-    ->hourly()
+    ->everyMinute()
     ->name('subscriptions-expire')
     ->withoutOverlapping()
     ->onOneServer();

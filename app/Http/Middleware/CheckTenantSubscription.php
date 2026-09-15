@@ -8,15 +8,22 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class CheckTenantSubscription
+final class CheckTenantSubscription
 {
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // An expired customer must retain access to self-service billing so
+        // they can review charges and start a new paid subscription. These
+        // endpoints still enforce auth:sanctum and billing.manage themselves.
+        if ($request->is('api/v1/billing', 'api/v1/billing/*')) {
+            return $next($request);
+        }
+
         // 1. Obtener el tenant actual
         /** @var \App\Models\Tenant|null $tenant */
         $tenant = tenant();
@@ -31,6 +38,7 @@ class CheckTenantSubscription
             $tenant->load('subscription');
         }
 
+        /** @var \App\Models\Subscription|null $subscription */
         $subscription = $tenant->subscription;
 
         // 3. Validar suscripción

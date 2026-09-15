@@ -19,7 +19,7 @@ final class ExpireSubscriptionsCommand extends Command
                             {--dry-run : Reportar sin escribir cambios.}
                             {--grace-hours=24 : Horas de gracia para suscripciones de pasarela.}';
 
-    protected $description = 'Marca expired las suscripciones activas/trial cuyo periodo ya venció.';
+    protected $description = 'Finaliza suscripciones canceladas y marca expired las demás cuyo periodo venció.';
 
     public function handle(): int
     {
@@ -27,6 +27,13 @@ final class ExpireSubscriptionsCommand extends Command
         $graceHours = max(0, (int) $this->option('grace-hours'));
         $now = Carbon::now();
         $providerCutoff = $now->copy()->subHours($graceHours);
+
+        $scheduledCancellationIds = Subscription::query()
+            ->where('status', 'active')
+            ->where('cancel_at_period_end', true)
+            ->whereNotNull('ends_at')
+            ->where('ends_at', '<=', $now)
+            ->pluck('id');
 
         $trialIds = Subscription::query()
             ->where('status', 'trial')
@@ -44,6 +51,7 @@ final class ExpireSubscriptionsCommand extends Command
         $providerActiveIds = Subscription::query()
             ->where('status', 'active')
             ->whereNotNull('provider_id')
+            ->where('cancel_at_period_end', false)
             ->whereNotNull('ends_at')
             ->where('ends_at', '<', $providerCutoff)
             ->pluck('id');
@@ -51,8 +59,9 @@ final class ExpireSubscriptionsCommand extends Command
         $this->info("Trials vencidos: {$trialIds->count()}");
         $this->info("Locales (sin pasarela) vencidos: {$localActiveIds->count()}");
         $this->info("Pasarela vencidos (>{$graceHours}h sin renovar): {$providerActiveIds->count()}");
+        $this->info("Cancelaciones al final del periodo: {$scheduledCancellationIds->count()}");
 
-        $total = $trialIds->count() + $localActiveIds->count() + $providerActiveIds->count();
+        $total = $trialIds->count() + $localActiveIds->count() + $providerActiveIds->count() + $scheduledCancellationIds->count();
 
         if ($dryRun) {
             $this->line("[dry-run] No se aplicaron cambios. Total candidatos: {$total}");
@@ -66,10 +75,14 @@ final class ExpireSubscriptionsCommand extends Command
             return self::SUCCESS;
         }
 
+        Subscription::query()
+            ->whereIn('id', $scheduledCancellationIds)
+            ->update(['status' => 'cancelled']);
+
         $allIds = $trialIds->merge($localActiveIds)->merge($providerActiveIds)->all();
         Subscription::query()->whereIn('id', $allIds)->update(['status' => 'expired']);
 
-        $this->info("✔ Total marcadas expired: {$total}");
+        $this->info("✔ Total de suscripciones finalizadas: {$total}");
 
         return self::SUCCESS;
     }

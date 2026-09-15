@@ -178,3 +178,15 @@ https://tu-dominio.com/api/v1/webhooks/mercadopago
 Las pruebas con usuarios/credenciales de prueba no siempre emiten una
 notificación de pago real. El comando `billing:reconcile-mercadopago`, ejecutado
 por el scheduler, cubre ese caso consultando directamente el estado remoto.
+
+## 10. Cancelación al final del periodo
+
+Cuando el cliente cancela, la recurrencia se detiene inmediatamente en Mercado
+Pago, pero la suscripción local permanece activa hasta `ends_at`. No se realiza
+una devolución automática. Durante ese periodo la interfaz muestra la fecha
+final de acceso y bloquea cambios de plan o complementos pagos.
+
+El comando `subscriptions:expire`, ejecutado cada minuto por el scheduler,
+finaliza localmente estas suscripciones al alcanzar la fecha pagada. Después de
+desplegar esta política es obligatorio ejecutar la migración central con
+`php artisan migrate --force`.

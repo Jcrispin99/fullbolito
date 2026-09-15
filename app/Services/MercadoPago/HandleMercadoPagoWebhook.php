@@ -82,6 +82,14 @@ final class HandleMercadoPagoWebhook
         $subscription = Subscription::query()->where('provider_id', $providerId)->first();
         $localStatus = $this->mapSubscriptionStatus($providerStatus);
 
+        if (
+            $subscription?->cancel_at_period_end
+            && in_array($providerStatus, ['cancelled', 'canceled'], true)
+            && $subscription->ends_at?->isFuture()
+        ) {
+            $localStatus = 'active';
+        }
+
         if (! $subscription && $localStatus !== 'active') {
             if ($checkout) {
                 $checkout->update([

@@ -122,6 +122,8 @@ export interface Company {
     phone: string | null;
     email: string | null;
     ubigeo: string | null;
+    latitude: number | null;
+    longitude: number | null;
     active: boolean;
     parent_id: number | null;
     branch_code: string | null;

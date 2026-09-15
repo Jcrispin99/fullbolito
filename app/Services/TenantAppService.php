@@ -69,6 +69,9 @@ final class TenantAppService
             'starts_at' => $subscription->starts_at?->toIso8601String(),
             'ends_at' => $subscription->ends_at?->toIso8601String(),
             'trial_ends_at' => $subscription->trial_ends_at?->toIso8601String(),
+            'cancel_at_period_end' => (bool) $subscription->cancel_at_period_end,
+            'cancellation_requested_at' => $subscription->cancellation_requested_at?->toIso8601String(),
+            'access_until' => $subscription->ends_at?->toIso8601String(),
         ] : null;
 
         $plans = array_values(Plan::query()

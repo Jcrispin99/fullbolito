@@ -34,6 +34,10 @@ final class PublicMarketplaceController extends ApiController
      *   - date    : YYYY-MM-DD (si se manda con time, filtra a las que tienen ese slot libre)
      *   - time    : HH:MM
      *   - duration: minutos (default usa el slot_duration de cada cancha)
+     *   - lat/lng : ubicación del visitante. Si vienen ambos, se ordena por
+     *               cercanía (Haversine) en vez de por nombre, y cada cancha
+     *               trae 'distance_km'. Las canchas cuya sede no tiene
+     *               coordenadas guardadas quedan al final, no se descartan.
      *
      * Paginación:
      *   - page (default 1)
@@ -48,6 +52,8 @@ final class PublicMarketplaceController extends ApiController
             'date' => ['nullable', 'date_format:Y-m-d'],
             'time' => ['nullable', 'date_format:H:i', 'required_with:date'],
             'duration' => ['nullable', 'integer', 'min:5', 'max:1440'],
+            'lat' => ['nullable', 'numeric', 'between:-90,90', 'required_with:lng'],
+            'lng' => ['nullable', 'numeric', 'between:-180,180', 'required_with:lat'],
             'page' => ['nullable', 'integer', 'min:1'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ]);
@@ -88,8 +94,27 @@ final class PublicMarketplaceController extends ApiController
                 }
             });
 
-        // Ordena por nombre. (Después podemos cambiar a randomize, popularidad, etc.)
-        $sorted = $all->sortBy(fn ($row) => mb_strtolower($row['court']['name']))->values();
+        $lat = isset($filters['lat']) ? (float) $filters['lat'] : null;
+        $lng = isset($filters['lng']) ? (float) $filters['lng'] : null;
+
+        if ($lat !== null && $lng !== null) {
+            $all = $all->map(function (array $row) use ($lat, $lng) {
+                $companyLat = $row['court']['company_latitude'] ?? null;
+                $companyLng = $row['court']['company_longitude'] ?? null;
+
+                $row['court']['distance_km'] = ($companyLat !== null && $companyLng !== null)
+                    ? round($this->haversineKm($lat, $lng, (float) $companyLat, (float) $companyLng), 2)
+                    : null;
+
+                return $row;
+            });
+
+            // Las que no tienen coordenadas guardadas van al final, no se descartan.
+            $sorted = $all->sortBy(fn ($row) => $row['court']['distance_km'] ?? INF)->values();
+        } else {
+            // Ordena por nombre. (Después podemos cambiar a randomize, popularidad, etc.)
+            $sorted = $all->sortBy(fn ($row) => mb_strtolower($row['court']['name']))->values();
+        }
 
         $total = $sorted->count();
         $items = $sorted->slice(($page - 1) * $perPage, $perPage)->values();
@@ -111,6 +136,8 @@ final class PublicMarketplaceController extends ApiController
                     'search' => $filters['search'] ?? null,
                     'date' => $filters['date'] ?? null,
                     'time' => $filters['time'] ?? null,
+                    'lat' => $lat,
+                    'lng' => $lng,
                 ], fn ($v) => $v !== null && $v !== ''),
                 'resolved_ubigeo' => ! empty($filters['ubigeo'])
                     ? $this->resolveUbigeoLabel($filters['ubigeo'])
@@ -118,6 +145,24 @@ final class PublicMarketplaceController extends ApiController
                 'iterated_tenants' => Tenant::query()->count(),
             ],
         ]);
+    }
+
+    /**
+     * Distancia entre dos coordenadas en kilómetros (fórmula de Haversine).
+     */
+    private function haversineKm(float $lat1, float $lon1, float $lat2, float $lon2): float
+    {
+        $earthRadiusKm = 6371;
+
+        $latDelta = deg2rad($lat2 - $lat1);
+        $lonDelta = deg2rad($lon2 - $lon1);
+
+        $a = sin($latDelta / 2) ** 2
+            + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($lonDelta / 2) ** 2;
+
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+
+        return $earthRadiusKm * $c;
     }
 
     /**
@@ -270,6 +315,7 @@ final class PublicMarketplaceController extends ApiController
                 'pp.price as base_price',
                 'co.id as company_id', 'co.business_name as company_name',
                 'co.ubigeo', 'co.address as company_address',
+                'co.latitude as company_latitude', 'co.longitude as company_longitude',
             ])
             ->orderBy('c.name')
             ->get()

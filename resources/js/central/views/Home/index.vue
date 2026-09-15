@@ -212,8 +212,8 @@ const mockGrid: number[][] = [
         </div>
 
         <h1 class="mx-auto mt-6 max-w-4xl text-balance text-5xl font-bold leading-[1.02] tracking-tight sm:text-6xl lg:text-7xl">
-          Tu complejo lleno.<br>
-          <span class="text-primary">Tu operación bajo control.</span>
+          Tu complejo lleno<br>
+          <span class="text-primary">Tu operación bajo control</span>
         </h1>
 
         <p class="mx-auto mt-6 max-w-2xl text-pretty text-base leading-7 text-white/60 sm:text-lg">

@@ -19,6 +19,10 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $ends_at
  * @property \Illuminate\Support\Carbon|null $trial_ends_at
  * @property \Illuminate\Support\Carbon|null $next_billing_at
+ * @property bool $cancel_at_period_end
+ * @property \Illuminate\Support\Carbon|null $cancellation_requested_at
+ * @property string|null $cancellation_requested_by
+ * @property string|null $cancellation_reason
  * @property Plan|null $plan
  */
 final class Subscription extends Model
@@ -36,6 +40,10 @@ final class Subscription extends Model
         'external_reference',
         'next_billing_at',
         'provider_data',
+        'cancel_at_period_end',
+        'cancellation_requested_at',
+        'cancellation_requested_by',
+        'cancellation_reason',
     ];
 
     protected $casts = [
@@ -44,6 +52,8 @@ final class Subscription extends Model
         'trial_ends_at' => 'datetime',
         'next_billing_at' => 'datetime',
         'provider_data' => 'array',
+        'cancel_at_period_end' => 'boolean',
+        'cancellation_requested_at' => 'datetime',
     ];
 
     /**
